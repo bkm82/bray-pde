@@ -29,21 +29,26 @@ class create_1Dmesh:
         self.node = np.linspace(x[0], x[1], n_points)
         self.delta_x = (x[1] - x[0]) / (n_points - 1)
         self.differentiation_matrix = create_differentiation_matrix(self.node)
+        self.temperature = np.zeros(self.n_points)
+
+    def set_internal_temperature(self, temperature):
+        """
+        Set the temperature for internal nodes.
+
+        Example: if you had mesh.temperature =np.array([0, 0, 0, 0])
+        then running mesh.set_internal_temperature(20) would result
+        in np.array([0, 20, 20, 0]
+        """
+        self.temperature[1:-1] = temperature
 
 
 def create_differentiation_matrix(nodes):
-    """Create a tridiagonal matrix differentiation matrix"""
+    """Create a differentiation matrix"""
     shape = np.shape(nodes)[0]
     upper = np.diagflat(np.repeat(1, shape - 1), 1)
     middle = -2 * np.identity(shape)
     differentiation_matrix = upper + np.transpose(upper) + middle
     return differentiation_matrix
-
-
-def set_internal_temperature(mesh, temperature):
-    """
-    Set the temperature for internal nodes.
-    """
 
 
 # def main():

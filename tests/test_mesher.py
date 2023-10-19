@@ -34,12 +34,17 @@ def test_set_differentiation_matrix(three_point_mesh):
     )
 
 
-def test_set_temperature_vector(three_point_mesh):
+def test_initialize_temperature_vector(three_point_mesh):
     expected_temperature = np.array([0, 0, 0])
     assert np.array_equal(three_point_mesh.temperature, expected_temperature)
 
 
-# def test_internal_initial_temperature(four_point_mesh):
-#     set_internal_temperature(four_point_mesh, 20)
+def test_initialize_four_point_temperature_vector(four_point_mesh):
+    expected_temperature = np.array([0, 0, 0, 0])
+    assert np.array_equal(four_point_mesh.temperature, expected_temperature)
 
-#     assert np.array_equal(four_point_mesh.temperature, np.array([0, 20, 20, 0]))
+
+def test_internal_initial_temperature(four_point_mesh):
+    four_point_mesh.set_internal_temperature(20)
+
+    assert np.array_equal(four_point_mesh.temperature, np.array([0, 20, 20, 0]))
