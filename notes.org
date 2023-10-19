@@ -1,0 +1,6 @@
+* Development Needs
+** DONE Add NP as a dependancy to the project
+CLOSED: [2023-10-18 Wed 17:08]
+:LOGBOOK:
+- State "DONE"       from "NEXT"       [2023-10-18 Wed 17:08]
+:END:
