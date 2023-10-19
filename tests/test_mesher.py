@@ -19,3 +19,11 @@ def test_set_deltax(three_point_mesh):
 
 def test_set_n_points(three_point_mesh):
     assert three_point_mesh.n_points == 3
+
+
+def test_set_differentiation_matrix(three_point_mesh):
+    expected_differentiation_matrix = np.array([-2, 1, 0], [1, -2, 1], [0, 1, -2])
+
+    assert np.array_equal(
+        three_point_mesh.differentiation_matrix, expected_differentiation_matrix
+    )
