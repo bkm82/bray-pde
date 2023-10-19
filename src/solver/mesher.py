@@ -40,10 +40,14 @@ def create_differentiation_matrix(nodes):
     return differentiation_matrix
 
 
-def main():
-    test = 1 + 2
-    print(test)
+def set_internal_temperature(mesh, temperature):
+    """
+    Set the temperature for internal nodes.
+    """
 
 
-if __name__ == "__main__":
-    main()
+# def main():
+
+
+# if __name__ == "__main__":
+#     main()
