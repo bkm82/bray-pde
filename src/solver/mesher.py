@@ -35,15 +35,14 @@ def create_differentiation_matrix(nodes):
     """Create a tridiagonal matrix differentiation matrix"""
     shape = np.shape(nodes)[0]
     upper = np.diagflat(np.repeat(1, shape - 1), 1)
-
     middle = -2 * np.identity(shape)
-
     differentiation_matrix = upper + np.transpose(upper) + middle
     return differentiation_matrix
 
 
 def main():
-    pass
+    test = 1 + 2
+    print(test)
 
 
 if __name__ == "__main__":
