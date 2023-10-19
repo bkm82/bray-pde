@@ -6,5 +6,5 @@ def main():
     print(add_one(1))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

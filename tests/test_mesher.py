@@ -6,7 +6,7 @@ from solver.mesher import create_1Dmesh
 
 @pytest.fixture
 def three_point_mesh():
-    return(create_1Dmesh(x=[0, 1], n_points=3))
+    return create_1Dmesh(x=[0, 1], n_points=3)
 
 
 def test_1dmesh_discritize(three_point_mesh):

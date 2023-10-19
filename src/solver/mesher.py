@@ -27,12 +27,12 @@ class create_1Dmesh:
         """
         self.n_points = n_points
         self.node = np.linspace(x[0], x[1], n_points)
-        self.delta_x = (x[1]-x[0]) / (n_points - 1)
+        self.delta_x = (x[1] - x[0]) / (n_points - 1)
 
 
 def main():
     pass
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
