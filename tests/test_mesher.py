@@ -22,7 +22,7 @@ def test_set_n_points(three_point_mesh):
 
 
 def test_set_differentiation_matrix(three_point_mesh):
-    expected_differentiation_matrix = np.array([-2, 1, 0], [1, -2, 1], [0, 1, -2])
+    expected_differentiation_matrix = np.array([[-2, 1, 0], [1, -2, 1], [0, 1, -2]])
 
     assert np.array_equal(
         three_point_mesh.differentiation_matrix, expected_differentiation_matrix
