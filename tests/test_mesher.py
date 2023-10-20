@@ -4,18 +4,93 @@ import numpy as np
 from solver.mesher import create_1Dmesh
 
 
+# @pytest.fixture
+# def three_point_mesh():
+#     return create_1Dmesh(x=[0, 1], n_cells=3)
+
+
 @pytest.fixture
-def three_point_mesh():
-    return create_1Dmesh(x=[0, 1], n_points=3)
+def four_cell_mesh():
+    return create_1Dmesh(x=[0, 1], n_cells=4)
 
 
-def test_1dmesh_discritize(three_point_mesh):
-    assert np.array_equal(three_point_mesh.node, np.array([0, 0.5, 1]))
+def test_1dmesh_discritize(four_cell_mesh):
+    assert np.array_equal(
+        four_cell_mesh.xcell_center, np.array([0.125, 0.375, 0.625, 0.875])
+    )
 
 
-def test_set_deltax(three_point_mesh):
-    assert three_point_mesh.delta_x == 0.5
+def test_set_deltax(four_cell_mesh):
+    assert four_cell_mesh.delta_x == 0.25
 
 
-def test_set_n_points(three_point_mesh):
-    assert three_point_mesh.n_points == 3
+def test_set_n_cells(four_cell_mesh):
+    assert four_cell_mesh.n_cells == 4
+
+
+def test_set_differentiation_matrix(four_cell_mesh):
+    expected_differentiation_matrix = np.array(
+        [[-2, 1, 0, 0], [1, -2, 1, 0], [0, 1, -2, 1], [0, 0, 1, -2]]
+    )
+
+    assert np.array_equal(
+        four_cell_mesh.differentiation_matrix, expected_differentiation_matrix
+    )
+
+
+def test_internal_initial_temperature(four_cell_mesh):
+    four_cell_mesh.set_cell_temperature(20)
+
+    assert np.array_equal(four_cell_mesh.temperature, np.array([20, 20, 20, 20]))
+
+
+def init_left_dirchlet(four_cell_mesh):
+    expected_boundary_condition_array = np.array([0, 0, 0, 0])
+    assert np.array_equal(
+        four_cell_mesh.boundary_condition_array, expected_boundary_condition_array
+    )
+
+
+def test_set_left_dirclet_BC_array(four_cell_mesh):
+    four_cell_mesh.set_dirichlet_boundary("left", 50)
+
+    assert np.array_equal(
+        four_cell_mesh.boundary_condition_array, np.array([100, 0, 0, 0])
+    )
+
+
+def test_set_left_dirclet_D2matrix(four_cell_mesh):
+    expected_differentiation_matrix = np.array(
+        [[-3, 1, 0, 0], [1, -2, 1, 0], [0, 1, -2, 1], [0, 0, 1, -2]]
+    )
+
+    four_cell_mesh.set_dirichlet_boundary("left", 50)
+
+    assert np.array_equal(
+        four_cell_mesh.differentiation_matrix, expected_differentiation_matrix
+    )
+
+
+def test_set_right_dirclet_BC_array(four_cell_mesh):
+    four_cell_mesh.set_dirichlet_boundary("right", 50)
+
+    assert np.array_equal(
+        four_cell_mesh.boundary_condition_array, np.array([0, 0, 0, 100])
+    )
+
+
+def test_set_right_dirclet_D2matrix(four_cell_mesh):
+    expected_differentiation_matrix = np.array(
+        [[-2, 1, 0, 0], [1, -2, 1, 0], [0, 1, -2, 1], [0, 0, 1, -3]]
+    )
+
+    four_cell_mesh.set_dirichlet_boundary("right", 50)
+
+    assert np.array_equal(
+        four_cell_mesh.differentiation_matrix, expected_differentiation_matrix
+    )
+
+
+def test_unsuported_boundary_conndtion_raises(four_cell_mesh):
+    with pytest.raises(ValueError):
+        four_cell_mesh.set_dirichlet_boundary("top", 50)
