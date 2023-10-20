@@ -44,7 +44,7 @@ def test_internal_initial_temperature(four_cell_mesh):
     assert np.array_equal(four_cell_mesh.temperature, np.array([20, 20, 20, 20]))
 
 
-def init_left_dirchlet(four_cell_mesh):
+def init_boundary_condtion(four_cell_mesh):
     expected_boundary_condition_array = np.array([0, 0, 0, 0])
     assert np.array_equal(
         four_cell_mesh.boundary_condition_array, expected_boundary_condition_array
@@ -94,3 +94,43 @@ def test_set_right_dirclet_D2matrix(four_cell_mesh):
 def test_unsuported_boundary_conndtion_raises(four_cell_mesh):
     with pytest.raises(ValueError):
         four_cell_mesh.set_dirichlet_boundary("top", 50)
+
+
+def test_set_left_neumann_BC(four_cell_mesh):
+    four_cell_mesh.set_neumann_boundary("left", 50)
+
+    assert np.array_equal(
+        four_cell_mesh.boundary_condition_array, np.array([200, 0, 0, 0])
+    )
+
+
+def test_set_left_neumann_D2matrix(four_cell_mesh):
+    expected_differentiation_matrix = np.array(
+        [[-1, 1, 0, 0], [1, -2, 1, 0], [0, 1, -2, 1], [0, 0, 1, -2]]
+    )
+
+    four_cell_mesh.set_neumann_boundary("left")
+
+    assert np.array_equal(
+        four_cell_mesh.differentiation_matrix, expected_differentiation_matrix
+    )
+
+
+def test_set_right_neumann_BC(four_cell_mesh):
+    four_cell_mesh.set_neumann_boundary("right", 50)
+
+    assert np.array_equal(
+        four_cell_mesh.boundary_condition_array, np.array([0, 0, 0, 200])
+    )
+
+
+def test_set_right_neumann_D2matrix(four_cell_mesh):
+    expected_differentiation_matrix = np.array(
+        [[-2, 1, 0, 0], [1, -2, 1, 0], [0, 1, -2, 1], [0, 0, 1, -1]]
+    )
+
+    four_cell_mesh.set_neumann_boundary("right")
+
+    assert np.array_equal(
+        four_cell_mesh.differentiation_matrix, expected_differentiation_matrix
+    )
