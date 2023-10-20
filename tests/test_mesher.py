@@ -38,17 +38,59 @@ def test_set_differentiation_matrix(four_cell_mesh):
     )
 
 
-# def test_initialize_temperature_vector(four_cell_mesh):
-#     expected_temperature = np.array([0, 0, 0, 0])
-#     assert np.array_equal(four_cell_mesh.temperature, expected_temperature)
-
-
-# def test_initialize_four_point_temperature_vector(four_cell_mesh):
-#     expected_temperature = np.array([0, 0, 0, 0])
-#     assert np.array_equal(four_point_mesh.temperature, expected_temperature)
-
-
 def test_internal_initial_temperature(four_cell_mesh):
     four_cell_mesh.set_cell_temperature(20)
 
     assert np.array_equal(four_cell_mesh.temperature, np.array([20, 20, 20, 20]))
+
+
+def init_left_dirchlet(four_cell_mesh):
+    expected_boundary_condition_array = np.array([0, 0, 0, 0])
+    assert np.array_equal(
+        four_cell_mesh.boundary_condition_array, expected_boundary_condition_array
+    )
+
+
+def test_set_left_dirclet_BC_array(four_cell_mesh):
+    four_cell_mesh.set_dirichlet_boundary("left", 50)
+
+    assert np.array_equal(
+        four_cell_mesh.boundary_condition_array, np.array([100, 0, 0, 0])
+    )
+
+
+def test_set_left_dirclet_D2matrix(four_cell_mesh):
+    expected_differentiation_matrix = np.array(
+        [[-3, 1, 0, 0], [1, -2, 1, 0], [0, 1, -2, 1], [0, 0, 1, -2]]
+    )
+
+    four_cell_mesh.set_dirichlet_boundary("left", 50)
+
+    assert np.array_equal(
+        four_cell_mesh.differentiation_matrix, expected_differentiation_matrix
+    )
+
+
+def test_set_right_dirclet_BC_array(four_cell_mesh):
+    four_cell_mesh.set_dirichlet_boundary("right", 50)
+
+    assert np.array_equal(
+        four_cell_mesh.boundary_condition_array, np.array([0, 0, 0, 100])
+    )
+
+
+def test_set_right_dirclet_D2matrix(four_cell_mesh):
+    expected_differentiation_matrix = np.array(
+        [[-2, 1, 0, 0], [1, -2, 1, 0], [0, 1, -2, 1], [0, 0, 1, -3]]
+    )
+
+    four_cell_mesh.set_dirichlet_boundary("right", 50)
+
+    assert np.array_equal(
+        four_cell_mesh.differentiation_matrix, expected_differentiation_matrix
+    )
+
+
+def test_unsuported_boundary_conndtion_raises(four_cell_mesh):
+    with pytest.raises(ValueError):
+        four_cell_mesh.set_dirichlet_boundary("top", 50)
