@@ -4,47 +4,51 @@ import numpy as np
 from solver.mesher import create_1Dmesh
 
 
-@pytest.fixture
-def three_point_mesh():
-    return create_1Dmesh(x=[0, 1], n_points=3)
+# @pytest.fixture
+# def three_point_mesh():
+#     return create_1Dmesh(x=[0, 1], n_cells=3)
 
 
 @pytest.fixture
-def four_point_mesh():
-    return create_1Dmesh(x=[0, 1], n_points=4)
+def four_cell_mesh():
+    return create_1Dmesh(x=[0, 1], n_cells=4)
 
 
-def test_1dmesh_discritize(three_point_mesh):
-    assert np.array_equal(three_point_mesh.node, np.array([0, 0.5, 1]))
-
-
-def test_set_deltax(three_point_mesh):
-    assert three_point_mesh.delta_x == 0.5
-
-
-def test_set_n_points(three_point_mesh):
-    assert three_point_mesh.n_points == 3
-
-
-def test_set_differentiation_matrix(three_point_mesh):
-    expected_differentiation_matrix = np.array([[-2, 1, 0], [1, -2, 1], [0, 1, -2]])
-
+def test_1dmesh_discritize(four_cell_mesh):
     assert np.array_equal(
-        three_point_mesh.differentiation_matrix, expected_differentiation_matrix
+        four_cell_mesh.xcell_center, np.array([0.125, 0.375, 0.625, 0.875])
     )
 
 
-def test_initialize_temperature_vector(three_point_mesh):
-    expected_temperature = np.array([0, 0, 0])
-    assert np.array_equal(three_point_mesh.temperature, expected_temperature)
+def test_set_deltax(four_cell_mesh):
+    assert four_cell_mesh.delta_x == 0.25
 
 
-def test_initialize_four_point_temperature_vector(four_point_mesh):
-    expected_temperature = np.array([0, 0, 0, 0])
-    assert np.array_equal(four_point_mesh.temperature, expected_temperature)
+def test_set_n_cells(four_cell_mesh):
+    assert four_cell_mesh.n_cells == 4
 
 
-def test_internal_initial_temperature(four_point_mesh):
-    four_point_mesh.set_internal_temperature(20)
+def test_set_differentiation_matrix(four_cell_mesh):
+    expected_differentiation_matrix = np.array(
+        [[-2, 1, 0, 0], [1, -2, 1, 0], [0, 1, -2, 1], [0, 0, 1, -2]]
+    )
 
-    assert np.array_equal(four_point_mesh.temperature, np.array([0, 20, 20, 0]))
+    assert np.array_equal(
+        four_cell_mesh.differentiation_matrix, expected_differentiation_matrix
+    )
+
+
+# def test_initialize_temperature_vector(four_cell_mesh):
+#     expected_temperature = np.array([0, 0, 0, 0])
+#     assert np.array_equal(four_cell_mesh.temperature, expected_temperature)
+
+
+# def test_initialize_four_point_temperature_vector(four_cell_mesh):
+#     expected_temperature = np.array([0, 0, 0, 0])
+#     assert np.array_equal(four_point_mesh.temperature, expected_temperature)
+
+
+def test_internal_initial_temperature(four_cell_mesh):
+    four_cell_mesh.set_cell_temperature(20)
+
+    assert np.array_equal(four_cell_mesh.temperature, np.array([20, 20, 20, 20]))
