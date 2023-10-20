@@ -43,6 +43,10 @@ class create_1Dmesh:
         """
         self.temperature = temperature * np.ones(self.n_cells)
 
+    def set_thermal_diffusivity(self, thermal_diffusivity):
+        """Set a diffusion constant."""
+        self.thermal_diffusivity = thermal_diffusivity
+
     def set_dirichlet_boundary(self, side, temperature):
         """Update boundary array and D2 for a dirichlet boundary."""
         if side == "left":

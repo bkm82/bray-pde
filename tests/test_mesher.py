@@ -28,6 +28,11 @@ def test_set_n_cells(four_cell_mesh):
     assert four_cell_mesh.n_cells == 4
 
 
+def test_set_diffusion_const(four_cell_mesh):
+    four_cell_mesh.set_thermal_diffusivity(4)
+    assert four_cell_mesh.thermal_diffusivity == 4
+
+
 def test_set_differentiation_matrix(four_cell_mesh):
     expected_differentiation_matrix = np.array(
         [[-2, 1, 0, 0], [1, -2, 1, 0], [0, 1, -2, 1], [0, 0, 1, -2]]
