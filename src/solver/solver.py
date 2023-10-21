@@ -13,12 +13,20 @@ class solver_1d:
 
     def take_step(self, delta_t):
         """Set the temperature to the next timestep."""
+        k = self.mesh.thermal_diffusivity * delta_t / (self.mesh.delta_x**2)
+        identity_matrix = np.identity(self.mesh.n_cells)
+        current_temperature = self.mesh.temperature
         if self.method == "explicit":
-            k = self.mesh.thermal_diffusivity * delta_t / (self.mesh.delta_x**2)
-            identity_matrix = np.identity(self.mesh.n_cells)
             self.mesh.temperature = (
                 k * self.mesh.differentiation_matrix + identity_matrix
-            ) @ self.mesh.temperature + (k * self.mesh.boundary_condition_array)
+            ) @ current_temperature + (k * self.mesh.boundary_condition_array)
+
+        if self.method == "implicit":
+            # temperature = self.mesh.temperature
+            a = identity_matrix - (k * self.mesh.differentiation_matrix)
+            b = self.mesh.temperature + (k * self.mesh.boundary_condition_array)
+
+            self.mesh.temperature = np.linalg.solve(a, b)
 
 
 # def main():

@@ -74,26 +74,51 @@ def explicit_solver(mock_mesh):
     )
 
 
+# # Create test cases to test the implicit solver
+@pytest.fixture
+def implicit_solver(mock_mesh):
+    return solver_1d(
+        mesh=mock_mesh,
+        initial_time=0,
+        n_time_steps=10,
+        time_step_size=1,
+        method="implicit",
+    )
+
+
 @pytest.mark.parametrize(
-    "solver_fixture", ["explicit_solver", "integration_test_explicit_solver"]
+    "solver_fixture, expected_method",
+    [
+        ("explicit_solver", "explicit"),
+        ("integration_test_explicit_solver", "explicit"),
+        ("implicit_solver", "implicit"),
+    ],
 )
-def test_solver_initiation(solver_fixture, request):
+def test_solver_initiation(solver_fixture, expected_method, request):
     solver_instance = request.getfixturevalue(solver_fixture)
     assert solver_instance.initial_time == 0
     assert solver_instance.n_time_steps == 10
     assert solver_instance.time_step_size == 1
-    assert solver_instance.method == "explicit"
+    assert solver_instance.method == expected_method
     assert solver_instance.mesh.n_cells == 4
     assert solver_instance.mesh.thermal_diffusivity == 0.0001
 
 
 @pytest.mark.parametrize(
-    "solver_fixture", ["explicit_solver", "integration_test_explicit_solver"]
+    "solver_fixture, expected",
+    [
+        ("explicit_solver", np.array([0.16, 0, 0, 0])),
+        ("integration_test_explicit_solver", np.array([0.16, 0, 0, 0])),
+        (
+            "implicit_solver",
+            np.array([1.59236073e-01, 2.53965675e-04, 4.05049955e-07, 6.47044657e-10]),
+        ),
+    ],
 )
-def test_solver_take_step_explicit(solver_fixture, request):
+def test_solver_take_step_explicit(solver_fixture, expected, request):
     solver_instance = request.getfixturevalue(solver_fixture)
     solver_instance.take_step(delta_t=1)
-    expected_temperature = np.array([0.16, 0, 0, 0])
+    expected_temperature = expected
     np.testing.assert_almost_equal(
         solver_instance.mesh.temperature, expected_temperature, decimal=5
     )
