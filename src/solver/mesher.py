@@ -43,6 +43,10 @@ class create_1Dmesh:
         """
         self.temperature = temperature * np.ones(self.n_cells)
 
+    def set_thermal_diffusivity(self, thermal_diffusivity):
+        """Set a diffusion constant in square meters per second."""
+        self.thermal_diffusivity = thermal_diffusivity
+
     def set_dirichlet_boundary(self, side, temperature):
         """Update boundary array and D2 for a dirichlet boundary."""
         if side == "left":
@@ -54,6 +58,18 @@ class create_1Dmesh:
 
         self.boundary_condition_array[array_index] = 2 * temperature
         self.differentiation_matrix[array_index, array_index] = -3
+
+    def set_neumann_boundary(self, side, flux=0):
+        """Update boundary array and D2 for a neumann boundary."""
+        if side == "left":
+            array_index = 0
+        elif side == "right":
+            array_index = -1
+        # else:
+        #     raise ValueError("Side must input must be left or right")
+
+        self.boundary_condition_array[array_index] = flux / self.delta_x
+        self.differentiation_matrix[array_index, array_index] = -1
 
 
 def create_differentiation_matrix(nodes):
