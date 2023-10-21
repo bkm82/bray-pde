@@ -90,8 +90,10 @@ def test_solver_initiation(solver_fixture, request):
 def test_solver_take_step(explicit_solver):
     solver_instance = explicit_solver
     solver_instance.take_step(delta_t=1)
-    expected_temperature = np.array([[0.0016, 0, 0, 0]])
-    assert solver_instance.temperature != expected_temperature
+    expected_temperature = np.array([0.16, 0, 0, 0])
+    np.testing.assert_almost_equal(
+        solver_instance.mesh.temperature, expected_temperature, decimal=5
+    )
 
 
 if __name__ == "__main__":

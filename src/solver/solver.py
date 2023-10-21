@@ -11,6 +11,14 @@ class solver_1d:
         self.method = method
         self.mesh = mesh
 
+    def take_step(self, delta_t):
+        if self.method == "explicit":
+            k = 0.0016
+            identity_matrix = np.identity(4)
+            self.mesh.temperature = (
+                k * self.mesh.differentiation_matrix + identity_matrix
+            ) @ self.mesh.temperature + (k * self.mesh.boundary_condition_array)
+
 
 # def main():
 
