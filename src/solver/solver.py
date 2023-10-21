@@ -30,6 +30,9 @@ class solver_1d:
             b = k * self.mesh.boundary_condition_array
             self.mesh.temperature = np.linalg.solve(a, (current_temperature + b))
 
+    def solve(self, delta_t):
+        pass
+
 
 # def main():
 
