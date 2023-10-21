@@ -1,11 +1,10 @@
 import numpy as np
 import pytest
 from solver.solver import solver_1d
-
 from solver.mesher import create_1Dmesh
 
 
-## TODO move this integration test to its own section
+# TODO move this integration test to its own section
 # Create a mesh for some integration testing with the meshing
 @pytest.fixture
 def four_cell_mesh():
@@ -51,6 +50,9 @@ def mock_mesh(mocker):
     :return: mesh
     """
     mesh = mocker.MagicMock()
+    mesh.xcell_center = np.array([0.125, 0.375, 0.625, 0.875])
+    mesh.delta_x = 0.25
+    mesh.temperature = np.array([0, 0, 0, 0])
     mesh.n_cells = 4
     mesh.thermal_diffusivity = 0.0001
     mesh.differentiation_matrix = np.array(
@@ -75,7 +77,7 @@ def explicit_solver(mock_mesh):
 @pytest.mark.parametrize(
     "solver_fixture", ["explicit_solver", "integration_test_explicit_solver"]
 )
-def test_mocker(solver_fixture, request):
+def test_solver_initiation(solver_fixture, request):
     solver_instance = request.getfixturevalue(solver_fixture)
     assert solver_instance.initial_time == 0
     assert solver_instance.n_time_steps == 10
@@ -83,6 +85,13 @@ def test_mocker(solver_fixture, request):
     assert solver_instance.method == "explicit"
     assert solver_instance.mesh.n_cells == 4
     assert solver_instance.mesh.thermal_diffusivity == 0.0001
+
+
+def test_solver_take_step(explicit_solver):
+    solver_instance = explicit_solver
+    solver_instance.take_step(delta_t=1)
+    expected_temperature = np.array([[0.0016, 0, 0, 0]])
+    assert solver_instance.temperature != expected_temperature
 
 
 if __name__ == "__main__":

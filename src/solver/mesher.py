@@ -44,7 +44,7 @@ class create_1Dmesh:
         self.temperature = temperature * np.ones(self.n_cells)
 
     def set_thermal_diffusivity(self, thermal_diffusivity):
-        """Set a diffusion constant."""
+        """Set a diffusion constant in square meters per second."""
         self.thermal_diffusivity = thermal_diffusivity
 
     def set_dirichlet_boundary(self, side, temperature):
