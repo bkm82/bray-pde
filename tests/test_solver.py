@@ -87,8 +87,11 @@ def test_solver_initiation(solver_fixture, request):
     assert solver_instance.mesh.thermal_diffusivity == 0.0001
 
 
-def test_solver_take_step(explicit_solver):
-    solver_instance = explicit_solver
+@pytest.mark.parametrize(
+    "solver_fixture", ["explicit_solver", "integration_test_explicit_solver"]
+)
+def test_solver_take_step_explicit(solver_fixture, request):
+    solver_instance = request.getfixturevalue(solver_fixture)
     solver_instance.take_step(delta_t=1)
     expected_temperature = np.array([0.16, 0, 0, 0])
     np.testing.assert_almost_equal(
