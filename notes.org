@@ -4,3 +4,26 @@ CLOSED: [2023-10-18 Wed 17:08]
 :LOGBOOK:
 - State "DONE"       from "NEXT"       [2023-10-18 Wed 17:08]
 :END:
+** TODO Update the mesher and solver naming from "differentiation matrix" to the "laplacian matrix
+*** Degree_Matrix = degree of the node (i.e. how many nodes it is connected to)
+example for a 1d 4 cell bar
+| 2 | 0 | 0 | 0 |
+| 0 | 2 | 0 | 0 |
+| 0 | 0 | 2 | 0 |
+| 0 | 0 | 0 | 2 |
+
+*** adjacency_matrix = matrix with a 1 if the node is connected else 0
+example for a 1d 4 cell bar
+#+attr_latex: :mode math :environment matrix
+| 0 | 1 | 0 | 0 |
+| 1 | 0 | 0 | 0 |
+| 0 | 1 | 0 | 1 |
+| 0 | 0 | 1 | 0 |
+
+
+*** laplacian_matrix L = D -A (degree_matrix-adjacency_matrix)
+ #+attr_latex: :mode math :environment matrix
+ |  2 | -1 |  0 |  0 |
+ | -1 |  2 | -1 |  0 |
+ |  0 | -1 |  2 | -1 |
+ |  0 |  0 | -1 |  2 |
