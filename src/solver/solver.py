@@ -14,7 +14,12 @@ class solver_1d:
         self.saved_state_list = []
 
     def take_step(self, delta_t):
-        """Set the temperature to the next timestep."""
+        """
+        Take a single step forward in temprature.
+
+        Inputs:
+        delta_t: the time step size to take
+        """
         k = self.mesh.thermal_diffusivity * delta_t / (self.mesh.delta_x**2)
         identity_matrix = np.identity(self.mesh.n_cells)
         current_temperature = self.mesh.temperature
@@ -84,8 +89,5 @@ class solver_1d:
         )
 
 
-# def main():
-
-
-# if __name__ == "__main__":
-#     main()
+if __name__ == "__main__":
+    pass

@@ -105,19 +105,26 @@ def test_solver_initiation(solver_fixture, expected_method, request):
     assert solver_instance.mesh.thermal_diffusivity == 0.0001
 
 
-# Test that the solver.take step method works
+# Expected temperature after steping forward 1 and 3 steps
+step_forward_expected_results = [
+    ("explicit_solver", np.array([0.16, 0, 0, 0]), np.array([0.4777, 0.000766, 0, 0])),
+    (
+        "integration_test_explicit_solver",
+        np.array([0.16, 0, 0, 0]),
+        np.array([0.4777, 0.000766, 0, 0]),
+    ),
+    (
+        "implicit_solver",
+        np.array([1.59236073e-01, 2.53965675e-04, 4.05049955e-07, 6.47044657e-10]),
+        np.array([4.75432619e-01, 1.51572460e-03, 4.02797229e-06, 9.65628626e-09]),
+    ),
+]
+
+
 @pytest.mark.parametrize(
-    "solver_fixture, expected",
-    [
-        ("explicit_solver", np.array([0.16, 0, 0, 0])),
-        ("integration_test_explicit_solver", np.array([0.16, 0, 0, 0])),
-        (
-            "implicit_solver",
-            np.array([1.59236073e-01, 2.53965675e-04, 4.05049955e-07, 6.47044657e-10]),
-        ),
-    ],
+    "solver_fixture, expected, three_step_expected", step_forward_expected_results
 )
-def test_solver_take_step(solver_fixture, expected, request):
+def test_solver_take_step_new(solver_fixture, expected, three_step_expected, request):
     solver_instance = request.getfixturevalue(solver_fixture)
     solver_instance.take_step(delta_t=1)
     expected_temperature = expected
@@ -128,17 +135,9 @@ def test_solver_take_step(solver_fixture, expected, request):
 
 # Test that the solver can be called
 @pytest.mark.parametrize(
-    "solver_fixture, expected",
-    [
-        ("explicit_solver", np.array([0.16, 0, 0, 0])),
-        ("integration_test_explicit_solver", np.array([0.16, 0, 0, 0])),
-        (
-            "implicit_solver",
-            np.array([1.59236073e-01, 2.53965675e-04, 4.05049955e-07, 6.47044657e-10]),
-        ),
-    ],
+    "solver_fixture, expected, three_step_expected", step_forward_expected_results
 )
-def test_solver_solve(solver_fixture, expected, request):
+def test_solver_solve(solver_fixture, expected, three_step_expected, request):
     solver_instance = request.getfixturevalue(solver_fixture)
     solver_instance.solve(t_initial=0, t_final=1, delta_t=1)
     expected_temperature = expected
@@ -147,22 +146,15 @@ def test_solver_solve(solver_fixture, expected, request):
     )
 
 
-# Test that the solver can be called for multiple time steps
 @pytest.mark.parametrize(
-    "solver_fixture, expected",
-    [
-        ("explicit_solver", np.array([0.4777, 0.000766, 0, 0])),
-        ("integration_test_explicit_solver", np.array([0.4777, 0.000766, 0, 0])),
-        (
-            "implicit_solver",
-            np.array([4.75432619e-01, 1.51572460e-03, 4.02797229e-06, 9.65628626e-09]),
-        ),
-    ],
+    "solver_fixture, expected, three_step_expected", step_forward_expected_results
 )
-def test_solver_solve_multiple_timesteps(solver_fixture, expected, request):
+def test_solver_solve_multiple_timesteps(
+    solver_fixture, expected, three_step_expected, request
+):
     solver_instance = request.getfixturevalue(solver_fixture)
     solver_instance.solve(t_initial=0, t_final=3, delta_t=1)
-    expected_temperature = expected
+    expected_temperature = three_step_expected
     np.testing.assert_almost_equal(
         solver_instance.mesh.temperature, expected_temperature, decimal=5
     )
@@ -174,7 +166,7 @@ def test_solver_save_creates_saved_state(explicit_solver):
     assert hasattr(solver_instance, "saved_state_list")
 
 
-@pytest.mark.xfail(reason="pds unable to determine index")
+@pytest.mark.xfail(reason="pandas dataframe unable to determine index")
 def test_solver_save_state_accepts_atribute_names(explicit_solver):
     solver_instance = explicit_solver
     solver_instance.save_state("time_step_size")
