@@ -22,7 +22,6 @@ def integration_test_explicit_solver(four_cell_mesh):
     return solver_1d(
         mesh=four_cell_mesh,
         initial_time=0,
-        n_time_steps=10,
         time_step_size=1,
         method="explicit",
     )
@@ -30,7 +29,6 @@ def integration_test_explicit_solver(four_cell_mesh):
 
 def test_initiate_solver(integration_test_explicit_solver):
     assert integration_test_explicit_solver.initial_time == 0
-    assert integration_test_explicit_solver.n_time_steps == 10
     assert integration_test_explicit_solver.time_step_size == 1
     assert integration_test_explicit_solver.method == "explicit"
     assert integration_test_explicit_solver.mesh.n_cells == 4
@@ -69,7 +67,6 @@ def explicit_solver(mock_mesh):
     return solver_1d(
         mesh=mock_mesh,
         initial_time=0,
-        n_time_steps=10,
         time_step_size=1,
         method="explicit",
     )
@@ -81,7 +78,6 @@ def implicit_solver(mock_mesh):
     return solver_1d(
         mesh=mock_mesh,
         initial_time=0,
-        n_time_steps=10,
         time_step_size=1,
         method="implicit",
     )
@@ -98,7 +94,6 @@ def implicit_solver(mock_mesh):
 def test_solver_initiation(solver_fixture, expected_method, request):
     solver_instance = request.getfixturevalue(solver_fixture)
     assert solver_instance.initial_time == 0
-    assert solver_instance.n_time_steps == 10
     assert solver_instance.time_step_size == 1
     assert solver_instance.method == expected_method
     assert solver_instance.mesh.n_cells == 4
@@ -126,7 +121,7 @@ step_forward_expected_results = [
 )
 def test_solver_take_step_new(solver_fixture, expected, three_step_expected, request):
     solver_instance = request.getfixturevalue(solver_fixture)
-    solver_instance.take_step(delta_t=1)
+    solver_instance.take_step()
     expected_temperature = expected
     np.testing.assert_almost_equal(
         solver_instance.mesh.temperature, expected_temperature, decimal=5
@@ -139,7 +134,7 @@ def test_solver_take_step_new(solver_fixture, expected, three_step_expected, req
 )
 def test_solver_solve(solver_fixture, expected, three_step_expected, request):
     solver_instance = request.getfixturevalue(solver_fixture)
-    solver_instance.solve(t_initial=0, t_final=1, delta_t=1)
+    solver_instance.solve(t_initial=0, t_final=1)
     expected_temperature = expected
     np.testing.assert_almost_equal(
         solver_instance.mesh.temperature, expected_temperature, decimal=5
@@ -153,7 +148,7 @@ def test_solver_solve_multiple_timesteps(
     solver_fixture, expected, three_step_expected, request
 ):
     solver_instance = request.getfixturevalue(solver_fixture)
-    solver_instance.solve(t_initial=0, t_final=3, delta_t=1)
+    solver_instance.solve(t_initial=0, t_final=3)
     expected_temperature = three_step_expected
     np.testing.assert_almost_equal(
         solver_instance.mesh.temperature, expected_temperature, decimal=5
@@ -196,17 +191,20 @@ def test_solver_save_state_accepts_keywords(explicit_solver):
     )
 
 
+# @pytest.mark.xfail(reason="data type of time_step_size int64 vs float64")
 def test_integration_solve_save_state(explicit_solver):
     solver_instance = explicit_solver
-    solver_instance.solve(t_initial=0, t_final=1, delta_t=1)
+    solver_instance.solve(t_initial=0, t_final=1)
     time_zero_dict = dict(
         method="explicit",
+        time_step_size=1,
         time=0,
         x_cordinates=np.array([0.125, 0.375, 0.625, 0.875]),
         temperature=np.array([0, 0, 0, 0]),
     )
     time_one_dict = dict(
         method="explicit",
+        time_step_size=1,
         time=1,
         x_cordinates=np.array([0.125, 0.375, 0.625, 0.875]),
         temperature=np.array([0.16, 0, 0, 0]),
@@ -219,6 +217,8 @@ def test_integration_solve_save_state(explicit_solver):
     pd.testing.assert_frame_equal(
         pd.concat(solver_instance.saved_state_list), expected_data_frame
     )
+
+    pd.testing.assert_frame_equal(solver_instance.saved_data, expected_data_frame)
 
 
 if __name__ == "__main__":
