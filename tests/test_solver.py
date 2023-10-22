@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import pytest
 from solver.solver import solver_1d
 from solver.mesher import create_1Dmesh
@@ -104,6 +105,7 @@ def test_solver_initiation(solver_fixture, expected_method, request):
     assert solver_instance.mesh.thermal_diffusivity == 0.0001
 
 
+# Test that the solver.take step method works
 @pytest.mark.parametrize(
     "solver_fixture, expected",
     [
@@ -115,12 +117,115 @@ def test_solver_initiation(solver_fixture, expected_method, request):
         ),
     ],
 )
-def test_solver_take_step_explicit(solver_fixture, expected, request):
+def test_solver_take_step(solver_fixture, expected, request):
     solver_instance = request.getfixturevalue(solver_fixture)
     solver_instance.take_step(delta_t=1)
     expected_temperature = expected
     np.testing.assert_almost_equal(
         solver_instance.mesh.temperature, expected_temperature, decimal=5
+    )
+
+
+# Test that the solver can be called
+@pytest.mark.parametrize(
+    "solver_fixture, expected",
+    [
+        ("explicit_solver", np.array([0.16, 0, 0, 0])),
+        ("integration_test_explicit_solver", np.array([0.16, 0, 0, 0])),
+        (
+            "implicit_solver",
+            np.array([1.59236073e-01, 2.53965675e-04, 4.05049955e-07, 6.47044657e-10]),
+        ),
+    ],
+)
+def test_solver_solve(solver_fixture, expected, request):
+    solver_instance = request.getfixturevalue(solver_fixture)
+    solver_instance.solve(t_initial=0, t_final=1, delta_t=1)
+    expected_temperature = expected
+    np.testing.assert_almost_equal(
+        solver_instance.mesh.temperature, expected_temperature, decimal=5
+    )
+
+
+# Test that the solver can be called for multiple time steps
+@pytest.mark.parametrize(
+    "solver_fixture, expected",
+    [
+        ("explicit_solver", np.array([0.4777, 0.000766, 0, 0])),
+        ("integration_test_explicit_solver", np.array([0.4777, 0.000766, 0, 0])),
+        (
+            "implicit_solver",
+            np.array([4.75432619e-01, 1.51572460e-03, 4.02797229e-06, 9.65628626e-09]),
+        ),
+    ],
+)
+def test_solver_solve_multiple_timesteps(solver_fixture, expected, request):
+    solver_instance = request.getfixturevalue(solver_fixture)
+    solver_instance.solve(t_initial=0, t_final=3, delta_t=1)
+    expected_temperature = expected
+    np.testing.assert_almost_equal(
+        solver_instance.mesh.temperature, expected_temperature, decimal=5
+    )
+
+
+def test_solver_save_creates_saved_state(explicit_solver):
+    solver_instance = explicit_solver
+    solver_instance.save_state()
+    assert hasattr(solver_instance, "saved_state_list")
+
+
+@pytest.mark.xfail(reason="pds unable to determine index")
+def test_solver_save_state_accepts_atribute_names(explicit_solver):
+    solver_instance = explicit_solver
+    solver_instance.save_state("time_step_size")
+    expected_list = pd.concat([pd.DataFrame({"time_step_size": 1}, index=[0])])
+    pd.testing.assert_frame_equal(
+        pd.concat(solver_instance.saved_state_list), expected_list
+    )
+
+
+def test_solver_save_state_accepts_keywords(explicit_solver):
+    solver_instance = explicit_solver
+    solver_instance.save_state(
+        "method", x_position=np.array([0.125, 0.375, 0.625, 0.875])
+    )
+    expected_list = pd.concat(
+        [
+            pd.DataFrame(
+                {
+                    "method": "explicit",
+                    "x_position": np.array([0.125, 0.375, 0.625, 0.875]),
+                }
+            )
+        ]
+    )
+    pd.testing.assert_frame_equal(
+        pd.concat(solver_instance.saved_state_list), expected_list
+    )
+
+
+def test_integration_solve_save_state(explicit_solver):
+    solver_instance = explicit_solver
+    solver_instance.solve(t_initial=0, t_final=1, delta_t=1)
+    time_zero_dict = dict(
+        method="explicit",
+        time=0,
+        x_cordinates=np.array([0.125, 0.375, 0.625, 0.875]),
+        temperature=np.array([0, 0, 0, 0]),
+    )
+    time_one_dict = dict(
+        method="explicit",
+        time=1,
+        x_cordinates=np.array([0.125, 0.375, 0.625, 0.875]),
+        temperature=np.array([0.16, 0, 0, 0]),
+    )
+    expected_list = []
+    expected_list.append(pd.DataFrame(time_zero_dict))
+    expected_list.append(pd.DataFrame(time_one_dict))
+    expected_data_frame = pd.concat(expected_list)
+
+    pd.testing.assert_frame_equal(
+        pd.concat(solver_instance.saved_state_list), expected_data_frame
     )
 
 
