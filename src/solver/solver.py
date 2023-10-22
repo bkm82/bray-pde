@@ -3,24 +3,25 @@ import pandas as pd
 
 
 class solver_1d:
-    def __init__(
-        self, mesh, n_time_steps, initial_time=0, time_step_size=1, method="explicit"
-    ):
+    def __init__(self, mesh, initial_time=0, time_step_size=1, method="explicit"):
         self.initial_time = initial_time
         self.time_step_size = time_step_size
-        self.n_time_steps = n_time_steps
         self.method = method
         self.mesh = mesh
         self.saved_state_list = []
 
-    def take_step(self, delta_t):
+    def take_step(self):
         """
         Take a single step forward in temprature.
 
         Inputs:
         delta_t: the time step size to take
         """
-        k = self.mesh.thermal_diffusivity * delta_t / (self.mesh.delta_x**2)
+        k = (
+            self.mesh.thermal_diffusivity
+            * self.time_step_size
+            / (self.mesh.delta_x**2)
+        )
         identity_matrix = np.identity(self.mesh.n_cells)
         current_temperature = self.mesh.temperature
         differentiation_matrix = k * self.mesh.differentiation_matrix
@@ -37,7 +38,7 @@ class solver_1d:
             b = k * self.mesh.boundary_condition_array
             self.mesh.temperature = np.linalg.solve(a, (current_temperature + b))
 
-    def solve(self, t_final, delta_t=1, t_initial=0):
+    def solve(self, t_final, t_initial=0):
         """
         Run the solver for unitil the final time is reached.
 
@@ -56,8 +57,8 @@ class solver_1d:
         )
         # Loop through time steps saving
         while current_time < t_final:
-            self.take_step(delta_t)
-            current_time = current_time + delta_t
+            self.take_step()
+            current_time = current_time + self.time_step_size
             self.save_state(
                 "method",
                 time=current_time,
