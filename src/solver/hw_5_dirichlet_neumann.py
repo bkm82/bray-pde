@@ -20,8 +20,8 @@ def create_mesh(n_cells):
 def main():
     n_cells = 20
     time_step_size = 15  # seconds
-    # time_max = 30000  # seconds
-    time_max = 600
+    time_max = 30000  # seconds
+
     print(create_mesh(4).delta_x)
 
     explicit_solution_unstable = solver.solver_1d(
@@ -30,7 +30,7 @@ def main():
         time_step_size=15,
         method="explicit",
     )
-    explicit_solution_unstable.solve(600)
+    explicit_solution_unstable.solve(60)
 
     explicit_solution_stable = solver.solver_1d(
         mesh=create_mesh(n_cells),
@@ -40,7 +40,22 @@ def main():
     )
     explicit_solution_stable.solve(time_max)
 
-    logging.warning(
+    implicit_solution_15sec = solver.solver_1d(
+        mesh=create_mesh(n_cells),
+        initial_time=0,
+        time_step_size=15,
+        method="implicit",
+    )
+    implicit_solution_15sec.solve(time_max)
+
+    implicit_solution_1sec = solver.solver_1d(
+        mesh=create_mesh(n_cells),
+        initial_time=0,
+        time_step_size=1,
+        method="implicit",
+    )
+    implicit_solution_1sec.solve(time_max)
+    logging.debug(
         f"explicit_solution saved data \n {explicit_solution_stable.saved_data.head(10)}"
     )
 
@@ -49,9 +64,23 @@ def main():
     # explicit_stable_data = explicit_solution_stable.saved_data
 
     plot_data = pd.concat(
-        [explicit_solution_unstable.saved_data, explicit_solution_stable.saved_data]
+        [
+            explicit_solution_unstable.saved_data,
+            explicit_solution_stable.saved_data,
+            implicit_solution_15sec.saved_data,
+            implicit_solution_1sec.saved_data,
+        ]
     )
-    time_points = [0, 60, 3600, time_max]  # time points that you want to plot
+    time_points = [
+        0,
+        15,
+        30,
+        60,
+        600,
+        3600,
+        time_max,
+    ]  # time points that you want to plot
+
     plot_data_filterd_bool = plot_data["time"].isin(time_points)
     plot_data_filtered = plot_data[plot_data_filterd_bool]
 
@@ -62,7 +91,8 @@ def main():
         )
         + pn.geom_line()
         + pn.geom_point()
-        + pn.facet_wrap("time_step")
+        + pn.facet_grid("method~time_step_size")
+        + pn.ylim(-20, 100)
     )
 
     print(plot)
