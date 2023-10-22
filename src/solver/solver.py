@@ -64,6 +64,8 @@ class solver_1d:
                 x_cordinates=self.mesh.xcell_center,
                 temperature=self.mesh.temperature,
             )
+        # Save the data into a single data frame for ploting
+        self.saved_data = pd.concat(self.saved_state_list)
 
     def save_state(self, *args, **kwargs):
         """

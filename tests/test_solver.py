@@ -220,6 +220,8 @@ def test_integration_solve_save_state(explicit_solver):
         pd.concat(solver_instance.saved_state_list), expected_data_frame
     )
 
+    pd.testing.assert_frame_equal(solver_instance.saved_data, expected_data_frame)
+
 
 if __name__ == "__main__":
     pytest.main()
