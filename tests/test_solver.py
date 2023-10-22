@@ -105,19 +105,18 @@ def test_solver_initiation(solver_fixture, expected_method, request):
     assert solver_instance.mesh.thermal_diffusivity == 0.0001
 
 
-# Test that the solver.take step method works
-@pytest.mark.parametrize(
-    "solver_fixture, expected",
-    [
-        ("explicit_solver", np.array([0.16, 0, 0, 0])),
-        ("integration_test_explicit_solver", np.array([0.16, 0, 0, 0])),
-        (
-            "implicit_solver",
-            np.array([1.59236073e-01, 2.53965675e-04, 4.05049955e-07, 6.47044657e-10]),
-        ),
-    ],
-)
-def test_solver_take_step(solver_fixture, expected, request):
+single_step_expected_results = [
+    ("explicit_solver", np.array([0.16, 0, 0, 0])),
+    ("integration_test_explicit_solver", np.array([0.16, 0, 0, 0])),
+    (
+        "implicit_solver",
+        np.array([1.59236073e-01, 2.53965675e-04, 4.05049955e-07, 6.47044657e-10]),
+    ),
+]
+
+
+@pytest.mark.parametrize("solver_fixture, expected", single_step_expected_results)
+def test_solver_take_step_new(solver_fixture, expected, request):
     solver_instance = request.getfixturevalue(solver_fixture)
     solver_instance.take_step(delta_t=1)
     expected_temperature = expected
@@ -127,17 +126,7 @@ def test_solver_take_step(solver_fixture, expected, request):
 
 
 # Test that the solver can be called
-@pytest.mark.parametrize(
-    "solver_fixture, expected",
-    [
-        ("explicit_solver", np.array([0.16, 0, 0, 0])),
-        ("integration_test_explicit_solver", np.array([0.16, 0, 0, 0])),
-        (
-            "implicit_solver",
-            np.array([1.59236073e-01, 2.53965675e-04, 4.05049955e-07, 6.47044657e-10]),
-        ),
-    ],
-)
+@pytest.mark.parametrize("solver_fixture, expected", single_step_expected_results)
 def test_solver_solve(solver_fixture, expected, request):
     solver_instance = request.getfixturevalue(solver_fixture)
     solver_instance.solve(t_initial=0, t_final=1, delta_t=1)
