@@ -14,6 +14,17 @@ def four_cell_mesh():
     return create_1Dmesh(x=[0, 1], n_cells=4)
 
 
+@pytest.fixture
+def five_cell_difference_mesh():
+    return create_1Dmesh(x=[0, 1], n_cells=5, mesh_type="finite_difference")
+
+
+def test_1dmesh_discritize_finite_difference(five_cell_difference_mesh):
+    np.testing.assert_array_equal(
+        five_cell_difference_mesh.xcell_center, np.array([0, 0.25, 0.5, 0.75, 1])
+    )
+
+
 def test_1dmesh_discritize(four_cell_mesh):
     assert np.array_equal(
         four_cell_mesh.xcell_center, np.array([0.125, 0.375, 0.625, 0.875])

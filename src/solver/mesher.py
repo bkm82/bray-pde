@@ -6,19 +6,20 @@ class create_1Dmesh:
     A class representing a 1D Mesh.
 
     Atributes:
-    node (np.array): An array of node x positions
+    xcell_center (np.array): An array of node x positions
     n_points (int): The number of mesh points
     delta_x (float) : The distance between mesh points
 
     """
 
-    def __init__(self, x, n_cells):
+    def __init__(self, x, n_cells, mesh_type="finite_volume"):
         """
         Initialize the Mesh object.
 
         Keyword Arguments:
         x -- the spatial domain of the mesh in the form [x_min, x_max]
-        n_points -- the number of points for discritization
+        n_cells -- the number of points for discritization.
+        use n_cells as the number of points for the finite volume case
 
         Example
         mesh = create_1Dmesh(x=[0, 1], n_cells=3)
@@ -26,11 +27,17 @@ class create_1Dmesh:
         mesh.deltax = 0.25
         """
         self.n_cells = n_cells
+        if mesh_type == "finite_volume":
+            self.delta_x = (x[1] - x[0]) / (n_cells)
+            self.xcell_center = np.linspace(
+                x[0] + (self.delta_x / 2), x[1] - self.delta_x / 2, n_cells
+            )
+        elif mesh_type == "finite_difference":
+            self.delta_x = (x[1] - x[0]) / (n_cells - 1)
+            self.xcell_center = np.linspace(x[0], x[1], n_cells)
+        else:
+            raise ValueError("Mesh type not supported")
 
-        self.delta_x = (x[1] - x[0]) / (n_cells)
-        self.xcell_center = np.linspace(
-            x[0] + (self.delta_x / 2), x[1] - self.delta_x / 2, n_cells
-        )
         self.differentiation_matrix = create_differentiation_matrix(self.xcell_center)
         self.boundary_condition_array = np.zeros(n_cells)
 
