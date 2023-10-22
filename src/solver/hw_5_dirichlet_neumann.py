@@ -38,18 +38,20 @@ def main():
         time_step_size=1,
         method="explicit",
     )
-    explicit_solution_unstable.solve(time_max)
+    explicit_solution_stable.solve(time_max)
 
-    logging.debug(
-        f"explicit_solution saved data \n {explicit_solution_stable.saved_data}"
+    logging.warning(
+        f"explicit_solution saved data \n {explicit_solution_stable.saved_data.head(10)}"
     )
 
-    time_points = [0, 60, 3600, time_max]
+    # add a model name
+    # explicit_unstable_data = explicit_solution_unstable.saved_data
+    # explicit_stable_data = explicit_solution_stable.saved_data
+
     plot_data = pd.concat(
-        [explicit_solution_unstable.saved_data, explicit_solution_stable.saved_data],
-        ignore_index=True,
+        [explicit_solution_unstable.saved_data, explicit_solution_stable.saved_data]
     )
-
+    time_points = [0, 60, 3600, time_max]  # time points that you want to plot
     plot_data_filterd_bool = plot_data["time"].isin(time_points)
     plot_data_filtered = plot_data[plot_data_filterd_bool]
 
@@ -60,6 +62,7 @@ def main():
         )
         + pn.geom_line()
         + pn.geom_point()
+        + pn.facet_wrap("time_step")
     )
 
     print(plot)

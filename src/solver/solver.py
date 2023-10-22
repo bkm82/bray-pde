@@ -51,6 +51,7 @@ class solver_1d:
         # save the inital state
         self.save_state(
             "method",
+            "time_step_size",
             time=current_time,
             x_cordinates=self.mesh.xcell_center,
             temperature=self.mesh.temperature,
@@ -61,6 +62,7 @@ class solver_1d:
             current_time = current_time + self.time_step_size
             self.save_state(
                 "method",
+                "time_step_size",
                 time=current_time,
                 x_cordinates=self.mesh.xcell_center,
                 temperature=self.mesh.temperature,

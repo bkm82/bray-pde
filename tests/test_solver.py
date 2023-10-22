@@ -191,17 +191,20 @@ def test_solver_save_state_accepts_keywords(explicit_solver):
     )
 
 
+# @pytest.mark.xfail(reason="data type of time_step_size int64 vs float64")
 def test_integration_solve_save_state(explicit_solver):
     solver_instance = explicit_solver
     solver_instance.solve(t_initial=0, t_final=1)
     time_zero_dict = dict(
         method="explicit",
+        time_step_size=1,
         time=0,
         x_cordinates=np.array([0.125, 0.375, 0.625, 0.875]),
         temperature=np.array([0, 0, 0, 0]),
     )
     time_one_dict = dict(
         method="explicit",
+        time_step_size=1,
         time=1,
         x_cordinates=np.array([0.125, 0.375, 0.625, 0.875]),
         temperature=np.array([0.16, 0, 0, 0]),
