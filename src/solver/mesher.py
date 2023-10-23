@@ -27,6 +27,7 @@ class create_1Dmesh:
         mesh.deltax = 0.25
         """
         self.n_cells = n_cells
+        self.mesh_type = mesh_type
         if mesh_type == "finite_volume":
             self.delta_x = (x[1] - x[0]) / (n_cells)
             self.xcell_center = np.linspace(
@@ -63,20 +64,38 @@ class create_1Dmesh:
         else:
             raise ValueError("Side must input must be left or right")
 
-        self.boundary_condition_array[array_index] = 2 * temperature
-        self.differentiation_matrix[array_index, array_index] = -3
+        if self.mesh_type == "finite_volume":
+            self.boundary_condition_array[array_index] = 2 * temperature
+            self.differentiation_matrix[array_index, array_index] = -3
+
+        elif self.mesh_type == "finite_difference":
+            self.boundary_condition_array[array_index] = 0
+            self.differentiation_matrix[array_index, :] = 0
+        else:
+            raise ValueError("mesh must be finite_volume or finite_difference")
 
     def set_neumann_boundary(self, side, flux=0):
         """Update boundary array and D2 for a neumann boundary."""
         if side == "left":
             array_index = 0
+            next_col_index = 1
         elif side == "right":
             array_index = -1
-        # else:
-        #     raise ValueError("Side must input must be left or right")
+            next_col_index = -2
+        else:
+            raise ValueError("Side must input must be left or right")
 
-        self.boundary_condition_array[array_index] = flux / self.delta_x
-        self.differentiation_matrix[array_index, array_index] = -1
+        if self.mesh_type == "finite_volume":
+            self.boundary_condition_array[array_index] = flux / self.delta_x
+            self.differentiation_matrix[array_index, array_index] = -1
+        elif self.mesh_type == "finite_difference":
+            self.boundary_condition_array[array_index] = 2 * flux * self.delta_x
+
+            self.differentiation_matrix[array_index, next_col_index] = 2
+        else:
+            raise ValueError(
+                "mesh_type unsupported, please input a finite_volume or finite_difference as mesh type"
+            )
 
 
 def create_differentiation_matrix(nodes):
