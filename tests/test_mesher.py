@@ -234,7 +234,6 @@ def five_cell_mesh():
     return create_1Dmesh(x=[0, 1], n_cells=5, mesh_type="finite_difference")
 
 
-@pytest.mark.xfail(reason="bug report not fixed")
 def test_finite_difference_dirichlet_set_temperature(five_cell_mesh):
     """
     Regression test for issue 10
@@ -245,7 +244,28 @@ def test_finite_difference_dirichlet_set_temperature(five_cell_mesh):
 
     five_cell_mesh.set_cell_temperature(20)
     five_cell_mesh.set_dirichlet_boundary("left", 50)
-    expected_temperature = np.array([50, 20, 20, 20, 20])
+    five_cell_mesh.set_dirichlet_boundary("right", 45)
+    expected_temperature = np.array([50, 20, 20, 20, 45])
+    np.testing.assert_allclose(
+        actual=five_cell_mesh.temperature, desired=expected_temperature
+    )
+
+
+@pytest.mark.xfail(reason="feature improvment recomendation")
+def test_finite_difference_dirichlet_overwride_temperature(five_cell_mesh):
+    """
+    Regression test for issue 10
+    Description
+    Initial resolution for issue 10 allowed for setting the boundary temperatures after the initial temperatures
+    However if the internal temperatures are set after the boundarys will be overwritten
+    Below is a testcase of optimal behavior
+    """
+
+    five_cell_mesh.set_dirichlet_boundary("left", 50)
+    five_cell_mesh.set_cell_temperature(20)
+    five_cell_mesh.set_dirichlet_boundary("right", 45)
+
+    expected_temperature = np.array([50, 20, 20, 20, 45])
     np.testing.assert_allclose(
         actual=five_cell_mesh.temperature, desired=expected_temperature
     )
