@@ -3,8 +3,7 @@
 #+OPTIONS: toc:nil
 #+SETUPFILE: ~/masters/bray-standard-latex-export.org
 
-[[Tests](https://github.com/bkm82/1D_Heat_Diffusion/actions/workflows/tests.yml/badge.svg)]
-
+[[Tests][(https://github.com/bkm82/1D_Heat_Diffusion/actions/workflows/tests.yml/badge.svg)]]
 
 * 1)Example
 ** Problem Setup
