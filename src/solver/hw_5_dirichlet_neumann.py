@@ -1,7 +1,8 @@
 import solver
 import mesher
 import logging
-import matplotlib.pyplot as plt
+
+# import matplotlib.pyplot as plt
 import plotnine as pn
 import pandas as pd
 
