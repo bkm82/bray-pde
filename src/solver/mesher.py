@@ -41,6 +41,7 @@ class create_1Dmesh:
 
         self.differentiation_matrix = create_differentiation_matrix(self.xcell_center)
         self.boundary_condition_array = np.zeros(n_cells)
+        self.temperature = np.zeros(n_cells)
 
     def set_cell_temperature(self, temperature):
         """
@@ -71,6 +72,7 @@ class create_1Dmesh:
         elif self.mesh_type == "finite_difference":
             self.boundary_condition_array[array_index] = 0
             self.differentiation_matrix[array_index, :] = 0
+            self.temperature[array_index] = temperature
         else:
             raise ValueError("mesh must be finite_volume or finite_difference")
 
