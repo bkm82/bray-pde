@@ -2,6 +2,7 @@
 #+AUTHOR: Bray Moll
 #+OPTIONS: toc:nil
 #+SETUPFILE: ~/masters/bray-standard-latex-export.org
+
 [[Tests](https://github.com/bkm82/1D_Heat_Diffusion/actions/workflows/tests.yml/badge.svg)]
 
 
@@ -52,6 +53,7 @@ Additionally we can set paramaters of interest such as the maximum, the number o
 Create a solver object with time paramaters, desired method, and a mesh and solve using .solve(t_final)
 #+ATTR_LATEX: :options frame=single
 #+BEGIN_SRC python :results output :exports both :session Python-Session
+  mesh_type = "finite_difference"
   explicit_solution_unstable = solver.solver_1d(
       mesh=create_mesh(n_cells, mesh_type),
       initial_time=0,
