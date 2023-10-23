@@ -230,5 +230,22 @@ class Test_finite_difference(Test_mesh):
 
 
 @pytest.fixture
-def four_cell_mesh():
-    return create_1Dmesh(x=[0, 1], n_cells=4)
+def five_cell_mesh():
+    return create_1Dmesh(x=[0, 1], n_cells=5, mesh_type="finite_difference")
+
+
+@pytest.mark.xfail(reason="bug report not fixed")
+def test_finite_difference_dirichlet_set_temperature(five_cell_mesh):
+    """
+    Regression test for issue 10
+    Description
+    When using the finite difference, setting the dirichlet boundary
+    does not enforce the temeprature
+    """
+
+    five_cell_mesh.set_cell_temperature(20)
+    five_cell_mesh.set_dirichlet_boundary("left", 50)
+    expected_temperature = np.array([50, 20, 20, 20, 20])
+    np.testing.assert_allclose(
+        actual=five_cell_mesh.temperature, desired=expected_temperature
+    )
