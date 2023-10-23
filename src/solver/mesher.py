@@ -6,19 +6,20 @@ class create_1Dmesh:
     A class representing a 1D Mesh.
 
     Atributes:
-    node (np.array): An array of node x positions
+    xcell_center (np.array): An array of node x positions
     n_points (int): The number of mesh points
     delta_x (float) : The distance between mesh points
 
     """
 
-    def __init__(self, x, n_cells):
+    def __init__(self, x, n_cells, mesh_type="finite_volume"):
         """
         Initialize the Mesh object.
 
         Keyword Arguments:
         x -- the spatial domain of the mesh in the form [x_min, x_max]
-        n_points -- the number of points for discritization
+        n_cells -- the number of points for discritization.
+        use n_cells as the number of points for the finite volume case
 
         Example
         mesh = create_1Dmesh(x=[0, 1], n_cells=3)
@@ -26,11 +27,18 @@ class create_1Dmesh:
         mesh.deltax = 0.25
         """
         self.n_cells = n_cells
+        self.mesh_type = mesh_type
+        if mesh_type == "finite_volume":
+            self.delta_x = (x[1] - x[0]) / (n_cells)
+            self.xcell_center = np.linspace(
+                x[0] + (self.delta_x / 2), x[1] - self.delta_x / 2, n_cells
+            )
+        elif mesh_type == "finite_difference":
+            self.delta_x = (x[1] - x[0]) / (n_cells - 1)
+            self.xcell_center = np.linspace(x[0], x[1], n_cells)
+        else:
+            raise ValueError("Mesh type not supported")
 
-        self.delta_x = (x[1] - x[0]) / (n_cells)
-        self.xcell_center = np.linspace(
-            x[0] + (self.delta_x / 2), x[1] - self.delta_x / 2, n_cells
-        )
         self.differentiation_matrix = create_differentiation_matrix(self.xcell_center)
         self.boundary_condition_array = np.zeros(n_cells)
 
@@ -56,20 +64,38 @@ class create_1Dmesh:
         else:
             raise ValueError("Side must input must be left or right")
 
-        self.boundary_condition_array[array_index] = 2 * temperature
-        self.differentiation_matrix[array_index, array_index] = -3
+        if self.mesh_type == "finite_volume":
+            self.boundary_condition_array[array_index] = 2 * temperature
+            self.differentiation_matrix[array_index, array_index] = -3
+
+        elif self.mesh_type == "finite_difference":
+            self.boundary_condition_array[array_index] = 0
+            self.differentiation_matrix[array_index, :] = 0
+        else:
+            raise ValueError("mesh must be finite_volume or finite_difference")
 
     def set_neumann_boundary(self, side, flux=0):
         """Update boundary array and D2 for a neumann boundary."""
         if side == "left":
             array_index = 0
+            next_col_index = 1
         elif side == "right":
             array_index = -1
-        # else:
-        #     raise ValueError("Side must input must be left or right")
+            next_col_index = -2
+        else:
+            raise ValueError("Side must input must be left or right")
 
-        self.boundary_condition_array[array_index] = flux / self.delta_x
-        self.differentiation_matrix[array_index, array_index] = -1
+        if self.mesh_type == "finite_volume":
+            self.boundary_condition_array[array_index] = flux / self.delta_x
+            self.differentiation_matrix[array_index, array_index] = -1
+        elif self.mesh_type == "finite_difference":
+            self.boundary_condition_array[array_index] = 2 * flux * self.delta_x
+
+            self.differentiation_matrix[array_index, next_col_index] = 2
+        else:
+            raise ValueError(
+                "mesh_type unsupported, please input a finite_volume or finite_difference as mesh type"
+            )
 
 
 def create_differentiation_matrix(nodes):
