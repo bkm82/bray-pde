@@ -11,7 +11,7 @@
 **** Overall Formulation
 Starting with the one-dimmensional heat equation in differential form
 
-$\frac{\partial T}{\partial t} = \alpha ^2\frac{\partial ^2 T}{\partial x ^2}$
+$$\frac{\partial T}{\partial t} = \alpha ^2\frac{\partial ^2 T}{\partial x ^2}$$
 
 The time derivative can be discritized using the 1st order
 
@@ -45,12 +45,12 @@ In this problem we are using a spatial domain
 $$x \epsilon [0,1]$$
 
 We are using an intial condition
-$$T(x, t=0) = 0^\circ C$$
+$$T(x, t=0) = 0\degree C $$
 a left dirichlet boundary
-$$T(0, t) = 50^\circ C$$
+$$T(0, t) = 50\degree C$$
 
 On the right size we will apply a zero Neuiman Boundary Condition
-$\frac{\partial T}{\partial x} (x = 1, t) = 0$
+$$\frac{\partial T}{\partial x} (x = 1, t) = 0$$
 
 We will set the thermal diffusivity
 $$\alpha ^2 = 0.0001 \frac{m^2}{s}$$
@@ -142,7 +142,7 @@ The data can be plotted using any tool capable of plotting pandas dataframes.
 #+RESULTS:
 [[file:explicit_unstable.png]]
 
-As demonstrated in this example, when our  $\Delta t > \frac{\Delta x ^2}{2 \alpha ^2}$ the explicit method will demonstrate numerical instability that continues to grow exponentially with each time step.
+As demonstrated in this example, when our  $$\Delta t > \frac{\Delta x ^2}{2 \alpha ^2}$$ the explicit method will demonstrate numerical instability that continues to grow exponentially with each time step.
 
 
 
