@@ -10,16 +10,20 @@
 *** Finite Difference Formulation
 **** Overall Formulation
 Starting with the one-dimmensional heat equation in differential form
-$\\ \\$
-$\frac{\partial T}{\partial t} = \alpha ^2\frac{\partial ^2 T}{\partial x ^2}$ $\\$
+
+$$\frac{\partial T}{\partial t} = \alpha ^2\frac{\partial ^2 T}{\partial x ^2}$$
 
 The time derivative can be discritized using the 1st order
-$\frac{\partial T}{\partial t} = \frac{T ^{n+1}-T ^{n}}{\Delta t} + \mathcal{O}(\Delta t)$
+
+$$\frac{\partial T}{\partial t} = \frac{T ^{n+1}-T ^{n}}{\Delta t} + O(\Delta t)$$
+
 and the spatial second derivative can be discritized using a centeral difference scheme
-$\frac{\partial ^2 T}{\partial x ^2} = \frac{T _{n-1}-2T _{n}+T _{n+1}}{(\Delta x)^2} + \mathcal{O}((\Delta x)^2)$
+
+$$\frac{\partial ^2 T}{\partial x ^2} = \frac{T _{n-1}-2T _{n}+T _{n+1}}{(\Delta x)^2} + O((\Delta x)^2)$$
 **** Boundarys
 At the right hand boundary the $T_{n+1}$ must be solved for. For a Neuiman boundary condtion the flux is known
-$\frac{\partial T}{\partial x } = q _ {right}$
+
+$$\frac{\partial T}{\partial x } = q _ {right}$$
 
 can be discritized
 
@@ -38,18 +42,18 @@ Right Neuimann Boundary condition
 #+RESULTS:
 
 In this problem we are using a spatial domain
-$x \epsilon [0,1]$
+$$x \epsilon [0,1]$$
 
 We are using an intial condition
-$T(x, t=0) = 0^\circ C$
+$$T(x, t=0) = 0\degree C $$
 a left dirichlet boundary
-$T(0, t) = 50^\circ C$
+$$T(0, t) = 50\degree C$$
 
 On the right size we will apply a zero Neuiman Boundary Condition
-$\frac{\partial T}{\partial x} (x = 1, t) = 0$
+$$\frac{\partial T}{\partial x} (x = 1, t) = 0$$
 
-We will set the thermal diffusivity to
-$\alpha ^2 = 0.0001 \frac{m^2}{s}$
+We will set the thermal diffusivity
+$$\alpha ^2 = 0.0001 \frac{m^2}{s}$$
 
 Additionally we can set paramaters of interest such as the maximum, the number of cells as well as the mesh type. The only difference for the mesh type in 1d is if the node is directly on the boundarys (as would be seen in the finite_difference or if the edge cell face is on the boundary
 #+ATTR_LATEX: :options frame=single
@@ -138,7 +142,7 @@ The data can be plotted using any tool capable of plotting pandas dataframes.
 #+RESULTS:
 [[file:explicit_unstable.png]]
 
-As demonstrated in this example, when our  $\Delta t > \frac{\Delta x ^2}{2 \alpha ^2}$ the explicit method will demonstrate numerical instability that continues to grow exponentially with each time step.
+As demonstrated in this example, when our  $$\Delta t > \frac{\Delta x ^2}{2 \alpha ^2}$$ the explicit method will demonstrate numerical instability that continues to grow exponentially with each time step.
 
 
 
