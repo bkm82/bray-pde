@@ -109,8 +109,9 @@ def create_differentiation_matrix(nodes):
     return differentiation_matrix
 
 
-# def main():
+def main():
+    pass
 
 
-# if __name__ == "__main__":
-#     main()
+if __name__ == "__main__":
+    main()

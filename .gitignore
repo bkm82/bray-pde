@@ -218,3 +218,7 @@ flycheck_*.el
 _minted*
 
 ltximg/
+
+#ignore pdf
+*.pdf
+*.tex
