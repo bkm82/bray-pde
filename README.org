@@ -15,11 +15,11 @@ $\frac{\partial T}{\partial t} = \alpha ^2\frac{\partial ^2 T}{\partial x ^2}$
 
 The time derivative can be discritized using the 1st order
 
-$\frac{\partial T}{\partial t} = \frac{T ^{n+1}-T ^{n}}{\Delta t} + \mathcal{O}(\Delta t)$
+$\frac{\partial T}{\partial t} = \frac{T ^{n+1}-T ^{n}}{\Delta t} + O(\Delta t)$
 
 and the spatial second derivative can be discritized using a centeral difference scheme
 
-$\frac{\partial ^2 T}{\partial x ^2} = \frac{T _{n-1}-2T _{n}+T _{n+1}}{(\Delta x)^2} + \mathcal{O}((\Delta x)^2)$
+$\frac{\partial ^2 T}{\partial x ^2} = \frac{T _{n-1}-2T _{n}+T _{n+1}}{(\Delta x)^2} + O((\Delta x)^2)$
 **** Boundarys
 At the right hand boundary the $T_{n+1}$ must be solved for. For a Neuiman boundary condtion the flux is known
 
