@@ -86,14 +86,6 @@ class create_1Dmesh:
                 "mesh_type unsupported, please input a finite_volume or finite_difference as mesh type"
             )
 
-    def create_differentiation_matrix(self, nodes):
-        """Create a differentiation matrix."""
-        shape = np.shape(nodes)[0]
-        upper = np.diagflat(np.repeat(1, shape - 1), 1)
-        middle = -2 * np.identity(shape)
-        differentiation_matrix = upper + np.transpose(upper) + middle
-        self.differentiation_matrix = differentiation_matrix
-
 
 class heat_diffusion_mesh(create_1Dmesh):
     """Create a heat diffusion mesh."""
@@ -114,6 +106,14 @@ class heat_diffusion_mesh(create_1Dmesh):
     def set_thermal_diffusivity(self, thermal_diffusivity):
         """Set a diffusion constant in square meters per second."""
         self.thermal_diffusivity = thermal_diffusivity
+
+    def create_differentiation_matrix(self, nodes):
+        """Create a differentiation matrix."""
+        shape = np.shape(nodes)[0]
+        upper = np.diagflat(np.repeat(1, shape - 1), 1)
+        middle = -2 * np.identity(shape)
+        differentiation_matrix = upper + np.transpose(upper) + middle
+        self.differentiation_matrix = differentiation_matrix
 
 
 def main():
