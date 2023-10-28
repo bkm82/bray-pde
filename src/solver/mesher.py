@@ -39,9 +39,9 @@ class create_1Dmesh:
         else:
             raise ValueError("Mesh type not supported")
 
-        self.differentiation_matrix = create_differentiation_matrix(self.xcell_center)
+        self.create_differentiation_matrix(self.xcell_center)
         self.boundary_condition_array = np.zeros(n_cells)
-        self.temperature = np.zeros(n_cells)
+        # self.temperature = np.zeros(n_cells)
 
     def set_cell_temperature(self, temperature):
         """
@@ -99,14 +99,21 @@ class create_1Dmesh:
                 "mesh_type unsupported, please input a finite_volume or finite_difference as mesh type"
             )
 
+    def create_differentiation_matrix(self, nodes):
+        """Create a differentiation matrix."""
+        shape = np.shape(nodes)[0]
+        upper = np.diagflat(np.repeat(1, shape - 1), 1)
+        middle = -2 * np.identity(shape)
+        differentiation_matrix = upper + np.transpose(upper) + middle
+        self.differentiation_matrix = differentiation_matrix
 
-def create_differentiation_matrix(nodes):
-    """Create a differentiation matrix."""
-    shape = np.shape(nodes)[0]
-    upper = np.diagflat(np.repeat(1, shape - 1), 1)
-    middle = -2 * np.identity(shape)
-    differentiation_matrix = upper + np.transpose(upper) + middle
-    return differentiation_matrix
+
+class heat_diffusion_mesh(create_1Dmesh):
+    """Create a heat diffusion mesh."""
+
+    def __init__(self, x, n_cells, mesh_type="finite_volume"):
+        super().__init__(x, n_cells, mesh_type)
+        self.temperature = np.zeros(n_cells)
 
 
 def main():

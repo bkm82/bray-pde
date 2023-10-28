@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 
-from solver.mesher import create_1Dmesh
+from solver.mesher import heat_diffusion_mesh
 
 
 class Test_mesh:
@@ -17,7 +17,7 @@ class Test_mesh:
 
     @pytest.fixture
     def mesh_fixture(self):
-        return create_1Dmesh(
+        return heat_diffusion_mesh(
             self.x_range, n_cells=self.n_cells, mesh_type=self.mesh_type
         )
 
@@ -231,7 +231,7 @@ class Test_finite_difference(Test_mesh):
 
 @pytest.fixture
 def five_cell_mesh():
-    return create_1Dmesh(x=[0, 1], n_cells=5, mesh_type="finite_difference")
+    return heat_diffusion_mesh(x=[0, 1], n_cells=5, mesh_type="finite_difference")
 
 
 def test_finite_difference_dirichlet_set_temperature(five_cell_mesh):
