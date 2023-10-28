@@ -43,6 +43,10 @@ class create_1Dmesh:
         self.boundary_condition_array = np.zeros(n_cells)
         # self.temperature = np.zeros(n_cells)
 
+    def create_differentiation_matrix(self, nodes):
+        shape = np.shape(nodes)[0]
+        self.differentiation_matrix = np.identity(shape)
+
     def set_dirichlet_boundary(self, side, temperature):
         """Update boundary array and D2 for a dirichlet boundary."""
         if side == "left":
@@ -121,6 +125,52 @@ class heat_diffusion_mesh(create_1Dmesh):
         upper = np.diagflat(np.repeat(1, shape - 1), 1)
         middle = -2 * np.identity(shape)
         differentiation_matrix = upper + np.transpose(upper) + middle
+        self.differentiation_matrix = differentiation_matrix
+
+
+class linear_convection__mesh(create_1Dmesh):
+    """Create a heat diffusion mesh."""
+
+    def __init__(self, x, n_cells: int, mesh_type: str = "finite_volume"):
+        """
+        Initialize a heat diffusion mesh object.
+
+        Parameters:
+           x : the spatial discritization of the domain
+           n_cells (int): The number of cells to discritize the domain into
+           mesh_type (string) : finite_voluem (default) or finite_difference
+        Attributes:
+           phi: the quantity of interest being transported
+        """
+        super().__init__(x, n_cells, mesh_type)
+        self.create_upwind_differentiation_matrix(self.xcell_center)
+
+        # self.phi = np.zeros(n_cells)
+
+    def set_phi(self, phi):
+        """
+        Set the value of phi for internal nodes.
+
+        Parameters:
+        phi (int, float, list):list of phi at every x value
+        """
+        if isinstance(phi, (float, int)):
+            self.phi = phi * np.ones(self.n_cells)
+        elif isinstance(phi, list):
+            if np.array(phi).shape != self.xcell_center.shape:
+                raise ValueError("the shape of phi must match the xcell_center shape")
+            self.phi = np.array(phi)
+
+    #     def set_thermal_diffusivity(self, thermal_diffusivity):
+    #         """Set a diffusion constant in square meters per second."""
+    #         self.thermal_diffusivity = thermal_diffusivity
+
+    def create_upwind_differentiation_matrix(self, nodes):
+        """Create a differentiation matrix."""
+        shape = np.shape(nodes)[0]
+        lower = np.diagflat(np.repeat(1, shape - 1), -1)
+        middle = -1 * np.identity(shape)
+        differentiation_matrix = lower + middle
         self.differentiation_matrix = differentiation_matrix
 
 
