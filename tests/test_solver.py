@@ -3,6 +3,7 @@ import pandas as pd
 import pytest
 from solver.solver import solver_1d
 from solver.mesher import heat_diffusion_mesh
+from unittest.mock import patch, MagicMock
 
 
 # TODO move this integration test to its own section
@@ -220,6 +221,25 @@ def test_integration_solve_save_state(explicit_solver):
 
     pd.testing.assert_frame_equal(solver_instance.saved_data, expected_data_frame)
 
+
+def test_init():
+    from solver import solver
+
+    with patch.object(solver, "main", MagicMock()) as mock_main:
+        with patch.object(solver, "__name__", "__main__"):
+            solver.init()
+    mock_main.assert_called_once()
+
+
+# from unittest import mock
+# def test_init():
+#     from solver import solver
+
+#     with mock.patch.object(solver, "main", return_value = 42):
+#         with mock.patch.object(solver, "__name__", "__main__"):
+#             with mock.patch.object(solver.sys,'exit') as mock_exit:
+#                 solver.init()
+#                 assert mock_exit.call_args[0][0] == 42
 
 if __name__ == "__main__":
     pytest.main()

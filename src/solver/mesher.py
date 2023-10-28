@@ -90,7 +90,15 @@ class create_1Dmesh:
 class heat_diffusion_mesh(create_1Dmesh):
     """Create a heat diffusion mesh."""
 
-    def __init__(self, x, n_cells, mesh_type="finite_volume"):
+    def __init__(self, x, n_cells: int, mesh_type: str = "finite_volume"):
+        """
+        Initialize a heat diffusion mesh object.
+
+        Parameters:
+           x (type) : the spatial discritization of the domain
+           n_cells (int): The number of cells to discritize the domain into
+           mesh_type (string) : finite_voluem (default) or finite_difference
+        """
         super().__init__(x, n_cells, mesh_type)
         self.temperature = np.zeros(n_cells)
 
@@ -120,5 +128,9 @@ def main():
     pass
 
 
-if __name__ == "__main__":
-    main()
+def init():
+    if __name__ == "__main__":
+        main()
+
+
+init()

@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import sys
 
 
 class solver_1d:
@@ -94,5 +95,13 @@ class solver_1d:
         )
 
 
-if __name__ == "__main__":
+def main():
     pass
+
+
+def init():
+    if __name__ == "__main__":
+        main()
+
+
+# init()

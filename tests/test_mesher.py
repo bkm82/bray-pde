@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
-
 from solver.mesher import heat_diffusion_mesh
+from unittest.mock import patch, MagicMock
 
 
 class Test_mesh:
@@ -269,3 +269,12 @@ def test_finite_difference_dirichlet_overwride_temperature(five_cell_mesh):
     np.testing.assert_allclose(
         actual=five_cell_mesh.temperature, desired=expected_temperature
     )
+
+
+def test_init():
+    from solver import mesher
+
+    with patch.object(mesher, "main", MagicMock()) as mock_main:
+        with patch.object(mesher, "__name__", "__main__"):
+            mesher.init()
+            mock_main.assert_called_once()
