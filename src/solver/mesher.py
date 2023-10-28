@@ -43,19 +43,6 @@ class create_1Dmesh:
         self.boundary_condition_array = np.zeros(n_cells)
         # self.temperature = np.zeros(n_cells)
 
-    def set_cell_temperature(self, temperature):
-        """
-        Set the temperature for internal nodes.
-
-        Example:running mesh.set_internal_temperature(20) would result
-        in np.array([20, 20, 20, 20]
-        """
-        self.temperature = temperature * np.ones(self.n_cells)
-
-    def set_thermal_diffusivity(self, thermal_diffusivity):
-        """Set a diffusion constant in square meters per second."""
-        self.thermal_diffusivity = thermal_diffusivity
-
     def set_dirichlet_boundary(self, side, temperature):
         """Update boundary array and D2 for a dirichlet boundary."""
         if side == "left":
@@ -114,6 +101,19 @@ class heat_diffusion_mesh(create_1Dmesh):
     def __init__(self, x, n_cells, mesh_type="finite_volume"):
         super().__init__(x, n_cells, mesh_type)
         self.temperature = np.zeros(n_cells)
+
+    def set_cell_temperature(self, temperature):
+        """
+        Set the temperature for internal nodes.
+
+        Example:running mesh.set_internal_temperature(20) would result
+        in np.array([20, 20, 20, 20]
+        """
+        self.temperature = temperature * np.ones(self.n_cells)
+
+    def set_thermal_diffusivity(self, thermal_diffusivity):
+        """Set a diffusion constant in square meters per second."""
+        self.thermal_diffusivity = thermal_diffusivity
 
 
 def main():

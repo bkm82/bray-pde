@@ -2,14 +2,14 @@ import numpy as np
 import pandas as pd
 import pytest
 from solver.solver import solver_1d
-from solver.mesher import create_1Dmesh
+from solver.mesher import heat_diffusion_mesh
 
 
 # TODO move this integration test to its own section
 # Create a mesh for some integration testing with the meshing
 @pytest.fixture
 def four_cell_mesh():
-    mesh = create_1Dmesh(x=[0, 1], n_cells=4)
+    mesh = heat_diffusion_mesh(x=[0, 1], n_cells=4)
     mesh.set_cell_temperature(0)
     mesh.set_dirichlet_boundary("left", 50)
     mesh.set_neumann_boundary("right")
