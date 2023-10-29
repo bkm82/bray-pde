@@ -88,7 +88,6 @@ class solver_1d(main_solver):
         Inputs:
         t_initial = the initial time (default 0)
         t_final = the final time
-        delta_t = the desired time step
         """
 
         self.current_time = t_initial
@@ -99,6 +98,49 @@ class solver_1d(main_solver):
             self.take_step()
             self.current_time = self.current_time + self.time_step_size
             self.update_save_dictionary(temperature=self.mesh.temperature)
+            self.save_state(**self.save_dictionary)
+
+        # # Save the data into a single data frame for ploting
+        self.saved_data = pd.concat(self.saved_state_list)
+
+
+class linear_convection_solver(main_solver):
+    def __init__(self, mesh, initial_time=0, time_step_size=1, method="explicit"):
+        super().__init__(mesh, initial_time, time_step_size, method)
+
+    def take_step(self):
+        """
+        Take a single step forward in time.
+
+        Inputs:
+        delta_t: the time step size to take
+        """
+        k = self.mesh.convection_coefficent * self.time_step_size / (self.mesh.delta_x)
+        self.courant_coefficent = k
+        self.mesh.phi = self.solver_take_step(k, self.mesh.phi)
+
+    def solve(self, t_final, t_initial=0):
+        """
+        Run the solver for unitil the final time is reached.
+
+        Inputs:
+        t_initial = the initial time (default 0)
+        t_final = the final time
+        """
+
+        self.current_time = t_initial
+        self.courant_coefficent = (
+            self.mesh.convection_coefficent * self.time_step_size / (self.mesh.delta_x)
+        )
+        self.update_save_dictionary(phi=self.mesh.phi, courant=self.courant_coefficent)
+
+        self.save_state(**self.save_dictionary)
+        while self.current_time < t_final:
+            self.take_step()
+            self.current_time = self.current_time + self.time_step_size
+            self.update_save_dictionary(
+                phi=self.mesh.phi, courant=self.courant_coefficent
+            )
             self.save_state(**self.save_dictionary)
 
         # # Save the data into a single data frame for ploting
