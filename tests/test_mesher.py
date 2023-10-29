@@ -37,12 +37,16 @@ class Test_linear_convection_mesh(Test_mesh):
     @pytest.fixture
     def mesh_fixture(self):
         return mesher.linear_convection__mesh(
-            self.x_range, n_cells=self.n_cells, mesh_type=self.mesh_type
+            self.x_range,
+            n_cells=self.n_cells,
+            mesh_type=self.mesh_type,
+            convection_coefficient=1,
         )
 
     expected_differentiation_matrix = np.array(
         [[-1, 0, 0, 0], [1, -1, 0, 0], [0, 1, -1, 0], [0, 0, 1, -1]]
     )
+    expected_left_boundary_condition_array = np.array([5, 0, 0, 0])
 
     def test_initiate_differentiation_matrix(self, mesh_fixture):
         np.testing.assert_allclose(
@@ -50,6 +54,13 @@ class Test_linear_convection_mesh(Test_mesh):
             desired=self.expected_differentiation_matrix,
             atol=0.000001,
         )
+
+    def test_initiate_differentation_matrix_neg(self):
+        """Test that a negative convcection coefficent shows unsupported error"""
+        with pytest.raises(ValueError):
+            mesher.linear_convection__mesh(
+                x=[0, 1], n_cells=4, convection_coefficient=-1
+            )
 
     def test_set_phi(self, mesh_fixture):
         mesh_fixture.set_phi(phi=[1, 2, 4, 5])
@@ -72,6 +83,25 @@ class Test_linear_convection_mesh(Test_mesh):
         """Ensure the shape of phi matches the shape of x"""
         with pytest.raises(ValueError):
             mesh_fixture.set_phi([1, 2, 3, 4, 5])
+
+    def test_set_phi_wrong_type(self, mesh_fixture):
+        with pytest.raises(TypeError):
+            mesh_fixture.set_phi("string")
+
+    def test_convection_coeff_saved(self, mesh_fixture):
+        assert mesh_fixture.convection_coefficent == 1
+
+    def test_left_dirichlet_boundary(self, mesh_fixture):
+        mesh_fixture.set_dirichlet_boundary("left", 5)
+        np.testing.assert_array_equal(
+            mesh_fixture.boundary_condition_array,
+            self.expected_left_boundary_condition_array,
+        )
+
+    def test_right_dirichlet_boundary(self, mesh_fixture):
+        """because right bc is not implemented yet ensure a value error si raised"""
+        with pytest.raises(ValueError):
+            mesh_fixture.set_dirichlet_boundary("right", 5)
 
 
 class Test_heat_diffusion_mesh(Test_mesh):
@@ -214,8 +244,6 @@ class Test_x_range(Test_heat_diffusion_mesh):
     expected_boundary_condition_right_neumann = np.array([0, 0, 0, 50])
 
 
-# Test that adding a 5 point finite_difference mesh type modifies the behavior
-# @pytest.mark.xfail(reason=" finite_diff boundary conditions not implemented")
 class Test_finite_difference(Test_heat_diffusion_mesh):
     n_cells = 5
     mesh_type = "finite_difference"

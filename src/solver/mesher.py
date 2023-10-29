@@ -44,8 +44,45 @@ class create_1Dmesh:
         # self.temperature = np.zeros(n_cells)
 
     def create_differentiation_matrix(self, nodes):
+        """Initialaze an empty differential matrix atribute."""
+        self.create_differentiation_matrix = None
+
+
+class heat_diffusion_mesh(create_1Dmesh):
+    """Create a heat diffusion mesh."""
+
+    def __init__(self, x, n_cells: int, mesh_type: str = "finite_volume"):
+        """
+        Initialize a heat diffusion mesh object.
+
+        Parameters:
+           x (type) : the spatial discritization of the domain
+           n_cells (int): The number of cells to discritize the domain into
+           mesh_type (string) : finite_voluem (default) or finite_difference
+        """
+        super().__init__(x, n_cells, mesh_type)
+        self.temperature = np.zeros(n_cells)
+
+    def set_cell_temperature(self, temperature):
+        """
+        Set the temperature for internal nodes.
+
+        Example:running mesh.set_internal_temperature(20) would result
+        in np.array([20, 20, 20, 20]
+        """
+        self.temperature = temperature * np.ones(self.n_cells)
+
+    def set_thermal_diffusivity(self, thermal_diffusivity):
+        """Set a diffusion constant in square meters per second."""
+        self.thermal_diffusivity = thermal_diffusivity
+
+    def create_differentiation_matrix(self, nodes):
+        """Create a differentiation matrix."""
         shape = np.shape(nodes)[0]
-        self.differentiation_matrix = np.identity(shape)
+        upper = np.diagflat(np.repeat(1, shape - 1), 1)
+        middle = -2 * np.identity(shape)
+        differentiation_matrix = upper + np.transpose(upper) + middle
+        self.differentiation_matrix = differentiation_matrix
 
     def set_dirichlet_boundary(self, side, temperature):
         """Update boundary array and D2 for a dirichlet boundary."""
@@ -91,47 +128,21 @@ class create_1Dmesh:
             )
 
 
-class heat_diffusion_mesh(create_1Dmesh):
-    """Create a heat diffusion mesh."""
-
-    def __init__(self, x, n_cells: int, mesh_type: str = "finite_volume"):
-        """
-        Initialize a heat diffusion mesh object.
-
-        Parameters:
-           x (type) : the spatial discritization of the domain
-           n_cells (int): The number of cells to discritize the domain into
-           mesh_type (string) : finite_voluem (default) or finite_difference
-        """
-        super().__init__(x, n_cells, mesh_type)
-        self.temperature = np.zeros(n_cells)
-
-    def set_cell_temperature(self, temperature):
-        """
-        Set the temperature for internal nodes.
-
-        Example:running mesh.set_internal_temperature(20) would result
-        in np.array([20, 20, 20, 20]
-        """
-        self.temperature = temperature * np.ones(self.n_cells)
-
-    def set_thermal_diffusivity(self, thermal_diffusivity):
-        """Set a diffusion constant in square meters per second."""
-        self.thermal_diffusivity = thermal_diffusivity
-
-    def create_differentiation_matrix(self, nodes):
-        """Create a differentiation matrix."""
-        shape = np.shape(nodes)[0]
-        upper = np.diagflat(np.repeat(1, shape - 1), 1)
-        middle = -2 * np.identity(shape)
-        differentiation_matrix = upper + np.transpose(upper) + middle
-        self.differentiation_matrix = differentiation_matrix
-
-
 class linear_convection__mesh(create_1Dmesh):
-    """Create a heat diffusion mesh."""
+    """
+    Create a heat diffusion mesh.
+    Attributes:
+    n_cells (int): The number of cells used to discritze the domain
+    mesh_type (str): finite_volume or finite_difference
+    """
 
-    def __init__(self, x, n_cells: int, mesh_type: str = "finite_volume"):
+    def __init__(
+        self,
+        x,
+        n_cells: int,
+        mesh_type: str = "finite_volume",
+        convection_coefficient: float = 1,
+    ):
         """
         Initialize a heat diffusion mesh object.
 
@@ -141,11 +152,14 @@ class linear_convection__mesh(create_1Dmesh):
            mesh_type (string) : finite_voluem (default) or finite_difference
         Attributes:
            phi: the quantity of interest being transported
+           convection_coefficent: a constant convection coefficent
         """
         super().__init__(x, n_cells, mesh_type)
         self.create_upwind_differentiation_matrix(self.xcell_center)
 
-        # self.phi = np.zeros(n_cells)
+        if convection_coefficient <= 0:
+            raise ValueError("only positive convection coefficents are supported")
+        self.convection_coefficent = convection_coefficient
 
     def set_phi(self, phi):
         """
@@ -160,10 +174,8 @@ class linear_convection__mesh(create_1Dmesh):
             if np.array(phi).shape != self.xcell_center.shape:
                 raise ValueError("the shape of phi must match the xcell_center shape")
             self.phi = np.array(phi)
-
-    #     def set_thermal_diffusivity(self, thermal_diffusivity):
-    #         """Set a diffusion constant in square meters per second."""
-    #         self.thermal_diffusivity = thermal_diffusivity
+        else:
+            raise TypeError("The phi type inputed not supported")
 
     def create_upwind_differentiation_matrix(self, nodes):
         """Create a differentiation matrix."""
@@ -172,6 +184,24 @@ class linear_convection__mesh(create_1Dmesh):
         middle = -1 * np.identity(shape)
         differentiation_matrix = lower + middle
         self.differentiation_matrix = differentiation_matrix
+
+    def set_dirichlet_boundary(self, side: str, phi: float):
+        """Update boundary array and D2 for a dirichlet boundary."""
+        if side == "left":
+            array_index = 0
+
+        else:
+            raise ValueError("Only left side implemented")
+
+        if self.mesh_type == "finite_volume":
+            self.boundary_condition_array[array_index] = phi
+
+    # elif self.mesh_type == "finite_difference":
+    #     self.boundary_condition_array[array_index] = 0
+    #     self.differentiation_matrix[array_index, :] = 0
+    #     self.temperature[array_index] = temperature
+    # else:
+    #     raise ValueError("mesh must be finite_volume or finite_difference")
 
 
 def main():

@@ -3,13 +3,32 @@ import pandas as pd
 import sys
 
 
-class solver_1d:
+class main_solver:
     def __init__(self, mesh, initial_time=0, time_step_size=1, method="explicit"):
         self.initial_time = initial_time
         self.time_step_size = time_step_size
         self.method = method
         self.mesh = mesh
         self.saved_state_list = []
+
+    def general_take_step(self, differentiation_matrix, identity_matrix, k, atribute):
+        if self.method == "explicit":
+            # solve the form y = ax + b
+            a = differentiation_matrix + identity_matrix
+            b = k * self.mesh.boundary_condition_array
+            # self.mesh.temperature = a @ current_temperature + b
+            return a @ atribute + b
+
+        if self.method == "implicit":
+            # solve the form ay = x+b where x= current temp, y= new temp
+            a = -differentiation_matrix + identity_matrix
+            b = k * self.mesh.boundary_condition_array
+            return np.linalg.solve(a, (atribute + b))
+
+
+class solver_1d(main_solver):
+    def __init__(self, mesh, initial_time=0, time_step_size=1, method="explicit"):
+        super().__init__(mesh, initial_time, time_step_size, method)
 
     def take_step(self):
         """
@@ -26,18 +45,9 @@ class solver_1d:
         identity_matrix = np.identity(self.mesh.n_cells)
         current_temperature = self.mesh.temperature
         differentiation_matrix = k * self.mesh.differentiation_matrix
-
-        if self.method == "explicit":
-            # solve the form y = ax + b
-            a = differentiation_matrix + identity_matrix
-            b = k * self.mesh.boundary_condition_array
-            self.mesh.temperature = a @ current_temperature + b
-
-        if self.method == "implicit":
-            # solve the form ay = x+b where x= current temp, y= new temp
-            a = -differentiation_matrix + identity_matrix
-            b = k * self.mesh.boundary_condition_array
-            self.mesh.temperature = np.linalg.solve(a, (current_temperature + b))
+        self.mesh.temperature = self.general_take_step(
+            differentiation_matrix, identity_matrix, k, current_temperature
+        )
 
     def solve(self, t_final, t_initial=0):
         """
