@@ -50,13 +50,16 @@ class main_solver:
             )
         )
 
-    def update_save_dictionary(self):
+    def update_save_dictionary(self, **kwargs):
         self.save_dictionary = {
             "method": self.method,
             "time_step_size": self.time_step_size,
             "time": self.current_time,
             "x_cordinates": self.mesh.xcell_center,
         }
+
+        for key, value in kwargs.items():
+            self.save_dictionary[key] = value
 
 
 class solver_1d(main_solver):
@@ -89,29 +92,17 @@ class solver_1d(main_solver):
         """
 
         self.current_time = t_initial
+        self.update_save_dictionary(temperature=self.mesh.temperature)
 
-        self.update_save_dictionary()
-        self.save_dictionary.update({"temperature": self.mesh.temperature})
         self.save_state(**self.save_dictionary)
         while self.current_time < t_final:
             self.take_step()
             self.current_time = self.current_time + self.time_step_size
-            self.update_save_dictionary()
-            self.save_dictionary.update({"temperature": self.mesh.temperature})
+            self.update_save_dictionary(temperature=self.mesh.temperature)
             self.save_state(**self.save_dictionary)
 
         # # Save the data into a single data frame for ploting
         self.saved_data = pd.concat(self.saved_state_list)
-
-
-#     def update_save_dictionary(self):
-#         self.save_dictionary = {
-#             "method": self.method,
-#             "time_step_size": self.time_step_size,
-#             "time": self.current_time,
-#             "x_cordinates": self.mesh.xcell_center,
-# }
-#         self.save_dictionary.update({"temperature": self.mesh.temperature})
 
 
 def main():
