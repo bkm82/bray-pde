@@ -1,6 +1,5 @@
 import numpy as np
 import pandas as pd
-import sys
 
 
 class main_solver:
@@ -11,75 +10,22 @@ class main_solver:
         self.mesh = mesh
         self.saved_state_list = []
 
-    def general_take_step(self, differentiation_matrix, identity_matrix, k, atribute):
+    def solver_take_step(self, k, atribute):
+        differentiation_matrix = self.mesh.differentiation_matrix
+        identity_matrix = np.identity(self.mesh.n_cells)
+        # identity_matrix =
         if self.method == "explicit":
             # solve the form y = ax + b
-            a = differentiation_matrix + identity_matrix
+            a = k * differentiation_matrix + identity_matrix
             b = k * self.mesh.boundary_condition_array
-            # self.mesh.temperature = a @ current_temperature + b
+
             return a @ atribute + b
 
         if self.method == "implicit":
             # solve the form ay = x+b where x= current temp, y= new temp
-            a = -differentiation_matrix + identity_matrix
+            a = -k * differentiation_matrix + identity_matrix
             b = k * self.mesh.boundary_condition_array
             return np.linalg.solve(a, (atribute + b))
-
-
-class solver_1d(main_solver):
-    def __init__(self, mesh, initial_time=0, time_step_size=1, method="explicit"):
-        super().__init__(mesh, initial_time, time_step_size, method)
-
-    def take_step(self):
-        """
-        Take a single step forward in temprature.
-
-        Inputs:
-        delta_t: the time step size to take
-        """
-        k = (
-            self.mesh.thermal_diffusivity
-            * self.time_step_size
-            / (self.mesh.delta_x**2)
-        )
-        identity_matrix = np.identity(self.mesh.n_cells)
-        current_temperature = self.mesh.temperature
-        differentiation_matrix = k * self.mesh.differentiation_matrix
-        self.mesh.temperature = self.general_take_step(
-            differentiation_matrix, identity_matrix, k, current_temperature
-        )
-
-    def solve(self, t_final, t_initial=0):
-        """
-        Run the solver for unitil the final time is reached.
-
-        Inputs:
-        t_initial = the initial time (default 0)
-        t_final = the final time
-        delta_t = the desired time step
-        """
-        current_time = t_initial
-        # save the inital state
-        self.save_state(
-            "method",
-            "time_step_size",
-            time=current_time,
-            x_cordinates=self.mesh.xcell_center,
-            temperature=self.mesh.temperature,
-        )
-        # Loop through time steps saving
-        while current_time < t_final:
-            self.take_step()
-            current_time = current_time + self.time_step_size
-            self.save_state(
-                "method",
-                "time_step_size",
-                time=current_time,
-                x_cordinates=self.mesh.xcell_center,
-                temperature=self.mesh.temperature,
-            )
-        # Save the data into a single data frame for ploting
-        self.saved_data = pd.concat(self.saved_state_list)
 
     def save_state(self, *args, **kwargs):
         """
@@ -103,6 +49,69 @@ class solver_1d(main_solver):
                 saved_state_dictionary,
             )
         )
+
+    def update_save_dictionary(self):
+        self.save_dictionary = {
+            "method": self.method,
+            "time_step_size": self.time_step_size,
+            "time": self.current_time,
+            "x_cordinates": self.mesh.xcell_center,
+        }
+
+
+class solver_1d(main_solver):
+    def __init__(self, mesh, initial_time=0, time_step_size=1, method="explicit"):
+        super().__init__(mesh, initial_time, time_step_size, method)
+
+    def take_step(self):
+        """
+        Take a single step forward in temprature.
+
+        Inputs:
+        delta_t: the time step size to take
+        """
+        k = (
+            self.mesh.thermal_diffusivity
+            * self.time_step_size
+            / (self.mesh.delta_x**2)
+        )
+
+        self.mesh.temperature = self.solver_take_step(k, self.mesh.temperature)
+
+    def solve(self, t_final, t_initial=0):
+        """
+        Run the solver for unitil the final time is reached.
+
+        Inputs:
+        t_initial = the initial time (default 0)
+        t_final = the final time
+        delta_t = the desired time step
+        """
+
+        self.current_time = t_initial
+
+        self.update_save_dictionary()
+        self.save_dictionary.update({"temperature": self.mesh.temperature})
+        self.save_state(**self.save_dictionary)
+        while self.current_time < t_final:
+            self.take_step()
+            self.current_time = self.current_time + self.time_step_size
+            self.update_save_dictionary()
+            self.save_dictionary.update({"temperature": self.mesh.temperature})
+            self.save_state(**self.save_dictionary)
+
+        # # Save the data into a single data frame for ploting
+        self.saved_data = pd.concat(self.saved_state_list)
+
+
+#     def update_save_dictionary(self):
+#         self.save_dictionary = {
+#             "method": self.method,
+#             "time_step_size": self.time_step_size,
+#             "time": self.current_time,
+#             "x_cordinates": self.mesh.xcell_center,
+# }
+#         self.save_dictionary.update({"temperature": self.mesh.temperature})
 
 
 def main():
