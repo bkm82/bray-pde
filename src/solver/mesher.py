@@ -163,8 +163,8 @@ class linear_convection__mesh(create_1Dmesh):
             self.create_upwind_differentiation_matrix(self.xcell_center)
         elif self.discretization_type == "central":
             self.create_central_differentiation_matrix(self.xcell_center)
-        elif self.discretization_type == "mccormack":
-            self.create_mccormack_differentiation_matrix(self.xcell_center)
+        elif self.discretization_type == "maccormack":
+            self.create_maccormack_differentiation_matrix(self.xcell_center)
         else:
             raise ValueError("discritization type not supported")
 
@@ -203,7 +203,7 @@ class linear_convection__mesh(create_1Dmesh):
         differentiation_matrix = upper + np.transpose(-upper)
         self.differentiation_matrix = differentiation_matrix
 
-    def create_mccormack_differentiation_matrix(self, nodes):
+    def create_maccormack_differentiation_matrix(self, nodes):
         shape = np.shape(nodes)[0]
         lower = np.diagflat(np.repeat(1, shape - 1), -1)
         middle = 1 * np.identity(shape)
@@ -225,7 +225,7 @@ class linear_convection__mesh(create_1Dmesh):
         elif self.mesh_type == "finite_difference":
             self.boundary_condition_array[array_index] = 0
             self.differentiation_matrix[array_index, :] = 0
-            if self.discretization_type == "mccormack":
+            if self.discretization_type == "maccormack":
                 self.predictor_differentiation_matrix[array_index, :] = 0
             self.phi[array_index] = phi
         else:

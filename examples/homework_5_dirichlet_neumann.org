@@ -312,4 +312,4 @@ Initially the code would fail the test (as it was a feature of the code that was
 * Github
 The code utilized in this assinment can be found on my git hub.
 
-https://github.com/bkm82/1D_Heat_Diffusion
+https://github.com/bkm82/bray-pde

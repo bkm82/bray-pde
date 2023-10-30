@@ -117,12 +117,12 @@ class linear_convection_solver(main_solver):
         """
         k = self.mesh.convection_coefficent * self.time_step_size / (self.mesh.delta_x)
         self.courant_coefficent = k
-        if self.mesh.discretization_type == "mccormack":
-            self.mesh.phi = self.mccormack_take_step(k, self.mesh.phi)
+        if self.mesh.discretization_type == "maccormack":
+            self.mesh.phi = self.maccormack_take_step(k, self.mesh.phi)
         else:
             self.mesh.phi = self.solver_take_step(k, self.mesh.phi)
 
-    def mccormack_take_step(self, k, atribute):
+    def maccormack_take_step(self, k, atribute):
         differentiation_matrix = self.mesh.differentiation_matrix
         identity_matrix = np.identity(self.mesh.n_cells)
         predictor_matrix = self.mesh.predictor_differentiation_matrix
@@ -136,7 +136,7 @@ class linear_convection_solver(main_solver):
             )
 
         elif self.method == "implicit":
-            raise ("implicit not implemented for mccormack")
+            raise ("implicit not implemented for maccormack")
         else:
             raise ("implicit or explicit method needed")
 
@@ -153,14 +153,29 @@ class linear_convection_solver(main_solver):
         self.courant_coefficent = (
             self.mesh.convection_coefficent * self.time_step_size / (self.mesh.delta_x)
         )
-        self.update_save_dictionary(phi=self.mesh.phi, courant=self.courant_coefficent)
+        discritization_type = self.mesh.discretization_type
+
+        # if discritization_type == "maccormack":
+        #     self.update_save_dictionary(
+        #         phi=self.mesh.phi,
+        #         courant=self.courant_coefficent,
+        #         discritization_type = "maccormack")
+
+        self.update_save_dictionary(
+            phi=self.mesh.phi,
+            courant=self.courant_coefficent,
+            discritization=self.mesh.discretization_type,
+        )
 
         self.save_state(**self.save_dictionary)
         while self.current_time < t_final:
             self.take_step()
             self.current_time = self.current_time + self.time_step_size
+
             self.update_save_dictionary(
-                phi=self.mesh.phi, courant=self.courant_coefficent
+                phi=self.mesh.phi,
+                courant=self.courant_coefficent,
+                discritization=self.mesh.discretization_type,
             )
             self.save_state(**self.save_dictionary)
 

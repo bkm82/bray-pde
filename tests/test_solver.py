@@ -261,6 +261,8 @@ def mock_linear_convective_mesh_upwind(mocker):
     )
     mesh.boundary_condition_array = np.array(np.array([1, 0, 0, 0]))
     mesh.convection_coefficent = 1
+
+    mesh.discretization_type = "upwind"
     return mesh
 
 
@@ -323,12 +325,12 @@ def mock_linear_convective_mesh_mcormack(mocker):
     mesh.boundary_condition_array = np.array(np.array([0, 0, 0, 0, 0]))
     mesh.convection_coefficent = 1
 
-    mesh.discretization_type = "mccormack"
+    mesh.discretization_type = "maccormack"
     return mesh
 
 
 @pytest.fixture
-def mccormack_solver(mock_linear_convective_mesh_mcormack):
+def maccormack_solver(mock_linear_convective_mesh_mcormack):
     return solver.linear_convection_solver(
         mesh=mock_linear_convective_mesh_mcormack,
         initial_time=0,
@@ -337,18 +339,18 @@ def mccormack_solver(mock_linear_convective_mesh_mcormack):
     )
 
 
-def test_mccormack_take_step_predictor(mccormack_solver):
-    mccormack_solver.take_step()
+def test_maccormack_take_step_predictor(maccormack_solver):
+    maccormack_solver.take_step()
     expected_predictor = [1, 2, 0, 0, 0]
 
-    np.testing.assert_array_equal(mccormack_solver.predictor, expected_predictor)
+    np.testing.assert_array_equal(maccormack_solver.predictor, expected_predictor)
 
 
-def test_mccormack_take_step(mccormack_solver):
-    mccormack_solver.take_step()
+def test_maccormack_take_step(maccormack_solver):
+    maccormack_solver.take_step()
     expected_phi = [1, 1, 1, 0, 0]
 
-    np.testing.assert_array_equal(mccormack_solver.mesh.phi, expected_phi)
+    np.testing.assert_array_equal(maccormack_solver.mesh.phi, expected_phi)
 
 
 if __name__ == "__main__":

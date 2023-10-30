@@ -1,0 +1,294 @@
+#+TITLE: Homework 6
+#+AUTHOR: Bray Moll
+#+OPTIONS: toc:nil
+#+SETUPFILE: ~/masters/bray-standard-latex-export.org
+
+* Question 1
+** Simple Explicit Upwind
+Stability Properties: Conditionally stable \\
+Stability Criterion: $0 \le \nu = \frac{c \Delta t}{\Delta x} \le 1$
+
+Order of Approximation: $O((\Delta t), (\Delta x))$ \\
+Nature of dominating truncation error: Dissapative \\
+** Simple Implicit Central Difference
+Stability Properties: Unconditionally Stable \\
+Stability Criterion: None \\
+Order of Approximation: $O((\Delta t), (\Delta x)^2)$ \\
+Nature of dominating truncation error: Dissapative \\
+** Leapfrog
+Stability Properties: Conditionally Neuturally Stable \\
+Stability Criterion: $\nu \le 1$ \\
+Order of Approximation:$O((\Delta t)^2, (\Delta x)^2)$\\
+Nature of dominating truncation error:dispersive\\
+** Lax-Wendroff
+Stability Properties:Conditionaly Stable \\
+Stability Criterion:$-1 \le \nu \le 1$ \\
+Order of Approximation:$O((\Delta t)^2, (\Delta x)^2)$ \\
+Nature of dominating truncation error:prodominently dispersive
+** MacCormac Scheme
+Stability Properties:Conditionally Stable \\
+Stability Criterion:$\nu \le 1$ \\
+Order of Approximation:$O((\Delta t)^2, (\Delta x)^2)$ \\
+Nature of dominating truncation error:
+
+* Linear Convection
+** Solve
+#+ATTR_LATEX: :options frame=single
+#+BEGIN_SRC python :results output :exports both :session Python-Session
+
+  from solver import solver
+  from solver import mesher
+  import numpy as np
+  import plotnine as pn
+  import pandas as pd
+ #+END_SRC
+
+ #+RESULTS:
+
+#+ATTR_LATEX: :options frame=single
+#+BEGIN_SRC python :results output :exports both :session Python-Session
+  time_step_list =[0.05,0.1, 0.2]
+  discretization_type_list =["upwind","central", "maccormack"]
+  method_type_list = ["explicit","implicit", "explicit"]
+  mesh_type_list = ["finite_volume", "finite_difference", "finite_difference"]
+  n_cells_list = [100, 101, 101]
+  zipped_list = zip(
+      discretization_type_list,
+      method_type_list,
+      mesh_type_list,
+      n_cells_list
+  )
+
+  solution_list = []
+  for discritization, method , mesh_type, n_cells in zipped_list:
+      for time_step in time_step_list:
+          x = [0,10]
+          # Create a Mesh
+          mesh = mesher.linear_convection__mesh(
+              x = x,
+              n_cells = n_cells,
+              mesh_type = mesh_type,
+              discretization_type = discritization
+          )
+          # Set initial and boundary conditions
+          mesh.set_dirichlet_boundary('left', 0)
+          phi_initial = [
+              np.sin(x) if x < np.pi else 0 for x in mesh.xcell_center
+          ]
+          mesh.set_phi(phi_initial)
+          mesh.set_dirichlet_boundary('left', 0)
+
+          # Create a solver
+          simple_explicit_upwind = solver.linear_convection_solver(
+              mesh = mesh,
+              initial_time = 0,
+              time_step_size = time_step,
+              method = method,
+
+
+          )
+          # Solve to final time point
+          simple_explicit_upwind.solve(2)
+
+          #Save data to a single data frame
+          data_data_frame = pd.DataFrame(simple_explicit_upwind.saved_data)
+          solution_list.append(pd.DataFrame(simple_explicit_upwind.saved_data))
+
+          #Report the solved configuration
+          print(f'\nSolved Using')
+          print(f'discritization: {discritization} \nmethod:{method}')
+          print(f'mesh: {simple_explicit_upwind.mesh.mesh_type}')
+          print(f'delta x: {mesh.delta_x}')
+          print(f'delta t: {time_step}')
+          print(f'courrant number: {simple_explicit_upwind.courant_coefficent}')
+
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+
+Solved Using
+discritization: upwind
+method:explicit
+mesh: finite_volume
+delta x: 0.1
+delta t: 0.05
+courrant number: 0.5
+
+Solved Using
+discritization: upwind
+method:explicit
+mesh: finite_volume
+delta x: 0.1
+delta t: 0.1
+courrant number: 1.0
+
+Solved Using
+discritization: upwind
+method:explicit
+mesh: finite_volume
+delta x: 0.1
+delta t: 0.2
+courrant number: 2.0
+
+Solved Using
+discritization: central
+method:implicit
+mesh: finite_difference
+delta x: 0.1
+delta t: 0.05
+courrant number: 0.5
+
+Solved Using
+discritization: central
+method:implicit
+mesh: finite_difference
+delta x: 0.1
+delta t: 0.1
+courrant number: 1.0
+
+Solved Using
+discritization: central
+method:implicit
+mesh: finite_difference
+delta x: 0.1
+delta t: 0.2
+courrant number: 2.0
+
+Solved Using
+discritization: maccormack
+method:explicit
+mesh: finite_difference
+delta x: 0.1
+delta t: 0.05
+courrant number: 0.5
+
+Solved Using
+discritization: maccormack
+method:explicit
+mesh: finite_difference
+delta x: 0.1
+delta t: 0.1
+courrant number: 1.0
+
+Solved Using
+discritization: maccormack
+method:explicit
+mesh: finite_difference
+delta x: 0.1
+delta t: 0.2
+courrant number: 2.0
+#+end_example
+
+** Plot Explicit Methods
+#+ATTR_LATEX: :options frame=single
+#+BEGIN_SRC python :results graphics file :file explicit.png :exports both :session Python-Session
+  time_points = [0,0.6,1,1.6,2]
+  plot_data = pd.concat(
+
+          solution_list,
+       ignore_index = True
+  )
+
+  plot_data.time = plot_data.time.round(1)
+  plot_data_filterd_bool = plot_data["time"].isin(time_points)
+  plot_data_filtered = plot_data[
+      plot_data_filterd_bool
+  ]
+
+  # Define a custom function to calculate phi_exact
+  def calculate_phi_exact(row):
+      if (row["x_cordinates"] - row['time']) >= 0 and (row["x_cordinates"] - row['time']) < np.pi:
+
+
+          return  np.sin(row['x_cordinates'] - row['time'])
+      else:
+          return 0
+
+  # Apply the custom function to create the "phi_exact" column
+  plot_data_filtered['phi_exact'] = plot_data_filtered.apply(calculate_phi_exact, axis=1)
+
+
+  explicit_plot = (
+      pn.ggplot(
+          plot_data_filtered[plot_data_filtered["method"]=="explicit"],
+          pn.aes("x_cordinates", "phi", color="factor(time)"),
+      )
+      + pn.geom_point(size =0.5)
+      + pn.geom_line(
+          mapping = pn.aes(x = "x_cordinates", y ="phi_exact")
+      )
+      + pn.facet_grid("courant~discritization", scales = 'free_y')
+
+  )
+
+  pn.ggsave(explicit_plot ,"explicit.png")
+
+ #+END_SRC
+
+ #+RESULTS:
+ [[file:explicit.png]]
+
+ These results demonstrate how the courrant number determines the nature of the error for both the upwind and maccormack. If the courant number is 1 the truncation error is zero and the numerical solution (shown with the points) is exactly the exact sollution (shown with the line). If the courant number is <1, the error is dispersive and smooths out the sharp edge between the wave an the 0 value. If the courant number is >1 the scheme is unstable and the numerical error accumulates. Looking closely at the 0.5 courrant number, the maccormack has less error due to the second order in time (i.e. $O((\Delta t)^2, (\Delta x)^2)$ )
+ \newpage
+** Centeral Implicit
+ #+ATTR_LATEX: :options frame=single
+ #+BEGIN_SRC python :results graphics file :file central_implicit.png :exports both :session Python-Session
+   central_implicit_plot = (
+       pn.ggplot(
+           plot_data_filtered[plot_data_filtered["method"]=="implicit"],
+           pn.aes("x_cordinates", "phi", color="factor(time)"),
+       )
+       + pn.geom_point()
+       + pn.geom_line(
+           mapping = pn.aes(x = "x_cordinates", y ="phi_exact")
+       )
+       + pn.facet_grid("courant~method", scales = 'free_y')
+
+   )
+   pn.ggsave(central_implicit_plot ,"central_implicit.png")
+
+ #+END_SRC
+
+ #+RESULTS:
+ [[file:central_implicit.png]]
+
+These results of using the simple implicit centeral difference solver demonstrates the unconditional stability seen when using the implicit method. As shown here as the courrant number increases with the increasing time step the numerical viscocity smooths the solution.
+
+* References
+
+This work was produced using an object oriented approach discussed and recomended in Scientific Software Design The Object-Oriented Way by Damian Rouson, Jim Xia, and Xiaofeng Xu.
+
+Additionally, the approach utilized was influenced by my own previous notes from MD362 Numerical analysis taught by Dr John M Neuberger.
+
+Finnaly preparing the code for this assignmet ChatGPT was utilized as a reasource to assist in implementing the code to assist in writing the correct python sintax. (i.e. for example i had inputed the query "In MATLAB i can create an array using linspace(x1,x2), how can i do that in python". The resulting recomendation to utilize the numpy module for the numpy.linspace() function was utilized.
+
+Chat GPT is a "Natural Language Processer" which at its core is a mathmatical model that calculates the probability of a given response $\textbf{Y} = f(\textbf{X})$ and then selecting the responce with the highest probability. Machine learning models are trained to fit a generalized non-linear model by taking the input paramaters and multiplying them by a weight function (i.e x1 * w1 = b1). In the case of a deep nural network the response of the first equation will be acted on my a non linear operator (i.e. b1 = b1 if b1>0, else 0) and then multiplied by another weight function. This can be repeated multiple times in varying configurations until the response was predicted.
+
+To train the model a gradient decent method is often utilized, where a training data with known responses is used to fit the weight paramaters. The model starts with random weights, predicts the response and compairs each result with the actual response utilizing a loss function (such as mean squared error) The loss is minimized by using gradient decent in which the weigths are updated by taking a step in the direction of steepest decent.
+
+Because Chat GPT is predicting the next most posible phrase, it can result in responses that sound confident, but are not correct. Each line of code was tested (see below in the Test Mesher section) Note: The information in this description was developed from my own notes from CS499 Deep Learning taught by Dr. Toby Hocking
+
+* How my code works
+ My code has two modules, a mesher and a solver and then a test mesher and a test solver
+
+*** Mesher
+The responsability of the mesher is to discritze the domain and apply the inital conditions. The mesher creates an object that stores an array for each points x cordinate its current phi value in the linear convection mesh object, or a temperature for the linear diffusion mesh object. The object also stores the thermal diffusivity or the wave speed, a differentiation matrix (which starts as the laplacian matrix but is modified based on the boundary conditions applied) and a boundary condition array.
+
+*** Solver
+The responsability of the solver was to take the mesh object and calculate the temperature at the next time step (utilizing either the explicit or implicit derivation) This could be done without any knowledge of the discritization approach (finite volume or finite difference) so long as the differentiation matrix was provided (with the exception of the mccormack scheme which in the current implementation needs to be passed to the solver. The solver responsible for storing the new temperature or phi value at each point for each time step in an object atribute.
+
+*** Test Mesher / Test Solver
+This code was developed using test driven developemnt, in which i started off by writing a test describing what i wanted to be true. For example i wanted calling create1Dmesh( x = [0,1], n_cells =5, mesh_type= 'finite_difference') to store an an array [0, .25, .5, .75, 1] as an object atribute. So i wrote a test that asserted that was the case
+#+ATTR_LATEX: :options frame=single
+#+BEGIN_SRC Python :results code :exports both :session Python-session
+    mesh = create1Dmesh(x = [0,1], n_cells =5, mesh_type = 'finite difference)"
+    assert (mesh.x_cellcenter = np.array([0, .25, .5, .75, 1])
+#+END_SRC
+
+Initially the code would fail the test (as it was a feature of the code that was not yet implemnted). After updating the code to implement the test was re-executed and a passing result indicated the program was behaving in my intended behavior. This pattern was repeated with the first test left in place, continuously re-verifying that a new change did not unintentionally modify the codes expected behavior. The python module pytest was utilized to help organize and run the test cases.
+
+* Github
+The code utilized in this assinment can be found on my git hub.
+
+https://github.com/bkm82/bray-pde

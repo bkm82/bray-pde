@@ -100,15 +100,15 @@ class Test_maccormac_linear_convection_mesh(Test_mesh):
             n_cells=self.n_cells,
             mesh_type=self.mesh_type,
             convection_coefficient=1,
-            discretization_type="mccormack",
+            discretization_type="maccormack",
         )
 
-    def test_mccormack_differentiation_matrix(self, mesh_fixture):
+    def test_maccormack_differentiation_matrix(self, mesh_fixture):
         np.testing.assert_array_equal(
             mesh_fixture.differentiation_matrix, self.expected_differentiation_matrix
         )
 
-    def test_mccormack_predictor_differentiation_matrix(self, mesh_fixture):
+    def test_maccormack_predictor_differentiation_matrix(self, mesh_fixture):
         np.testing.assert_array_equal(
             mesh_fixture.predictor_differentiation_matrix,
             self.expected_predictor_differentiation_matrix,
