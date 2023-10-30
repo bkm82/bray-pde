@@ -117,7 +117,28 @@ class linear_convection_solver(main_solver):
         """
         k = self.mesh.convection_coefficent * self.time_step_size / (self.mesh.delta_x)
         self.courant_coefficent = k
-        self.mesh.phi = self.solver_take_step(k, self.mesh.phi)
+        if self.mesh.discretization_type == "mccormack":
+            self.mesh.phi = self.mccormack_take_step(k, self.mesh.phi)
+        else:
+            self.mesh.phi = self.solver_take_step(k, self.mesh.phi)
+
+    def mccormack_take_step(self, k, atribute):
+        differentiation_matrix = self.mesh.differentiation_matrix
+        identity_matrix = np.identity(self.mesh.n_cells)
+        predictor_matrix = self.mesh.predictor_differentiation_matrix
+        # self.predictor = (identity_matrix - predictor_matrix)@atribute
+        if self.method == "explicit":
+            self.predictor = (identity_matrix - k * predictor_matrix) @ atribute
+
+            return 0.5 * (
+                atribute
+                + ((identity_matrix - k * differentiation_matrix) @ self.predictor)
+            )
+
+        elif self.method == "implicit":
+            raise ("implicit not implemented for mccormack")
+        else:
+            raise ("implicit or explicit method needed")
 
     def solve(self, t_final, t_initial=0):
         """
