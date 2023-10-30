@@ -33,6 +33,101 @@ class Test_mesh:
         assert mesh_fixture.delta_x == self.expected_delta_x
 
 
+class Test_central_linear_convection_mesh(Test_mesh):
+    n_cells = 5
+    mesh_type = "finite_difference"
+
+    # Expected Paramaters
+    expected_xcell_center = np.array([0, 0.25, 0.5, 0.75, 1])
+    expected_n_cells = 5
+    expected_differentiation_matrix = np.array(
+        [
+            [0, -0.5, 0, 0, 0],
+            [0.5, 0, -0.5, 0, 0],
+            [0, 0.5, 0, -0.5, 0],
+            [0, 0, 0.5, 0, -0.5],
+            [0, 0, 0, 0.5, 0],
+        ]
+    )
+    expected_left_dirichlet_differentiation_matrix = np.array(
+        [
+            [0, 0, 0, 0, 0],
+            [0.5, 0, -0.5, 0, 0],
+            [0, 0.5, 0, -0.5, 0],
+            [0, 0, 0.5, 0, -0.5],
+            [0, 0, 0, 0.5, 0],
+        ]
+    )
+
+    expected_right_differentiation_matrix = np.array(
+        [
+            [0, -0.5, 0, 0, 0],
+            [0.5, 0, -0.5, 0, 0],
+            [0, 0.5, 0, -0.5, 0],
+            [0, 0, 0.5, 0, -0.5],
+            [0, 0, 1.5, -1, 0.5],
+        ]
+    )
+    expected_left_dirichlet_boundary_condition_array = np.array([0, 0, 0, 0, 0])
+
+    expected_left_dirichlet_phi = np.array([5, 0, 0, 0, 0])
+
+    @pytest.fixture
+    def mesh_fixture(self):
+        return mesher.linear_convection__mesh(
+            self.x_range,
+            n_cells=self.n_cells,
+            mesh_type=self.mesh_type,
+            convection_coefficient=1,
+            discretization_type="central",
+        )
+
+    def test_central_differentiation_matrix(self, mesh_fixture):
+        np.testing.assert_array_equal(
+            mesh_fixture.differentiation_matrix, self.expected_differentiation_matrix
+        )
+
+    def test_central_left_dirichlet_differentiation_matrix(self, mesh_fixture):
+        mesh_fixture.set_dirichlet_boundary("left", 5)
+        np.testing.assert_array_equal(
+            mesh_fixture.differentiation_matrix,
+            self.expected_left_dirichlet_differentiation_matrix,
+        )
+
+    def test_central_left_dirichlet_boundary_condtion(self, mesh_fixture):
+        mesh_fixture.set_phi(0)
+        mesh_fixture.set_dirichlet_boundary("left", 5)
+        np.testing.assert_array_equal(
+            mesh_fixture.boundary_condition_array,
+            self.expected_left_dirichlet_boundary_condition_array,
+        )
+
+    def test_central_left_dirichlet_phi(self, mesh_fixture):
+        mesh_fixture.set_phi(0)
+        mesh_fixture.set_dirichlet_boundary("left", 5)
+        np.testing.assert_array_equal(
+            mesh_fixture.phi,
+            self.expected_left_dirichlet_phi,
+        )
+
+    def test_right_differentiation_matrix(self, mesh_fixture):
+        mesh_fixture.set_right_boundary()
+        np.testing.assert_array_equal(
+            mesh_fixture.differentiation_matrix,
+            self.expected_right_differentiation_matrix,
+        )
+
+    def test_discritization_error(self):
+        with pytest.raises(ValueError):
+            mesher.linear_convection__mesh(
+                self.x_range,
+                n_cells=self.n_cells,
+                mesh_type=self.mesh_type,
+                convection_coefficient=1,
+                discretization_type="downwind",
+            )
+
+
 class Test_linear_convection_mesh(Test_mesh):
     @pytest.fixture
     def mesh_fixture(self):
@@ -49,6 +144,7 @@ class Test_linear_convection_mesh(Test_mesh):
     expected_left_boundary_condition_array = np.array([5, 0, 0, 0])
 
     def test_initiate_differentiation_matrix(self, mesh_fixture):
+        # mesh_fixture.set_centeral_
         np.testing.assert_allclose(
             actual=mesh_fixture.differentiation_matrix,
             desired=self.expected_differentiation_matrix,

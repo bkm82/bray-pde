@@ -130,7 +130,8 @@ class heat_diffusion_mesh(create_1Dmesh):
 
 class linear_convection__mesh(create_1Dmesh):
     """
-    Create a heat diffusion mesh.
+    Create a linear convection diffusion mesh.
+
     Attributes:
     n_cells (int): The number of cells used to discritze the domain
     mesh_type (str): finite_volume or finite_difference
@@ -141,10 +142,11 @@ class linear_convection__mesh(create_1Dmesh):
         x,
         n_cells: int,
         mesh_type: str = "finite_volume",
-        convection_coefficient: float = 1,
+        convection_coefficient=1,
+        discretization_type: str = "upwind",
     ):
         """
-        Initialize a heat diffusion mesh object.
+        Initialize a lienar convection mesh object.
 
         Parameters:
            x : the spatial discritization of the domain
@@ -155,11 +157,19 @@ class linear_convection__mesh(create_1Dmesh):
            convection_coefficent: a constant convection coefficent
         """
         super().__init__(x, n_cells, mesh_type)
-        self.create_upwind_differentiation_matrix(self.xcell_center)
+
+        self.discretization_type = discretization_type
+        if self.discretization_type == "upwind":
+            self.create_upwind_differentiation_matrix(self.xcell_center)
+        elif self.discretization_type == "central":
+            self.create_central_differentiation_matrix(self.xcell_center)
+        else:
+            raise ValueError("discritization type not supported")
 
         if convection_coefficient <= 0:
             raise ValueError("only positive convection coefficents are supported")
         self.convection_coefficent = convection_coefficient
+        self.phi = np.zeros(n_cells)
 
     def set_phi(self, phi):
         """
@@ -185,6 +195,12 @@ class linear_convection__mesh(create_1Dmesh):
         differentiation_matrix = lower + middle
         self.differentiation_matrix = differentiation_matrix
 
+    def create_central_differentiation_matrix(self, nodes):
+        shape = np.shape(nodes)[0]
+        upper = np.diagflat(np.repeat(-0.5, shape - 1), 1)
+        differentiation_matrix = upper + np.transpose(-upper)
+        self.differentiation_matrix = differentiation_matrix
+
     def set_dirichlet_boundary(self, side: str, phi: float):
         """Update boundary array and D2 for a dirichlet boundary."""
         if side == "left":
@@ -196,12 +212,20 @@ class linear_convection__mesh(create_1Dmesh):
         if self.mesh_type == "finite_volume":
             self.boundary_condition_array[array_index] = phi
 
-    # elif self.mesh_type == "finite_difference":
-    #     self.boundary_condition_array[array_index] = 0
-    #     self.differentiation_matrix[array_index, :] = 0
-    #     self.temperature[array_index] = temperature
-    # else:
-    #     raise ValueError("mesh must be finite_volume or finite_difference")
+        elif self.mesh_type == "finite_difference":
+            self.boundary_condition_array[array_index] = 0
+            self.differentiation_matrix[array_index, :] = 0
+            self.phi[array_index] = phi
+        else:
+            raise ValueError("mesh must be finite_volume or finite_difference")
+
+    def set_right_boundary(self):
+        """
+        Set the differentiation matrix using a 2nd order left discritization.
+
+        For finite volume only
+        """
+        self.differentiation_matrix[-1, -3:] = [1.5, -1, 0.5]
 
 
 def main():
