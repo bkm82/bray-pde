@@ -26,4 +26,10 @@ example for a 1d 4 cell bar
  |  2 | -1 |  0 |  0 |
  | -1 |  2 | -1 |  0 |
  |  0 | -1 |  2 | -1 |
- |  0 |  0 | -1 |  2 |
+ |  0 |  0 | -1 |
+
+** DONE update references in the readme/examples for the heat euations to call heat_diffusion_mesh() instead of create_1d_mesh
+CLOSED: [2023-10-27 Fri 23:24]
+:LOGBOOK:
+- State "DONE"       from "NEXT"       [2023-10-27 Fri 23:24]
+:END:

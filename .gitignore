@@ -222,3 +222,6 @@ ltximg/
 #ignore pdf
 *.pdf
 *.tex
+
+#Speficit files
+code.org

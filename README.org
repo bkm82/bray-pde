@@ -5,8 +5,9 @@
 
 [[Tests][https://github.com/bkm82/1D_Heat_Diffusion/actions/workflows/tests.yml/badge.svg]]
 
-* 1)Example
+* Example
 ** Problem Setup
+
 #+ATTR_LATEX: :options frame=single
 #+BEGIN_SRC python :results output :exports both :session Python-Session
   import pandas as pd
@@ -35,7 +36,7 @@ Additionally we can set paramaters of interest such as the maximum, the number o
 #+ATTR_LATEX: :options frame=single
 #+BEGIN_SRC python :results output :exports both :session Python-Session
   def create_mesh(n_cells, mesh_type):
-      mesh = mesher.create_1Dmesh(x=[0, 1], n_cells=n_cells, mesh_type=mesh_type)
+      mesh = mesher.heat_diffusion_mesh(x=[0, 1], n_cells=n_cells, mesh_type=mesh_type)
       mesh.set_cell_temperature(0)  # set initial conditions to 0 celcicus
       mesh.set_dirichlet_boundary("left", 50)  # Left to 50 c
       mesh.set_neumann_boundary("right")

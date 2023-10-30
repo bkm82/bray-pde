@@ -2,14 +2,16 @@ import numpy as np
 import pandas as pd
 import pytest
 from solver.solver import solver_1d
-from solver.mesher import create_1Dmesh
+from solver.mesher import heat_diffusion_mesh
+from solver import solver
+from unittest.mock import patch, MagicMock
 
 
 # TODO move this integration test to its own section
 # Create a mesh for some integration testing with the meshing
 @pytest.fixture
 def four_cell_mesh():
-    mesh = create_1Dmesh(x=[0, 1], n_cells=4)
+    mesh = heat_diffusion_mesh(x=[0, 1], n_cells=4)
     mesh.set_cell_temperature(0)
     mesh.set_dirichlet_boundary("left", 50)
     mesh.set_neumann_boundary("right")
@@ -219,6 +221,136 @@ def test_integration_solve_save_state(explicit_solver):
     )
 
     pd.testing.assert_frame_equal(solver_instance.saved_data, expected_data_frame)
+
+
+def test_init():
+    from solver import solver
+
+    with patch.object(solver, "main", MagicMock()) as mock_main:
+        with patch.object(solver, "__name__", "__main__"):
+            solver.init()
+    mock_main.assert_called_once()
+
+
+# from unittest import mock
+# def test_init():
+#     from solver import solver
+
+
+#     with mock.patch.object(solver, "main", return_value = 42):
+#         with mock.patch.object(solver, "__name__", "__main__"):
+#             with mock.patch.object(solver.sys,'exit') as mock_exit:
+#                 solver.init()
+#                 assert mock_exit.call_args[0][0] == 42
+@pytest.fixture
+def mock_linear_convective_mesh_upwind(mocker):
+    """
+    Create to create a mock mesh object for use in testing the solver.
+    Mesh configuration
+    N_elements = 4
+    Left boundary = Dirchilet 1
+    :return: mesh
+    """
+    mesh = mocker.MagicMock()
+    mesh.xcell_center = np.array([0.125, 0.375, 0.625, 0.875])
+    mesh.delta_x = 0.25
+    mesh.phi = np.array([1, 1, 0, 0])
+    mesh.n_cells = 4
+    mesh.differentiation_matrix = np.array(
+        [[-1, 0, 0, 0], [1, -1, 0, 0], [0, 1, -1, 0], [0, 0, 1, -1]]
+    )
+    mesh.boundary_condition_array = np.array(np.array([1, 0, 0, 0]))
+    mesh.convection_coefficent = 1
+
+    mesh.discretization_type = "upwind"
+    return mesh
+
+
+@pytest.fixture
+def upwind_solver(mock_linear_convective_mesh_upwind):
+    return solver.linear_convection_solver(
+        mesh=mock_linear_convective_mesh_upwind,
+        initial_time=0,
+        time_step_size=0.25,
+        method="explicit",
+    )
+
+
+def test_upwind_take_step_(upwind_solver):
+    upwind_solver.take_step()
+    expected_phi = [1, 1, 1, 0]
+
+    np.testing.assert_array_equal(upwind_solver.mesh.phi, expected_phi)
+
+
+def test_upwind_solver(upwind_solver):
+    upwind_solver.solve(2)
+    expected_phi = [1, 1, 1, 1]
+
+    np.testing.assert_array_equal(upwind_solver.mesh.phi, expected_phi)
+
+
+@pytest.fixture
+def mock_linear_convective_mesh_mcormack(mocker):
+    """
+    Create to create a mock mesh object for use in testing the solver.
+    Mesh configuration
+    N_elements = 4
+    Left boundary = Dirchilet 1
+    :return: mesh
+    """
+    mesh = mocker.MagicMock()
+    mesh.xcell_center = np.array([0, 0.25, 0.5, 0.75, 1])
+    mesh.delta_x = 0.25
+    mesh.phi = np.array([1, 1, 0, 0, 0])
+    mesh.n_cells = 5
+    mesh.differentiation_matrix = np.array(
+        [
+            [0, 0, 0, 0, 0],
+            [-1, 1, 0, 0, 0],
+            [0, -1, 1, 0, 0],
+            [0, 0, -1, 1, 0],
+            [0, 0, 0, -1, 1],
+        ]
+    )
+    mesh.predictor_differentiation_matrix = np.array(
+        [
+            [0, 0, 0, 0, 0],
+            [0, -1, 1, 0, 0],
+            [0, 0, -1, 1, 0],
+            [0, 0, 0, -1, 1],
+            [0, 0, 0, 0, -1],
+        ]
+    )
+    mesh.boundary_condition_array = np.array(np.array([0, 0, 0, 0, 0]))
+    mesh.convection_coefficent = 1
+
+    mesh.discretization_type = "maccormack"
+    return mesh
+
+
+@pytest.fixture
+def maccormack_solver(mock_linear_convective_mesh_mcormack):
+    return solver.linear_convection_solver(
+        mesh=mock_linear_convective_mesh_mcormack,
+        initial_time=0,
+        time_step_size=0.25,
+        method="explicit",
+    )
+
+
+def test_maccormack_take_step_predictor(maccormack_solver):
+    maccormack_solver.take_step()
+    expected_predictor = [1, 2, 0, 0, 0]
+
+    np.testing.assert_array_equal(maccormack_solver.predictor, expected_predictor)
+
+
+def test_maccormack_take_step(maccormack_solver):
+    maccormack_solver.take_step()
+    expected_phi = [1, 1, 1, 0, 0]
+
+    np.testing.assert_array_equal(maccormack_solver.mesh.phi, expected_phi)
 
 
 if __name__ == "__main__":
