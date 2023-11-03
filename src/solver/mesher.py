@@ -2,6 +2,44 @@ import numpy as np
 import scipy
 
 
+class differentiation_matrix:
+    """Create a differentiation matrix."""
+
+    def __init__(self, n_cells: int):
+        """
+        Initialaze a differentiation  matrix atribute.
+
+        Paramaters: n_cells number of cells
+        Returns: A sparse  matrix n_cells x n_cells with -2 on the diagonal and a 1 on the +1 and -1 diagonal
+        """
+        self.n_cells = n_cells
+        self.ones = np.ones(self.n_cells)
+        self.differentiation_matrix = scipy.sparse.spdiags(
+            np.array([self.ones, -2 * self.ones, self.ones]), np.array([-1, 0, 1])
+        )
+
+    def get_matrix(self):
+        """Return: differentiation matrix."""
+        return self.differentiation_matrix.toarray()
+
+    # def set_dirichilet(self, side: str, mesh_type: str):
+    #     """Update differentiation matrix based on boundary condition"""
+    #     if side == "left":
+    #         array_index = 0
+    #     elif side == "right":
+    #         array_index = -1
+    #     else:
+    #         raise ValueError("Side must input must be left or right")
+
+    #     if self.mesh_type == "finite_volume":
+    #         self.differentiation_matrix[array_index, array_index] = -3
+
+    #     elif self.mesh_type == "finite_difference":
+    #         self.differentiation_matrix[array_index, :] = 0
+    #     else:
+    #         raise ValueError("mesh must be finite_volume or finite_difference")
+
+
 class create_1Dmesh:
     """
     A class representing a 1D Mesh.
@@ -40,25 +78,10 @@ class create_1Dmesh:
         else:
             raise ValueError("Mesh type not supported")
 
-        self.differentiation_matrix = self.create_differentiation_matrix(
-            self.n_cells
-        ).toarray()
+        # self.differentiation_matrix = differentiation_matrix(self.n_cells)
 
+        self.differentiation_matrix = differentiation_matrix(self.n_cells).get_matrix()
         self.boundary_condition_array = np.zeros(n_cells)
-
-    def create_differentiation_matrix(self, n_cells):
-        """
-        Initialaze a differentiation  matrix atribute.
-
-        Paramaters:number of cells
-        Returns: A sparse  matrix n_cells x n_cells with -2 on the diagonal and a 1 on the +1 and -1 diagonal
-        """
-
-        ones = np.ones(n_cells)
-        differentiation_matrix = scipy.sparse.spdiags(
-            np.array([ones, -2 * ones, ones]), np.array([-1, 0, 1])
-        )
-        return differentiation_matrix
 
 
 class heat_diffusion_mesh(create_1Dmesh):
@@ -91,6 +114,7 @@ class heat_diffusion_mesh(create_1Dmesh):
 
     def set_dirichlet_boundary(self, side, temperature):
         """Update boundary array and D2 for a dirichlet boundary."""
+        # self.differentiation_matrix.set_dirichlet()
         if side == "left":
             array_index = 0
         elif side == "right":
