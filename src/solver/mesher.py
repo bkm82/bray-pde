@@ -1,4 +1,5 @@
 import numpy as np
+import scipy
 
 
 class create_1Dmesh:
@@ -39,13 +40,25 @@ class create_1Dmesh:
         else:
             raise ValueError("Mesh type not supported")
 
-        self.create_differentiation_matrix(self.xcell_center)
-        self.boundary_condition_array = np.zeros(n_cells)
-        # self.temperature = np.zeros(n_cells)
+        self.differentiation_matrix = self.create_differentiation_matrix(
+            self.n_cells
+        ).toarray()
 
-    def create_differentiation_matrix(self, nodes):
-        """Initialaze an empty differential matrix atribute."""
-        self.create_differentiation_matrix = None
+        self.boundary_condition_array = np.zeros(n_cells)
+
+    def create_differentiation_matrix(self, n_cells):
+        """
+        Initialaze a differentiation  matrix atribute.
+
+        Paramaters:number of cells
+        Returns: A sparse  matrix n_cells x n_cells with -2 on the diagonal and a 1 on the +1 and -1 diagonal
+        """
+
+        ones = np.ones(n_cells)
+        differentiation_matrix = scipy.sparse.spdiags(
+            np.array([ones, -2 * ones, ones]), np.array([-1, 0, 1])
+        )
+        return differentiation_matrix
 
 
 class heat_diffusion_mesh(create_1Dmesh):
@@ -75,14 +88,6 @@ class heat_diffusion_mesh(create_1Dmesh):
     def set_thermal_diffusivity(self, thermal_diffusivity):
         """Set a diffusion constant in square meters per second."""
         self.thermal_diffusivity = thermal_diffusivity
-
-    def create_differentiation_matrix(self, nodes):
-        """Create a differentiation matrix."""
-        shape = np.shape(nodes)[0]
-        upper = np.diagflat(np.repeat(1, shape - 1), 1)
-        middle = -2 * np.identity(shape)
-        differentiation_matrix = upper + np.transpose(upper) + middle
-        self.differentiation_matrix = differentiation_matrix
 
     def set_dirichlet_boundary(self, side, temperature):
         """Update boundary array and D2 for a dirichlet boundary."""
