@@ -2,44 +2,6 @@ import numpy as np
 import scipy
 
 
-class differentiation_matrix:
-    """Create a differentiation matrix."""
-
-    def __init__(self, n_cells: int):
-        """
-        Initialaze a differentiation  matrix atribute.
-
-        Paramaters: n_cells number of cells
-        Returns: A sparse  matrix n_cells x n_cells with -2 on the diagonal and a 1 on the +1 and -1 diagonal
-        """
-        self.n_cells = n_cells
-        self.ones = np.ones(self.n_cells)
-        self.differentiation_matrix = scipy.sparse.spdiags(
-            np.array([self.ones, -2 * self.ones, self.ones]), np.array([-1, 0, 1])
-        )
-
-    def get_matrix(self):
-        """Return: differentiation matrix."""
-        return self.differentiation_matrix.toarray()
-
-    # def set_dirichilet(self, side: str, mesh_type: str):
-    #     """Update differentiation matrix based on boundary condition"""
-    #     if side == "left":
-    #         array_index = 0
-    #     elif side == "right":
-    #         array_index = -1
-    #     else:
-    #         raise ValueError("Side must input must be left or right")
-
-    #     if self.mesh_type == "finite_volume":
-    #         self.differentiation_matrix[array_index, array_index] = -3
-
-    #     elif self.mesh_type == "finite_difference":
-    #         self.differentiation_matrix[array_index, :] = 0
-    #     else:
-    #         raise ValueError("mesh must be finite_volume or finite_difference")
-
-
 class create_1Dmesh:
     """
     A class representing a 1D Mesh.
@@ -78,9 +40,8 @@ class create_1Dmesh:
         else:
             raise ValueError("Mesh type not supported")
 
-        # self.differentiation_matrix = differentiation_matrix(self.n_cells)
-
-        self.differentiation_matrix = differentiation_matrix(self.n_cells).get_matrix()
+        self.differentiation_matrix_object = differentiation_matrix(self.n_cells)
+        self.differentiation_matrix = self.differentiation_matrix_object.get_matrix()
         self.boundary_condition_array = np.zeros(n_cells)
 
 
@@ -114,7 +75,8 @@ class heat_diffusion_mesh(create_1Dmesh):
 
     def set_dirichlet_boundary(self, side, temperature):
         """Update boundary array and D2 for a dirichlet boundary."""
-        # self.differentiation_matrix.set_dirichlet()
+        self.differentiation_matrix_object.set_dirichlet_boundary(side, self.mesh_type)
+
         if side == "left":
             array_index = 0
         elif side == "right":
@@ -124,33 +86,29 @@ class heat_diffusion_mesh(create_1Dmesh):
 
         if self.mesh_type == "finite_volume":
             self.boundary_condition_array[array_index] = 2 * temperature
-            self.differentiation_matrix[array_index, array_index] = -3
 
         elif self.mesh_type == "finite_difference":
             self.boundary_condition_array[array_index] = 0
-            self.differentiation_matrix[array_index, :] = 0
             self.temperature[array_index] = temperature
         else:
             raise ValueError("mesh must be finite_volume or finite_difference")
 
     def set_neumann_boundary(self, side, flux=0):
         """Update boundary array and D2 for a neumann boundary."""
+
+        self.differentiation_matrix_object.set_neumann_boundary(side, self.mesh_type)
+
         if side == "left":
             array_index = 0
-            next_col_index = 1
         elif side == "right":
             array_index = -1
-            next_col_index = -2
         else:
             raise ValueError("Side must input must be left or right")
 
         if self.mesh_type == "finite_volume":
             self.boundary_condition_array[array_index] = flux / self.delta_x
-            self.differentiation_matrix[array_index, array_index] = -1
         elif self.mesh_type == "finite_difference":
             self.boundary_condition_array[array_index] = 2 * flux * self.delta_x
-
-            self.differentiation_matrix[array_index, next_col_index] = 2
         else:
             raise ValueError(
                 "mesh_type unsupported, please input a finite_volume or finite_difference as mesh type"
@@ -267,6 +225,73 @@ class linear_convection__mesh(create_1Dmesh):
         For finite volume only
         """
         self.differentiation_matrix[-1, -3:] = [1.5, -1, 0.5]
+
+
+class differentiation_matrix:
+    """Create a differentiation matrix."""
+
+    def __init__(self, n_cells: int):
+        """
+        Initialaze a differentiation  matrix.
+
+        Paramaters: n_cells number of cells
+        Atributes:
+        differentiation_matrix: A sparse  matrix n_cells x n_cells with -2 on the diagonal and a 1 on the +1 and -1 diagonal
+
+        """
+        self.__n_cells = n_cells
+        self.diagonal = np.ones(self.__n_cells)
+        self.__offset_diagonal = np.ones(self.__n_cells)
+        self.differentiation_matrix = scipy.sparse.spdiags(
+            np.array(
+                [self.__offset_diagonal, -2 * self.diagonal, self.__offset_diagonal]
+            ),
+            np.array([-1, 0, 1]),
+        ).toarray()
+
+    def get_matrix(self):
+        """Return: differentiation matrix."""
+        return self.differentiation_matrix
+
+    def set_dirichlet_boundary(self, side, mesh_type):
+        """Update boundary array and D2 for a dirichlet boundary."""
+
+        if side == "left":
+            array_index = 0
+
+        elif side == "right":
+            array_index = -1
+
+        else:
+            raise ValueError("Side must input must be left or right")
+
+        if mesh_type == "finite_volume":
+            self.differentiation_matrix[array_index, array_index] = -3
+
+        elif mesh_type == "finite_difference":
+            self.differentiation_matrix[array_index, :] = 0
+        else:
+            raise ValueError("mesh must be finite_volume or finite_difference")
+
+    def set_neumann_boundary(self, side, mesh_type):
+        """Update boundary array and D2 for a neumann boundary."""
+        if side == "left":
+            array_index = 0
+            next_col_index = 1
+        elif side == "right":
+            array_index = -1
+            next_col_index = -2
+        else:
+            raise ValueError("Side must input must be left or right")
+
+        if mesh_type == "finite_volume":
+            self.differentiation_matrix[array_index, array_index] = -1
+        elif mesh_type == "finite_difference":
+            self.differentiation_matrix[array_index, next_col_index] = 2
+        else:
+            raise ValueError(
+                "mesh_type unsupported, please input a finite_volume or finite_difference as mesh type"
+            )
 
 
 def main():
