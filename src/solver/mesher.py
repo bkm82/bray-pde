@@ -29,17 +29,10 @@ class create_1Dmesh:
         """
         self.n_cells = n_cells
         self.mesh_type = mesh_type
-        if mesh_type == "finite_volume":
-            self.delta_x = (x[1] - x[0]) / (n_cells)
-            self.xcell_center = np.linspace(
-                x[0] + (self.delta_x / 2), x[1] - self.delta_x / 2, n_cells
-            )
-        elif mesh_type == "finite_difference":
-            self.delta_x = (x[1] - x[0]) / (n_cells - 1)
-            self.xcell_center = np.linspace(x[0], x[1], n_cells)
-        else:
-            raise ValueError("Mesh type not supported")
+        x_grid = grid(n_cells, x, mesh_type)
 
+        self.delta_x = x_grid.cell_width
+        self.xcell_center = x_grid.cell_cordinates
         self.differentiation_matrix_object = differentiation_matrix(self.n_cells)
         self.differentiation_matrix = self.differentiation_matrix_object.get_matrix()
         self.boundary_condition_array = np.zeros(n_cells)
@@ -312,6 +305,51 @@ class maccormack_differentiation_matrix(differentiation_matrix):
         self.predictor_differentiation_matrix = -np.transpose(
             self.differentiation_matrix
         )
+
+
+class grid:
+    """
+    A 1d uniformly discritzed grid object.
+
+    Attributes:
+        cordinates:
+        delta:
+    """
+
+    def __init__(
+        self, n_cells: int, cordinates: tuple[float, float], mesh_type: str
+    ) -> None:
+        """
+        Args:
+            n_cells: int = number of cells to discritize the grid
+            cordinates: tupple(float, float) = min and max of the grid
+            mesh_type (string)=  finite_volume or finite_difference
+        """
+        self.n_cells = n_cells
+        self.cordinates = cordinates
+        self.mesh_type = mesh_type
+        self.discritize()
+
+    def discritize(self):
+        if self.mesh_type == "finite_volume":
+            self.cell_width = (self.cordinates[1] - self.cordinates[0]) / (self.n_cells)
+            self.cell_cordinates = np.linspace(
+                self.cordinates[0] + (self.cell_width / 2),
+                self.cordinates[1] - self.cell_width / 2,
+                self.n_cells,
+            )
+        elif self.mesh_type == "finite_difference":
+            self.cell_width = (self.cordinates[1] - self.cordinates[0]) / (
+                self.n_cells - 1
+            )
+            self.cell_cordinates = np.linspace(
+                self.cordinates[0], self.cordinates[1], self.n_cells
+            )
+        else:
+            raise ValueError("Mesh type not supported")
+
+    def get_cell_width(self):
+        return self.cell_width
 
 
 def main():

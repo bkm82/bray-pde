@@ -9,6 +9,7 @@ class main_solver:
         self.method = method
         self.mesh = mesh
         self.saved_state_list = []
+        self.current_time = initial_time
 
     def solver_take_step(self, k, atribute):
         differentiation_matrix = self.mesh.differentiation_matrix
@@ -136,9 +137,9 @@ class linear_convection_solver(main_solver):
             )
 
         elif self.method == "implicit":
-            raise ("implicit not implemented for maccormack")
+            raise Exception("implicit not implemented for maccormack")
         else:
-            raise ("implicit or explicit method needed")
+            raise Exception("implicit or explicit method needed")
 
     def solve(self, t_final, t_initial=0):
         """
