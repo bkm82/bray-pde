@@ -48,10 +48,10 @@ Nature of dominating truncation error:
 #+ATTR_LATEX: :options frame=single
 #+BEGIN_SRC python :results output :exports both :session Python-Session
   time_step_list =[0.05,0.1, 0.2]
-  discretization_type_list =["upwind","central", "maccormack"]
-  method_type_list = ["explicit","implicit", "explicit"]
-  mesh_type_list = ["finite_volume", "finite_difference", "finite_difference"]
-  n_cells_list = [100, 101, 101]
+  discretization_type_list =["central", "maccormack","upwind"]
+  method_type_list = ["implicit", "explicit","explicit"]
+  mesh_type_list = ["finite_difference", "finite_difference", "finite_volume"]
+  n_cells_list = [101, 101, 100]
   zipped_list = zip(
       discretization_type_list,
       method_type_list,
@@ -64,7 +64,7 @@ Nature of dominating truncation error:
       for time_step in time_step_list:
           x = [0,10]
           # Create a Mesh
-          mesh = mesher.linear_convection__mesh(
+          mesh = mesher.linear_convection_mesh(
               x = x,
               n_cells = n_cells,
               mesh_type = mesh_type,
@@ -108,30 +108,6 @@ Nature of dominating truncation error:
 #+begin_example
 
 Solved Using
-discritization: upwind
-method:explicit
-mesh: finite_volume
-delta x: 0.1
-delta t: 0.05
-courrant number: 0.5
-
-Solved Using
-discritization: upwind
-method:explicit
-mesh: finite_volume
-delta x: 0.1
-delta t: 0.1
-courrant number: 1.0
-
-Solved Using
-discritization: upwind
-method:explicit
-mesh: finite_volume
-delta x: 0.1
-delta t: 0.2
-courrant number: 2.0
-
-Solved Using
 discritization: central
 method:implicit
 mesh: finite_difference
@@ -175,6 +151,30 @@ Solved Using
 discritization: maccormack
 method:explicit
 mesh: finite_difference
+delta x: 0.1
+delta t: 0.2
+courrant number: 2.0
+
+Solved Using
+discritization: upwind
+method:explicit
+mesh: finite_volume
+delta x: 0.1
+delta t: 0.05
+courrant number: 0.5
+
+Solved Using
+discritization: upwind
+method:explicit
+mesh: finite_volume
+delta x: 0.1
+delta t: 0.1
+courrant number: 1.0
+
+Solved Using
+discritization: upwind
+method:explicit
+mesh: finite_volume
 delta x: 0.1
 delta t: 0.2
 courrant number: 2.0

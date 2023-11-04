@@ -55,7 +55,7 @@ class heat_diffusion_mesh(create_1Dmesh):
         Parameters:
            x (type) : the spatial discritization of the domain
            n_cells (int): The number of cells to discritize the domain into
-           mesh_type (string) : finite_voluem (default) or finite_difference
+           mesh_type (string) : finite_volume (default) or finite_difference
         """
         super().__init__(x, n_cells, mesh_type)
         self.temperature = np.zeros(n_cells)
@@ -115,7 +115,7 @@ class heat_diffusion_mesh(create_1Dmesh):
             )
 
 
-class linear_convection__mesh(create_1Dmesh):
+class linear_convection_mesh(create_1Dmesh):
     """
     Create a linear convection diffusion mesh.
 
@@ -147,13 +147,28 @@ class linear_convection__mesh(create_1Dmesh):
 
         self.discretization_type = discretization_type
         if self.discretization_type == "upwind":
-            self.create_upwind_differentiation_matrix(self.xcell_center)
+            self.differentiation_matrix_object = upwind_differentiation_matrix(
+                self.n_cells
+            )
+
         elif self.discretization_type == "central":
-            self.create_central_differentiation_matrix(self.xcell_center)
+            self.differentiation_matrix_object = central_differentiation_matrix(
+                self.n_cells
+            )
+
         elif self.discretization_type == "maccormack":
-            self.create_maccormack_differentiation_matrix(self.xcell_center)
+            # self.create_maccormack_differentiation_matrix(self.xcell_center)
+            self.differentiation_matrix_object = maccormack_differentiation_matrix(
+                self.n_cells
+            )
+
+            self.predictor_differentiation_matrix = (
+                self.differentiation_matrix_object.predictor_differentiation_matrix
+            )
         else:
             raise ValueError("discritization type not supported")
+
+        self.differentiation_matrix = self.differentiation_matrix_object.get_matrix()
 
         if convection_coefficient <= 0:
             raise ValueError("only positive convection coefficents are supported")
@@ -176,30 +191,9 @@ class linear_convection__mesh(create_1Dmesh):
         else:
             raise TypeError("The phi type inputed not supported")
 
-    def create_upwind_differentiation_matrix(self, nodes):
-        """Create a differentiation matrix."""
-        shape = np.shape(nodes)[0]
-        lower = np.diagflat(np.repeat(1, shape - 1), -1)
-        middle = -1 * np.identity(shape)
-        differentiation_matrix = lower + middle
-        self.differentiation_matrix = differentiation_matrix
-
-    def create_central_differentiation_matrix(self, nodes):
-        shape = np.shape(nodes)[0]
-        upper = np.diagflat(np.repeat(-0.5, shape - 1), 1)
-        differentiation_matrix = upper + np.transpose(-upper)
-        self.differentiation_matrix = differentiation_matrix
-
-    def create_maccormack_differentiation_matrix(self, nodes):
-        shape = np.shape(nodes)[0]
-        lower = np.diagflat(np.repeat(1, shape - 1), -1)
-        middle = 1 * np.identity(shape)
-        differentiation_matrix = -lower + middle
-        self.differentiation_matrix = differentiation_matrix
-        self.predictor_differentiation_matrix = -np.transpose(differentiation_matrix)
-
     def set_dirichlet_boundary(self, side: str, phi: float):
         """Update boundary array and D2 for a dirichlet boundary."""
+        self.differentiation_matrix_object.set_dirichlet_boundary(side, self.mesh_type)
         if side == "left":
             array_index = 0
 
@@ -208,10 +202,9 @@ class linear_convection__mesh(create_1Dmesh):
 
         if self.mesh_type == "finite_volume":
             self.boundary_condition_array[array_index] = phi
-
+            self.differentiation_matrix[array_index, array_index] = -1
         elif self.mesh_type == "finite_difference":
             self.boundary_condition_array[array_index] = 0
-            self.differentiation_matrix[array_index, :] = 0
             if self.discretization_type == "maccormack":
                 self.predictor_differentiation_matrix[array_index, :] = 0
             self.phi[array_index] = phi
@@ -239,19 +232,22 @@ class differentiation_matrix:
         differentiation_matrix: A sparse  matrix n_cells x n_cells with -2 on the diagonal and a 1 on the +1 and -1 diagonal
 
         """
-        self.__n_cells = n_cells
-        self.diagonal = np.ones(self.__n_cells)
-        self.__offset_diagonal = np.ones(self.__n_cells)
-        self.differentiation_matrix = scipy.sparse.spdiags(
-            np.array(
-                [self.__offset_diagonal, -2 * self.diagonal, self.__offset_diagonal]
-            ),
-            np.array([-1, 0, 1]),
-        ).toarray()
+        self.n_cells = n_cells
+        self.differentiation_matrix = self.set_diagonal()
 
     def get_matrix(self):
         """Return: differentiation matrix."""
         return self.differentiation_matrix
+
+    def set_diagonal(self, lower=1, middle=-2, upper=1):
+        """Create a sparce diagonal matrix"""
+        self.diagonal = np.ones(self.n_cells)
+        return scipy.sparse.spdiags(
+            np.array(
+                [lower * self.diagonal, middle * self.diagonal, upper * self.diagonal]
+            ),
+            np.array([-1, 0, 1]),
+        ).toarray()
 
     def set_dirichlet_boundary(self, side, mesh_type):
         """Update boundary array and D2 for a dirichlet boundary."""
@@ -292,6 +288,30 @@ class differentiation_matrix:
             raise ValueError(
                 "mesh_type unsupported, please input a finite_volume or finite_difference as mesh type"
             )
+
+
+class upwind_differentiation_matrix(differentiation_matrix):
+    def __init__(self, n_cells: int):
+        """Create a differentiation matrix."""
+        super().__init__(n_cells)
+        self.differentiation_matrix = self.set_diagonal(lower=1, middle=-1, upper=0)
+
+
+class central_differentiation_matrix(differentiation_matrix):
+    def __init__(self, n_cells: int):
+        """Create a differentiation matrix."""
+        super().__init__(n_cells)
+        self.differentiation_matrix = self.set_diagonal(lower=0.5, middle=0, upper=-0.5)
+
+
+class maccormack_differentiation_matrix(differentiation_matrix):
+    def __init__(self, n_cells: int):
+        super().__init__(n_cells)
+        self.differentiation_matrix = self.set_diagonal(lower=-1, middle=1, upper=0)
+
+        self.predictor_differentiation_matrix = -np.transpose(
+            self.differentiation_matrix
+        )
 
 
 def main():

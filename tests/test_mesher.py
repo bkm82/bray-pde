@@ -79,23 +79,14 @@ class Test_maccormac_linear_convection_mesh(Test_mesh):
             [0, 0, 0, 0, -1],
         ]
     )
-    # expected_right_differentiation_matrix = np.array(
 
-    #     [
-    #         [0, -0.5, 0, 0, 0],
-    #         [0.5, 0, -0.5, 0, 0],
-    #         [0, 0.5, 0, -0.5, 0],
-    #         [0, 0, 0.5, 0, -0.5],
-    #         [0, 0, 1.5, -1, 0.5],
-    #     ]
-    # )
     expected_left_dirichlet_boundary_condition_array = np.array([0, 0, 0, 0, 0])
 
     expected_left_dirichlet_phi = np.array([5, 0, 0, 0, 0])
 
     @pytest.fixture
     def mesh_fixture(self):
-        return mesher.linear_convection__mesh(
+        return mesher.linear_convection_mesh(
             self.x_range,
             n_cells=self.n_cells,
             mesh_type=self.mesh_type,
@@ -129,39 +120,6 @@ class Test_maccormac_linear_convection_mesh(Test_mesh):
             mesh_fixture.predictor_differentiation_matrix,
             self.expected_left_dirichlet_predctor_differentiation_matrix,
         )
-
-    # def test_central_left_dirichlet_boundary_condtion(self, mesh_fixture):
-    #     mesh_fixture.set_phi(0)
-    #     mesh_fixture.set_dirichlet_boundary("left", 5)
-    #     np.testing.assert_array_equal(
-    #         mesh_fixture.boundary_condition_array,
-    #         self.expected_left_dirichlet_boundary_condition_array,
-    #     )
-
-    # def test_central_left_dirichlet_phi(self, mesh_fixture):
-    #     mesh_fixture.set_phi(0)
-    #     mesh_fixture.set_dirichlet_boundary("left", 5)
-    #     np.testing.assert_array_equal(
-    #         mesh_fixture.phi,
-    #         self.expected_left_dirichlet_phi,
-    #     )
-
-    # def test_right_differentiation_matrix(self, mesh_fixture):
-    #     mesh_fixture.set_right_boundary()
-    #     np.testing.assert_array_equal(
-    #         mesh_fixture.differentiation_matrix,
-    #         self.expected_right_differentiation_matrix,
-    #     )
-
-    # def test_discritization_error(self):
-    #     with pytest.raises(ValueError):
-    #         mesher.linear_convection__mesh(
-    #             self.x_range,
-    #             n_cells=self.n_cells,
-    #             mesh_type=self.mesh_type,
-    #             convection_coefficient=1,
-    #             discretization_type="downwind",
-    #         )
 
 
 ############################################################
@@ -206,7 +164,7 @@ class Test_central_linear_convection_mesh(Test_mesh):
 
     @pytest.fixture
     def mesh_fixture(self):
-        return mesher.linear_convection__mesh(
+        return mesher.linear_convection_mesh(
             self.x_range,
             n_cells=self.n_cells,
             mesh_type=self.mesh_type,
@@ -251,7 +209,7 @@ class Test_central_linear_convection_mesh(Test_mesh):
 
     def test_discritization_error(self):
         with pytest.raises(ValueError):
-            mesher.linear_convection__mesh(
+            mesher.linear_convection_mesh(
                 self.x_range,
                 n_cells=self.n_cells,
                 mesh_type=self.mesh_type,
@@ -261,9 +219,13 @@ class Test_central_linear_convection_mesh(Test_mesh):
 
 
 class Test_linear_convection_mesh(Test_mesh):
+    mesh_type = "finite_difference"
+    expected_xcell_center = np.array([0, 1 / 3, 2 / 3, 1])
+    expected_delta_x: float = 1 / 3
+
     @pytest.fixture
     def mesh_fixture(self):
-        return mesher.linear_convection__mesh(
+        return mesher.linear_convection_mesh(
             self.x_range,
             n_cells=self.n_cells,
             mesh_type=self.mesh_type,
@@ -273,7 +235,11 @@ class Test_linear_convection_mesh(Test_mesh):
     expected_differentiation_matrix = np.array(
         [[-1, 0, 0, 0], [1, -1, 0, 0], [0, 1, -1, 0], [0, 0, 1, -1]]
     )
-    expected_left_boundary_condition_array = np.array([5, 0, 0, 0])
+
+    expected_left_dirichlet_differentiation_matrix = np.array(
+        [[0, 0, 0, 0], [1, -1, 0, 0], [0, 1, -1, 0], [0, 0, 1, -1]]
+    )
+    expected_left_boundary_condition_array = np.array([0, 0, 0, 0])
 
     def test_initiate_differentiation_matrix(self, mesh_fixture):
         # mesh_fixture.set_centeral_
@@ -286,7 +252,7 @@ class Test_linear_convection_mesh(Test_mesh):
     def test_initiate_differentation_matrix_neg(self):
         """Test that a negative convcection coefficent shows unsupported error"""
         with pytest.raises(ValueError):
-            mesher.linear_convection__mesh(
+            mesher.linear_convection_mesh(
                 x=[0, 1], n_cells=4, convection_coefficient=-1
             )
 
@@ -324,6 +290,13 @@ class Test_linear_convection_mesh(Test_mesh):
         np.testing.assert_array_equal(
             mesh_fixture.boundary_condition_array,
             self.expected_left_boundary_condition_array,
+        )
+
+    def test_left_dirichlet_differentiaton_matrix(self, mesh_fixture):
+        mesh_fixture.set_dirichlet_boundary("left", 5)
+        np.testing.assert_array_equal(
+            mesh_fixture.differentiation_matrix,
+            self.expected_left_dirichlet_differentiation_matrix,
         )
 
     def test_right_dirichlet_boundary(self, mesh_fixture):
@@ -587,10 +560,40 @@ def test_init():
             mock_main.assert_called_once()
 
 
-class Test_lienar_convection_mesh:
-    n_cells: int = 5
-    x_range = [0, 4]
-    mesh_type = "finite_differnce"
+class Test_upwind_linear_convection_mesh_finite_volume(Test_linear_convection_mesh):
+    n_cells = 4
+    mesh_type = "finite_volume"
+    discritization_type = "upwind"
+    expected_delta_x = 0.25
+    # Expected Paramaters
+    expected_xcell_center = np.array([0.125, 0.375, 0.625, 0.875])
+    expected_n_cells = 4
+    expected_differentiation_matrix = np.array(
+        [
+            [-1, 0, 0, 0],
+            [1, -1, 0, 0],
+            [0, 1, -1, 0],
+            [0, 0, 1, -1],
+        ]
+    )
+    expected_left_dirichlet_differentiation_matrix = np.array(
+        [
+            [-1, 0, 0, 0],
+            [1, -1, 0, 0],
+            [0, 1, -1, 0],
+            [0, 0, 1, -1],
+        ]
+    )
 
-    expected_xcell_center = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
-    expected_delta_x = 1
+    expected_right_differentiation_matrix = np.array(
+        [
+            [-1, 0, 0, 0],
+            [1, -1, 0, 0],
+            [0, 1, -1, 0],
+            [0, 0, 1, -1],
+        ]
+    )
+
+    expected_left_boundary_condition_array = np.array([5, 0, 0, 0])
+
+    expected_left_dirichlet_phi = np.array([0, 0, 0, 0])
