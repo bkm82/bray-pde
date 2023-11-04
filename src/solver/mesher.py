@@ -327,18 +327,17 @@ class grid:
         """
         self.n_cells = n_cells
         self.cordinates = cordinates
-        self.mesh_type = mesh_type
-        self.discritize()
+        self.__discritize(mesh_type)
 
-    def discritize(self):
-        if self.mesh_type == "finite_volume":
+    def __discritize(self, mesh_type):
+        if mesh_type == "finite_volume":
             self.cell_width = (self.cordinates[1] - self.cordinates[0]) / (self.n_cells)
             self.cell_cordinates = np.linspace(
                 self.cordinates[0] + (self.cell_width / 2),
                 self.cordinates[1] - self.cell_width / 2,
                 self.n_cells,
             )
-        elif self.mesh_type == "finite_difference":
+        elif mesh_type == "finite_difference":
             self.cell_width = (self.cordinates[1] - self.cordinates[0]) / (
                 self.n_cells - 1
             )
@@ -347,9 +346,6 @@ class grid:
             )
         else:
             raise ValueError("Mesh type not supported")
-
-    def get_cell_width(self):
-        return self.cell_width
 
 
 def main():

@@ -1,4 +1,4 @@
-from solver.mesher import differentiation_matrix
+from solver.mesher import grid
 from typing import Sequence, Tuple, List
 
 
@@ -7,6 +7,7 @@ class cartesian_mesh:
     A 2d cartesian mesh.
 
     Atributes:
+    x_grid.
     """
 
     def __init__(
@@ -26,7 +27,7 @@ class cartesian_mesh:
 
         """
         # Validate input
-        implemented_dimensions = [2]
+        implemented_dimensions = [1, 2]
         if dimensions not in implemented_dimensions:
             raise ValueError("mesh dimesnionality not implemented")
 
@@ -35,3 +36,17 @@ class cartesian_mesh:
             raise ValueError("number of cordinates needs to match dimesnions")
         if len(n_cells) != dimensions:
             raise ValueError("each dimension needs number of cells")
+
+        # # Discritize each dimmension
+        grid_list = ["x_grid", "y_grid"]
+        index_list = [0, 1]
+        for index, grid_name in zip(index_list[:dimensions], grid_list[:dimensions]):
+            setattr(
+                self,
+                grid_name,
+                grid(
+                    n_cells=n_cells[index],
+                    cordinates=cordinates[index],
+                    mesh_type=mesh_type,
+                ),
+            )
