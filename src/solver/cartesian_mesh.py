@@ -50,8 +50,8 @@ class cartesian_mesh:
 
         """
         # Implemented dimensions and mesh types
-        self.implemented_dimensions: Tuple = ("x", "y")
-        self.implemented_mesh_types: Tuple = "finite_volume"
+        self.implemented_dimensions: Tuple[str, str] = ("x", "y")
+        self.implemented_mesh_types: str = "finite_volume"
 
         if dimensions > len(self.implemented_dimensions):
             raise ValueError("mesh dimesnionality not implemented")

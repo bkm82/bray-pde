@@ -81,16 +81,16 @@ The data will be stored in a pandas data frame in the self.saved_data atribute. 
 #+RESULTS:
 #+begin_example
      method  time_step_size  time  x_cordinates  temperature
-0  explicit              15     0      0.000000         50.0
-1  explicit              15     0      0.052632          0.0
-2  explicit              15     0      0.105263          0.0
-3  explicit              15     0      0.157895          0.0
-4  explicit              15     0      0.210526          0.0
-5  explicit              15     0      0.263158          0.0
-6  explicit              15     0      0.315789          0.0
-7  explicit              15     0      0.368421          0.0
-8  explicit              15     0      0.421053          0.0
-9  explicit              15     0      0.473684          0.0
+0  explicit              15     0         0.025          0.0
+1  explicit              15     0         0.075          0.0
+2  explicit              15     0         0.125          0.0
+3  explicit              15     0         0.175          0.0
+4  explicit              15     0         0.225          0.0
+5  explicit              15     0         0.275          0.0
+6  explicit              15     0         0.325          0.0
+7  explicit              15     0         0.375          0.0
+8  explicit              15     0         0.425          0.0
+9  explicit              15     0         0.475          0.0
 #+end_example
 
 

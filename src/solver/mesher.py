@@ -33,13 +33,14 @@ class create_1Dmesh:
 
         self.delta_x = x_grid.cell_width
         self.xcell_center = x_grid.cell_cordinates
-        self.differentiation_matrix_object = differentiation_matrix(self.n_cells)
-        self.differentiation_matrix = self.differentiation_matrix_object.get_matrix()
-        # self.boundary_condition_array = np.zeros(n_cells)
-        self.boundary_condition_array = boundary_condition(
-            n_cells
-        ).boundary_condition_array
-        # self.boundary_condtion_array = boundary_condition_matrix(n_cells)
+        self.x_differentiation_matrix = differentiation_matrix(self.n_cells)
+        self.differentiation_matrix = self.x_differentiation_matrix.get_matrix()
+        self.boundary_condition_object = boundary_condition(
+            n_cells=self.n_cells, mesh_type=self.mesh_type
+        )
+        self.boundary_condition_array = (
+            self.boundary_condition_object.boundary_condition_array
+        )
 
 
 class heat_diffusion_mesh(create_1Dmesh):
@@ -72,20 +73,15 @@ class heat_diffusion_mesh(create_1Dmesh):
 
     def set_dirichlet_boundary(self, side, temperature):
         """Update boundary array and D2 for a dirichlet boundary."""
-        self.differentiation_matrix_object.set_dirichlet_boundary(side, self.mesh_type)
-
-        if side == "left":
-            array_index = 0
-        elif side == "right":
-            array_index = -1
-        else:
-            raise ValueError("Side must input must be left or right")
+        self.x_differentiation_matrix.set_dirichlet_boundary(side, self.mesh_type)
+        self.boundary_condition_object.set_dirichlet_boundary(
+            side=side, phi=temperature
+        )
+        array_index = side_selector().boundary_index(side)
 
         if self.mesh_type == "finite_volume":
-            self.boundary_condition_array[array_index] = 2 * temperature
-
+            pass
         elif self.mesh_type == "finite_difference":
-            self.boundary_condition_array[array_index] = 0
             self.temperature[array_index] = temperature
         else:
             raise ValueError("mesh must be finite_volume or finite_difference")
@@ -93,7 +89,8 @@ class heat_diffusion_mesh(create_1Dmesh):
     def set_neumann_boundary(self, side, flux=0):
         """Update boundary array and D2 for a neumann boundary."""
 
-        self.differentiation_matrix_object.set_neumann_boundary(side, self.mesh_type)
+        self.x_differentiation_matrix.set_neumann_boundary(side, self.mesh_type)
+        # self.boundary_condition_object.set_neumann_boundary(side = side, phi = temperature)
 
         if side == "left":
             array_index = 0
@@ -144,28 +141,24 @@ class linear_convection_mesh(create_1Dmesh):
 
         self.discretization_type = discretization_type
         if self.discretization_type == "upwind":
-            self.differentiation_matrix_object = upwind_differentiation_matrix(
-                self.n_cells
-            )
+            self.x_differentiation_matrix = upwind_differentiation_matrix(self.n_cells)
 
         elif self.discretization_type == "central":
-            self.differentiation_matrix_object = central_differentiation_matrix(
-                self.n_cells
-            )
+            self.x_differentiation_matrix = central_differentiation_matrix(self.n_cells)
 
         elif self.discretization_type == "maccormack":
             # self.create_maccormack_differentiation_matrix(self.xcell_center)
-            self.differentiation_matrix_object = maccormack_differentiation_matrix(
+            self.x_differentiation_matrix = maccormack_differentiation_matrix(
                 self.n_cells
             )
 
             self.predictor_differentiation_matrix = (
-                self.differentiation_matrix_object.predictor_differentiation_matrix
+                self.x_differentiation_matrix.predictor_differentiation_matrix
             )
         else:
             raise ValueError("discritization type not supported")
 
-        self.differentiation_matrix = self.differentiation_matrix_object.get_matrix()
+        self.differentiation_matrix = self.x_differentiation_matrix.get_matrix()
 
         if convection_coefficient <= 0:
             raise ValueError("only positive convection coefficents are supported")
@@ -190,7 +183,7 @@ class linear_convection_mesh(create_1Dmesh):
 
     def set_dirichlet_boundary(self, side: str, phi: float):
         """Update boundary array and D2 for a dirichlet boundary."""
-        self.differentiation_matrix_object.set_dirichlet_boundary(side, self.mesh_type)
+        self.x_differentiation_matrix.set_dirichlet_boundary(side, self.mesh_type)
         if side == "left":
             array_index = 0
 
@@ -215,18 +208,6 @@ class linear_convection_mesh(create_1Dmesh):
         For finite volume only
         """
         self.differentiation_matrix[-1, -3:] = [1.5, -1, 0.5]
-
-
-class boundary_condition:
-    """
-    A boundary condition object.
-
-    Attributes
-        boundary_condition_array: array[float]
-    """
-
-    def __init__(self, n_cells: int):
-        self.boundary_condition_array = np.zeros(n_cells)
 
 
 class differentiation_matrix:
@@ -260,15 +241,7 @@ class differentiation_matrix:
 
     def set_dirichlet_boundary(self, side, mesh_type):
         """Update boundary array and D2 for a dirichlet boundary."""
-
-        if side == "left":
-            array_index = 0
-
-        elif side == "right":
-            array_index = -1
-
-        else:
-            raise ValueError("Side must input must be left or right")
+        array_index = side_selector().boundary_index(side)
 
         if mesh_type == "finite_volume":
             self.differentiation_matrix[array_index, array_index] = -3
@@ -279,20 +252,14 @@ class differentiation_matrix:
             raise ValueError("mesh must be finite_volume or finite_difference")
 
     def set_neumann_boundary(self, side, mesh_type):
-        """Update boundary array and D2 for a neumann boundary."""
-        if side == "left":
-            array_index = 0
-            next_col_index = 1
-        elif side == "right":
-            array_index = -1
-            next_col_index = -2
-        else:
-            raise ValueError("Side must input must be left or right")
+        """Update the differentiation matrix for a neumann boundary."""
+        boundary_index = side_selector().boundary_index(side)
+        first_interior_index = side_selector().first_interior_index(side)
 
         if mesh_type == "finite_volume":
-            self.differentiation_matrix[array_index, array_index] = -1
+            self.differentiation_matrix[boundary_index, boundary_index] = -1
         elif mesh_type == "finite_difference":
-            self.differentiation_matrix[array_index, next_col_index] = 2
+            self.differentiation_matrix[boundary_index, first_interior_index] = 2
         else:
             raise ValueError(
                 "mesh_type unsupported, please input a finite_volume or finite_difference as mesh type"
@@ -362,6 +329,59 @@ class grid:
             )
         else:
             raise ValueError("Mesh type not supported")
+
+
+class boundary_condition:
+    """
+    A boundary condition object.
+
+    Attributes
+        boundary_condition_array: array[float]
+    """
+
+    def __init__(self, n_cells: int, mesh_type: str):
+        self.boundary_condition_array = np.zeros(n_cells)
+        mesh_type_validator().validate(mesh_type)
+        self.__mesh_type = mesh_type
+
+    def set_dirichlet_boundary(self, side: str, phi: float):
+        """Update the boundary contition array for a dirichlet boundary"""
+        boundary_index = side_selector().boundary_index(side)
+        if self.__mesh_type == "finite_volume":
+            self.boundary_condition_array[boundary_index] = 2 * phi
+        elif self.__mesh_type == "finite_difference":
+            self.boundary_condition_array[boundary_index] = 0
+
+
+class side_selector:
+    """Set the array index to modify based on the boundary side."""
+
+    def boundary_index(self, side: str):
+        """Return the index for the first or last row (or column) based on the side."""
+        if side == "left":
+            return 0
+        elif side == "right":
+            return -1
+        else:
+            raise ValueError("Side must input must be left or right")
+
+    def first_interior_index(self, side: str):
+        """Return the index for the first interior cell (1, or -2)."""
+        if side == "left":
+            return 1
+        elif side == "right":
+            return -2
+        else:
+            raise ValueError("Side must input must be left or right")
+
+
+class mesh_type_validator:
+    """Validate that the mesh type is supported."""
+
+    def validate(self, mesh_type: str):
+        """ensures that the mesh type is either a "finite_volume" or "finite_difference"""
+        if mesh_type not in ("finite_volume", "finite_difference"):
+            raise ValueError("Side must input must be left or right")
 
 
 def main():
