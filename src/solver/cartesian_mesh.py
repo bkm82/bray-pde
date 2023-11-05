@@ -7,14 +7,26 @@ class cartesian_mesh:
     A cartesian mesh up to 2D.
 
     Atributes:
-    {dim}_grid (dim = x , y)
+    dimensions: int =  Number of dimensions (1d or 2d)
+    n_cells:List[int]: Number of cells to discritize each dimension
+    cordinates:Sequence[Tuple[float, float]] = The bounds each dimension
+    mesh_type: str = The mesh type. currently only finite_volume.
+
+    Example:
+    To create a 2d mesh with
+        3 cells in the x axis going from 0 to 1
+        4 cells in the y axis going from 0 to 2
+        cartesian_mesh(
+            dimensions = 2
+            n_cells = [3, 4]
+            cordinates = [(0,1), (0,2)]
     """
 
     def __init__(
         self,
+        dimensions: int = 2,
         n_cells: List[int] = [4, 4],
         cordinates: Sequence[Tuple[float, float]] = [(0, 1), (0, 1)],
-        dimensions: int = 2,
         mesh_type: str = "finite_volume",
     ) -> None:
         """

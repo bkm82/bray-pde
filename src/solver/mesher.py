@@ -33,8 +33,10 @@ class create_1Dmesh:
 
         self.delta_x = x_grid.cell_width
         self.xcell_center = x_grid.cell_cordinates
+
         self.x_differentiation_matrix = differentiation_matrix(self.n_cells)
         self.laplacian_matrix = self.x_differentiation_matrix.get_matrix()
+
         self.boundary_condition_object = boundary_condition(
             n_cells=self.n_cells, mesh_type=self.mesh_type
         )
@@ -88,25 +90,10 @@ class heat_diffusion_mesh(create_1Dmesh):
 
     def set_neumann_boundary(self, side, flux=0):
         """Update boundary array and D2 for a neumann boundary."""
-
         self.x_differentiation_matrix.set_neumann_boundary(side, self.mesh_type)
-        # self.boundary_condition_object.set_neumann_boundary(side = side, phi = temperature)
-
-        if side == "left":
-            array_index = 0
-        elif side == "right":
-            array_index = -1
-        else:
-            raise ValueError("Side must input must be left or right")
-
-        if self.mesh_type == "finite_volume":
-            self.boundary_condition_array[array_index] = flux / self.delta_x
-        elif self.mesh_type == "finite_difference":
-            self.boundary_condition_array[array_index] = 2 * flux * self.delta_x
-        else:
-            raise ValueError(
-                "mesh_type unsupported, please input a finite_volume or finite_difference as mesh type"
-            )
+        self.boundary_condition_object.set_neuimann_boundary(
+            side=side, flux=flux, cell_width=self.delta_x
+        )
 
 
 class linear_convection_mesh(create_1Dmesh):
@@ -184,6 +171,7 @@ class linear_convection_mesh(create_1Dmesh):
     def set_dirichlet_boundary(self, side: str, phi: float):
         """Update boundary array and D2 for a dirichlet boundary."""
         self.x_differentiation_matrix.set_dirichlet_boundary(side, self.mesh_type)
+        # self.boundary_condition_object.set_dirichlet_boundary(side= side, phi = phi)
         if side == "left":
             array_index = 0
 
@@ -345,12 +333,20 @@ class boundary_condition:
         self.__mesh_type = mesh_type
 
     def set_dirichlet_boundary(self, side: str, phi: float):
-        """Update the boundary contition array for a dirichlet boundary"""
+        """Update the boundary contition array for a dirichlet boundary."""
         boundary_index = side_selector().boundary_index(side)
         if self.__mesh_type == "finite_volume":
             self.boundary_condition_array[boundary_index] = 2 * phi
         elif self.__mesh_type == "finite_difference":
             self.boundary_condition_array[boundary_index] = 0
+
+    def set_neuimann_boundary(self, side: str, flux: float, cell_width: float):
+        """Update the boundary contition array for a neuiman boundary."""
+        boundary_index = side_selector().boundary_index(side)
+        if self.__mesh_type == "finite_volume":
+            self.boundary_condition_array[boundary_index] = flux / cell_width
+        elif self.__mesh_type == "finite_difference":
+            self.boundary_condition_array[boundary_index] = 2 * flux * cell_width
 
 
 class side_selector:
