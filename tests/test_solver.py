@@ -56,7 +56,7 @@ def mock_mesh(mocker):
     mesh.temperature = np.array([0, 0, 0, 0])
     mesh.n_cells = 4
     mesh.thermal_diffusivity = 0.0001
-    mesh.differentiation_matrix = np.array(
+    mesh.laplacian_matrix = np.array(
         [[-3, 1, 0, 0], [1, -2, 1, 0], [0, 1, -2, 1], [0, 0, 1, -1]]
     )
     mesh.boundary_condition_array = np.array(np.array([100, 0, 0, 0]))
@@ -256,7 +256,7 @@ def mock_linear_convective_mesh_upwind(mocker):
     mesh.delta_x = 0.25
     mesh.phi = np.array([1, 1, 0, 0])
     mesh.n_cells = 4
-    mesh.differentiation_matrix = np.array(
+    mesh.laplacian_matrix = np.array(
         [[-1, 0, 0, 0], [1, -1, 0, 0], [0, 1, -1, 0], [0, 0, 1, -1]]
     )
     mesh.boundary_condition_array = np.array(np.array([1, 0, 0, 0]))
@@ -304,7 +304,7 @@ def mock_linear_convective_mesh_mcormack(mocker):
     mesh.delta_x = 0.25
     mesh.phi = np.array([1, 1, 0, 0, 0])
     mesh.n_cells = 5
-    mesh.differentiation_matrix = np.array(
+    mesh.laplacian_matrix = np.array(
         [
             [0, 0, 0, 0, 0],
             [-1, 1, 0, 0, 0],

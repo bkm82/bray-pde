@@ -12,19 +12,19 @@ class main_solver:
         self.current_time = initial_time
 
     def solver_take_step(self, k, atribute):
-        differentiation_matrix = self.mesh.differentiation_matrix
+        laplacian_matrix = self.mesh.laplacian_matrix
         identity_matrix = np.identity(self.mesh.n_cells)
         # identity_matrix =
         if self.method == "explicit":
             # solve the form y = ax + b
-            a = k * differentiation_matrix + identity_matrix
+            a = k * laplacian_matrix + identity_matrix
             b = k * self.mesh.boundary_condition_array
 
             return a @ atribute + b
 
         if self.method == "implicit":
             # solve the form ay = x+b where x= current temp, y= new temp
-            a = -k * differentiation_matrix + identity_matrix
+            a = -k * laplacian_matrix + identity_matrix
             b = k * self.mesh.boundary_condition_array
             return np.linalg.solve(a, (atribute + b))
 
@@ -124,7 +124,7 @@ class linear_convection_solver(main_solver):
             self.mesh.phi = self.solver_take_step(k, self.mesh.phi)
 
     def maccormack_take_step(self, k, atribute):
-        differentiation_matrix = self.mesh.differentiation_matrix
+        laplacian_matrix = self.mesh.laplacian_matrix
         identity_matrix = np.identity(self.mesh.n_cells)
         predictor_matrix = self.mesh.predictor_differentiation_matrix
         # self.predictor = (identity_matrix - predictor_matrix)@atribute
@@ -132,8 +132,7 @@ class linear_convection_solver(main_solver):
             self.predictor = (identity_matrix - k * predictor_matrix) @ atribute
 
             return 0.5 * (
-                atribute
-                + ((identity_matrix - k * differentiation_matrix) @ self.predictor)
+                atribute + ((identity_matrix - k * laplacian_matrix) @ self.predictor)
             )
 
         elif self.method == "implicit":
