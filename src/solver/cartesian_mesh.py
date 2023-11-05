@@ -1,13 +1,13 @@
-from solver.mesher import grid
+from solver.mesher import grid, differentiation_matrix
 from typing import Sequence, Tuple, List
 
 
 class cartesian_mesh:
     """
-    A 2d cartesian mesh.
+    A cartesian mesh up to 2D.
 
     Atributes:
-    x_grid.
+    {dim}_grid (dim = x , y)
     """
 
     def __init__(
@@ -39,8 +39,7 @@ class cartesian_mesh:
 
         # # Discritize each dimmension
         grid_list = ["x_grid", "y_grid"]
-        index_list = [0, 1]
-        for index, grid_name in zip(index_list[:dimensions], grid_list[:dimensions]):
+        for index, grid_name in enumerate(grid_list[:dimensions]):
             setattr(
                 self,
                 grid_name,
@@ -50,3 +49,16 @@ class cartesian_mesh:
                     mesh_type=mesh_type,
                 ),
             )
+
+        matrix_list = ["x_differentiation_matrix", "y_differentiation_matrix"]
+
+        for index, matrix_name in enumerate(matrix_list[:dimensions]):
+            setattr(
+                self,
+                matrix_name,
+                differentiation_matrix(
+                    n_cells=n_cells[index],
+                ),
+            )
+        # self.x_differentiation_matrix = differentiation_matrix(n_cells[0])
+        # x_differentiation_matrix

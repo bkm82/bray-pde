@@ -225,7 +225,7 @@ class differentiation_matrix:
         differentiation_matrix: A sparse  matrix n_cells x n_cells with -2 on the diagonal and a 1 on the +1 and -1 diagonal
 
         """
-        self.n_cells = n_cells
+        self.__n_cells = n_cells
         self.differentiation_matrix = self.set_diagonal()
 
     def get_matrix(self):
@@ -234,7 +234,7 @@ class differentiation_matrix:
 
     def set_diagonal(self, lower=1, middle=-2, upper=1):
         """Create a sparce diagonal matrix"""
-        self.diagonal = np.ones(self.n_cells)
+        self.diagonal = np.ones(self.__n_cells)
         return scipy.sparse.spdiags(
             np.array(
                 [lower * self.diagonal, middle * self.diagonal, upper * self.diagonal]
