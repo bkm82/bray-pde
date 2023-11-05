@@ -35,7 +35,11 @@ class create_1Dmesh:
         self.xcell_center = x_grid.cell_cordinates
         self.differentiation_matrix_object = differentiation_matrix(self.n_cells)
         self.differentiation_matrix = self.differentiation_matrix_object.get_matrix()
-        self.boundary_condition_array = np.zeros(n_cells)
+        # self.boundary_condition_array = np.zeros(n_cells)
+        self.boundary_condition_array = boundary_condition(
+            n_cells
+        ).boundary_condition_array
+        # self.boundary_condtion_array = boundary_condition_matrix(n_cells)
 
 
 class heat_diffusion_mesh(create_1Dmesh):
@@ -211,6 +215,18 @@ class linear_convection_mesh(create_1Dmesh):
         For finite volume only
         """
         self.differentiation_matrix[-1, -3:] = [1.5, -1, 0.5]
+
+
+class boundary_condition:
+    """
+    A boundary condition object.
+
+    Attributes
+        boundary_condition_array: array[float]
+    """
+
+    def __init__(self, n_cells: int):
+        self.boundary_condition_array = np.zeros(n_cells)
 
 
 class differentiation_matrix:

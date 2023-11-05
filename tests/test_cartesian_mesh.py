@@ -79,6 +79,7 @@ class Test_cartesian_mesh_exceptions:
         ({"dimensions": 2, "cordinates": [(0, 1)]}),
         ({"dimensions": 2, "n_cells": [5]}),
         ({"dimensions": 1}),
+        ({"mesh_type": "finite_difference"}),
     ]
 
     @pytest.mark.parametrize("inputs", exception_inputs)
