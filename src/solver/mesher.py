@@ -79,6 +79,7 @@ class heat_diffusion_mesh(create_1Dmesh):
         self.boundary_condition_object.set_dirichlet_boundary(
             side=side, phi=temperature
         )
+
         array_index = side_selector().boundary_index(side)
 
         if self.mesh_type == "finite_volume":
@@ -150,28 +151,34 @@ class linear_convection_mesh(create_1Dmesh):
         if convection_coefficient <= 0:
             raise ValueError("only positive convection coefficents are supported")
         self.convection_coefficent = convection_coefficient
-        self.phi = np.zeros(n_cells)
 
-    def set_phi(self, phi):
-        """
-        Set the value of phi for internal nodes.
+        self.phi_object = cell_phi(n_cells, mesh_type)
+        self.phi = self.phi_object
+        # self.phi = np.zeros(n_cells)
 
-        Parameters:
-        phi (int, float, list):list of phi at every x value
-        """
-        if isinstance(phi, (float, int)):
-            self.phi = phi * np.ones(self.n_cells)
-        elif isinstance(phi, list):
-            if np.array(phi).shape != self.xcell_center.shape:
-                raise ValueError("the shape of phi must match the xcell_center shape")
-            self.phi = np.array(phi)
-        else:
-            raise TypeError("The phi type inputed not supported")
+    # ---------------------------------------------------------------------------
+    # def set_phi(self, phi):
+    #     """
+    #     Set the value of phi for internal nodes.
+
+    #     Parameters:
+    #     phi (int, float, list):list of phi at every x value
+    #     """
+    #     if isinstance(phi, (float, int)):
+    #         self.phi = phi * np.ones(self.n_cells)
+    #     elif isinstance(phi, list):
+    #         if np.array(phi).shape != self.xcell_center.shape:
+    #             raise ValueError("the shape of phi must match the xcell_center shape")
+    #         self.phi = np.array(phi)
+    #     else:
+    #         raise TypeError("The phi type inputed not supported")
+    # ----------------------------------------------------------------------
 
     def set_dirichlet_boundary(self, side: str, phi: float):
         """Update boundary array and D2 for a dirichlet boundary."""
         self.x_differentiation_matrix.set_dirichlet_boundary(side, self.mesh_type)
-        # self.boundary_condition_object.set_dirichlet_boundary(side= side, phi = phi)
+        self.boundary_condition_object.set_dirichlet_boundary(side=side, phi=phi / 2)
+        self.phi_object.set_dirichlet_boundary(side, phi)
         if side == "left":
             array_index = 0
 
@@ -179,13 +186,14 @@ class linear_convection_mesh(create_1Dmesh):
             raise ValueError("Only left side implemented")
 
         if self.mesh_type == "finite_volume":
-            self.boundary_condition_array[array_index] = phi
+            pass
+            # self.boundary_condition_array[array_index] = phi
             self.laplacian_matrix[array_index, array_index] = -1
         elif self.mesh_type == "finite_difference":
-            self.boundary_condition_array[array_index] = 0
+            # self.boundary_condition_array[array_index] = 0
             if self.discretization_type == "maccormack":
                 self.predictor_differentiation_matrix[array_index, :] = 0
-            self.phi[array_index] = phi
+            # self.phi[array_index] = phi
         else:
             raise ValueError("mesh must be finite_volume or finite_difference")
 
@@ -347,6 +355,56 @@ class boundary_condition:
             self.boundary_condition_array[boundary_index] = flux / cell_width
         elif self.__mesh_type == "finite_difference":
             self.boundary_condition_array[boundary_index] = 2 * flux * cell_width
+
+
+class cell_phi:
+    """
+    An object that stores each cells phi value
+    """
+
+    def __init__(self, n_cells: int, mesh_type: str):
+        """Create phi object and store n_cells."""
+        self.phi = np.zeros(n_cells)
+        self.__n_cells = n_cells
+        self.mesh_type = mesh_type
+
+    def set_phi(self, phi):
+        """
+        Set the value of phi for internal nodes.
+
+        Parameters:
+        phi (int, float, list):list of phi at every x value
+        """
+        if isinstance(phi, (float, int)):
+            self.phi = phi * np.ones(self.__n_cells)
+        elif isinstance(phi, list):
+            if np.array(phi).shape != self.phi.shape:
+                raise ValueError("the shape of phi must match the xcell_center shape")
+            self.phi = np.array(phi)
+        else:
+            raise TypeError("The phi type inputed not supported")
+
+    def get_phi(self):
+        return self.phi
+
+    def set_dirichlet_boundary(self, side: str, phi: float):
+        """Update phi for a dirichlet boundary."""
+        # self.x_differentiation_matrix.set_dirichlet_boundary(side, self.mesh_type)
+        # self.boundary_condition_object.set_dirichlet_boundary(side= side, phi = phi/2)
+
+        if side == "left":
+            array_index = 0
+
+        else:
+            raise ValueError("Only left side implemented")
+
+        if self.mesh_type == "finite_volume":
+            pass
+
+        elif self.mesh_type == "finite_difference":
+            self.phi[array_index] = phi
+        else:
+            raise ValueError("mesh must be finite_volume or finite_difference")
 
 
 class side_selector:

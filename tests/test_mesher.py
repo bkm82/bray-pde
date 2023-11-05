@@ -185,7 +185,7 @@ class Test_central_linear_convection_mesh(Test_mesh):
         )
 
     def test_central_left_dirichlet_boundary_condtion(self, mesh_fixture):
-        mesh_fixture.set_phi(0)
+        mesh_fixture.phi.set_phi(0)
         mesh_fixture.set_dirichlet_boundary("left", 5)
         np.testing.assert_array_equal(
             mesh_fixture.boundary_condition_array,
@@ -193,10 +193,10 @@ class Test_central_linear_convection_mesh(Test_mesh):
         )
 
     def test_central_left_dirichlet_phi(self, mesh_fixture):
-        mesh_fixture.set_phi(0)
+        mesh_fixture.phi.set_phi(0)
         mesh_fixture.set_dirichlet_boundary("left", 5)
         np.testing.assert_array_equal(
-            mesh_fixture.phi,
+            mesh_fixture.phi.get_phi(),
             self.expected_left_dirichlet_phi,
         )
 
@@ -257,30 +257,30 @@ class Test_linear_convection_mesh(Test_mesh):
             )
 
     def test_set_phi(self, mesh_fixture):
-        mesh_fixture.set_phi(phi=[1, 2, 4, 5])
-        np.testing.assert_equal(mesh_fixture.phi, [1, 2, 4, 5])
+        mesh_fixture.phi.set_phi(phi=[1, 2, 4, 5])
+        np.testing.assert_equal(mesh_fixture.phi.get_phi(), [1, 2, 4, 5])
 
     def test_set_phi_float(self, mesh_fixture):
-        mesh_fixture.set_phi(phi=5.0)
-        np.testing.assert_equal(mesh_fixture.phi, [5, 5, 5, 5])
+        mesh_fixture.phi.set_phi(phi=5.0)
+        np.testing.assert_equal(mesh_fixture.phi.get_phi(), [5, 5, 5, 5])
 
     def test_set_phi_int(self, mesh_fixture):
-        mesh_fixture.set_phi(phi=5)
-        np.testing.assert_equal(mesh_fixture.phi, [5, 5, 5, 5])
+        mesh_fixture.phi.set_phi(phi=5)
+        np.testing.assert_equal(mesh_fixture.phi.get_phi(), [5, 5, 5, 5])
 
     def test_set_phi_float_lenght(self, mesh_fixture):
-        mesh_fixture.set_phi(phi=5.0)
+        mesh_fixture.phi.set_phi(phi=5.0)
         with np.testing.assert_raises(AssertionError):
-            np.testing.assert_array_equal(mesh_fixture.phi, [5, 5, 5, 5, 5])
+            np.testing.assert_array_equal(mesh_fixture.phi.get_phi(), [5, 5, 5, 5, 5])
 
     def test_set_phi_wrong_shape_error(self, mesh_fixture):
         """Ensure the shape of phi matches the shape of x"""
         with pytest.raises(ValueError):
-            mesh_fixture.set_phi([1, 2, 3, 4, 5])
+            mesh_fixture.phi.set_phi([1, 2, 3, 4, 5])
 
     def test_set_phi_wrong_type(self, mesh_fixture):
         with pytest.raises(TypeError):
-            mesh_fixture.set_phi("string")
+            mesh_fixture.phi.set_phi("string")
 
     def test_convection_coeff_saved(self, mesh_fixture):
         assert mesh_fixture.convection_coefficent == 1
