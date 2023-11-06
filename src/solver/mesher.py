@@ -44,7 +44,7 @@ class create_1Dmesh:
             self.boundary_condition_object.boundary_condition_array
         )
 
-        self.cell_phi = cell_phi(n_cells, mesh_type)
+        self.cell_phi = cell_phi(n_cells=n_cells, dim=1, mesh_type=mesh_type)
 
 
 class heat_diffusion_mesh(create_1Dmesh):
@@ -147,7 +147,7 @@ class linear_convection_mesh(create_1Dmesh):
             raise ValueError("only positive convection coefficents are supported")
         self.convection_coefficent = convection_coefficient
 
-        self.phi = cell_phi(n_cells, mesh_type)
+        self.phi = cell_phi(n_cells=n_cells, dim=1, mesh_type=mesh_type)
 
     def set_dirichlet_boundary(self, side: str, phi: float):
         """Update boundary array and D2 for a dirichlet boundary."""
@@ -337,10 +337,16 @@ class cell_phi:
     An object that stores each cells phi value
     """
 
-    def __init__(self, n_cells: int, mesh_type: str):
-        """Create phi object and store n_cells."""
-        self.phi = np.zeros(n_cells)
+    def __init__(self, n_cells: int, dim: int, mesh_type: str):
+        """
+        Create phi object and store n_cells.
+
+        args:
+        n_cells: List[int] Number of cells, in the order of [n_xcells, n_ycells}
+        """
+        self.phi = np.zeros(np.flip(n_cells))
         self.__n_cells = n_cells
+        mesh_type_validator().validate(mesh_type=mesh_type)
         self.mesh_type = mesh_type
 
     def set_phi(self, phi):

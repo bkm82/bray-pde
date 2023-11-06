@@ -116,7 +116,7 @@ class cartesian_mesh:
 
     def create_atribute_list(self, atribute_name: str) -> List[str]:
         """
-        Create a list of of atributes for each active dimension
+        Create a list of of atributes for each active dimension.
 
         args:
         atribute_name:str the atribute name you would like in teh list

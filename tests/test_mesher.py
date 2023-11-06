@@ -597,3 +597,46 @@ class Test_upwind_linear_convection_mesh_finite_volume(Test_linear_convection_me
     expected_left_boundary_condition_array = np.array([5, 0, 0, 0])
 
     expected_left_dirichlet_phi = np.array([0, 0, 0, 0])
+
+
+class Test_cell_phi:
+    @pytest.fixture
+    def one_d_phi_finite_dif(self):
+        return mesher.cell_phi(n_cells=3, dim=1, mesh_type="finite_difference")
+
+    def test_1d_phi(self):
+        expected = np.array([0, 0, 0, 0])
+        actual = mesher.cell_phi(n_cells=4, dim=1, mesh_type="finite_volume").get_phi()
+        np.testing.assert_array_equal(x=actual, y=expected)
+
+    def test_1d_phi_listcell(self):
+        expected = np.array([0, 0, 0, 0])
+        actual = mesher.cell_phi(
+            n_cells=[4], dim=1, mesh_type="finite_volume"
+        ).get_phi()
+        np.testing.assert_array_equal(x=actual, y=expected)
+
+    def test_1d_phi_left_dirichlet(self, one_d_phi_finite_dif):
+        expected = np.array([10, 0, 0])
+        one_d_phi_finite_dif.set_dirichlet_boundary("left", 10)
+        actual = one_d_phi_finite_dif.get_phi()
+        np.testing.assert_array_equal(x=actual, y=expected)
+
+    def test_2d_phi(self):
+        expected = np.array([[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]])
+        actual = mesher.cell_phi(
+            n_cells=[3, 4], dim=2, mesh_type="finite_volume"
+        ).get_phi()
+        np.testing.assert_array_equal(x=actual, y=expected)
+
+    @pytest.mark.xfail
+    def test_2d_phi_left_dirichlet(self):
+        expected = np.array([[10, 0, 0], [10, 0, 0], [10, 0, 0], [10, 0, 0]])
+        actual = mesher.cell_phi(n_cells=[3, 4], dim=2, mesh_type="finite_difference")
+        actual.set_dirichlet_boundary(side="left", phi=10)
+
+        np.testing.assert_array_equal(x=actual.get_phi(), y=expected)
+
+    def test_phi_mesh_type_validate(self):
+        with pytest.raises(ValueError):
+            mesher.cell_phi(n_cells=1, dim=1, mesh_type="unsuported")
