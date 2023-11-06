@@ -34,6 +34,12 @@ class Test_1d_cartesian_mesh:
             x=one_d_mesh.x_differentiation_matrix.get_matrix(), y=expected
         )
 
+    def test_1d_boundary_condition_array(self, one_d_mesh):
+        expected = np.array([0, 0, 0, 0])
+        np.testing.assert_array_equal(
+            x=one_d_mesh.x_boundary_condition_array.get_array(), y=expected
+        )
+
 
 class Test_2d_cartesian_mesh:
     @pytest.fixture
@@ -69,6 +75,19 @@ class Test_2d_cartesian_mesh:
         matrix = getattr(two_d_mesh, dimension)
         expected = differentation_matrix(n_cells)
         np.testing.assert_array_equal(x=matrix.get_matrix(), y=expected)
+
+    boundary_array_inputs = [
+        ("x_boundary_condition_array", np.array([0, 0, 0])),
+        ("y_boundary_condition_array", np.array([0, 0, 0, 0])),
+    ]
+
+    @pytest.mark.parametrize("dimension,expected", boundary_array_inputs)
+    def test_2d_cell_boundary_condition_array(
+        self, two_d_mesh, dimension, expected, differentation_matrix
+    ):
+        matrix = getattr(two_d_mesh, dimension)
+        # expected = differentation_matrix(n_cells)
+        np.testing.assert_array_equal(x=matrix.get_array(), y=expected)
 
 
 class Test_cartesian_mesh_exceptions:

@@ -328,6 +328,9 @@ class boundary_condition:
         elif self.__mesh_type == "finite_difference":
             self.boundary_condition_array[boundary_index] = 2 * flux * cell_width
 
+    def get_array(self):
+        return self.boundary_condition_array
+
 
 class cell_phi:
     """

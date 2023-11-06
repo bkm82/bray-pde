@@ -1,4 +1,4 @@
-from solver.mesher import grid, differentiation_matrix
+from solver.mesher import grid, differentiation_matrix, boundary_condition
 from typing import Sequence, Tuple, List
 
 
@@ -81,10 +81,13 @@ class cartesian_mesh:
         """Discritize the mesh for each axis dimension."""
         grid_list = self.create_atribute_list("grid")
         matrix_list = self.create_atribute_list("differentiation_matrix")
+        boundary_array_list = self.create_atribute_list("boundary_condition_array")
 
-        for index, (grid_name, matrix_name) in enumerate(
-            zip(grid_list[: self.dimensions], matrix_list[: self.dimensions])
-        ):
+        for index, (
+            grid_name,
+            differentiation_matrix_name,
+            boundary_array_name,
+        ) in enumerate(zip(grid_list, matrix_list, boundary_array_list)):
             setattr(
                 self,
                 grid_name,
@@ -97,11 +100,34 @@ class cartesian_mesh:
 
             setattr(
                 self,
-                matrix_name,
+                differentiation_matrix_name,
                 differentiation_matrix(
                     n_cells=self.n_cells[index],
                 ),
             )
 
-    def create_atribute_list(self, atribute_name):
-        return [f"{dim}_{atribute_name}" for dim in self.implemented_dimensions]
+            setattr(
+                self,
+                boundary_array_name,
+                boundary_condition(
+                    n_cells=self.n_cells[index], mesh_type=self.mesh_type
+                ),
+            )
+
+    def create_atribute_list(self, atribute_name: str) -> List[str]:
+        """
+        Create a list of of atributes for each active dimension
+
+        args:
+        atribute_name:str the atribute name you would like in teh list
+
+        example:
+        create_atribute_list (differentation_matrix) with dimensions = 2
+        returns ["x_differentiation_matrix", "y_differentiation_matrix"]
+        """
+        attribute_list: List[str] = []
+        for index, dim in enumerate(self.implemented_dimensions):
+            if index <= self.dimensions - 1:
+                attribute_list.insert(index, f"{dim}_{atribute_name}")
+
+        return attribute_list
