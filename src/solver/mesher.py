@@ -4,7 +4,7 @@ import scipy
 
 class create_1Dmesh:
     """
-    A class representing a 1D Mesh.
+    A 1D mesh object.
 
     Atributes:
     xcell_center (np.array): An array of node x positions
@@ -44,7 +44,7 @@ class create_1Dmesh:
             self.boundary_condition_object.boundary_condition_array
         )
 
-        self.phi_object = cell_phi(n_cells, mesh_type)
+        self.cell_phi = cell_phi(n_cells, mesh_type)
 
 
 class heat_diffusion_mesh(create_1Dmesh):
@@ -60,7 +60,7 @@ class heat_diffusion_mesh(create_1Dmesh):
            mesh_type (string) : finite_volume (default) or finite_difference
         """
         super().__init__(x, n_cells, mesh_type)
-        self.temperature = self.phi_object.phi
+        self.temperature = self.cell_phi.phi
 
     def set_cell_temperature(self, temperature):
         """
@@ -69,8 +69,8 @@ class heat_diffusion_mesh(create_1Dmesh):
         Example:running mesh.set_internal_temperature(20) would result
         in np.array([20, 20, 20, 20]
         """
-        self.phi_object.set_phi(phi=temperature)
-        self.temperature = self.phi_object.get_phi()
+        self.cell_phi.set_phi(phi=temperature)
+        self.temperature = self.cell_phi.get_phi()
 
     def set_thermal_diffusivity(self, thermal_diffusivity):
         """Set a diffusion constant in square meters per second."""
@@ -82,7 +82,7 @@ class heat_diffusion_mesh(create_1Dmesh):
         self.boundary_condition_object.set_dirichlet_boundary(
             side=side, phi=temperature
         )
-        self.phi_object.set_dirichlet_boundary(side, temperature)
+        self.cell_phi.set_dirichlet_boundary(side, temperature)
 
     def set_neumann_boundary(self, side, flux=0):
         """Update boundary array and D2 for a neumann boundary."""
