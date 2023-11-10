@@ -88,7 +88,7 @@ class heat_diffusion_mesh(create_1Dmesh):
     def set_neumann_boundary(self, side, flux=0):
         """Update boundary array and D2 for a neumann boundary."""
         self.x_differentiation_matrix.set_neumann_boundary(side, self.mesh_type)
-        self.boundary_condition_object.set_neuimann_boundary(
+        self.boundary_condition_object.set_neumann_boundary(
             side=side, flux=flux, cell_width=self.delta_x
         )
 
@@ -321,7 +321,7 @@ class boundary_condition:
         elif self.__mesh_type == "finite_difference":
             self.boundary_condition_array[boundary_index] = 0
 
-    def set_neuimann_boundary(self, side: str, flux: float, cell_width: float):
+    def set_neumann_boundary(self, side: str, flux: float, cell_width: float):
         """Update the boundary contition array for a neuiman boundary."""
         boundary_index = side_selector().boundary_index(side)
         if self.__mesh_type == "finite_volume":

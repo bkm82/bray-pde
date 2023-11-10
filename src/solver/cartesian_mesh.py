@@ -114,6 +114,41 @@ class cartesian_mesh:
                 ),
             )
 
+    def set_dirichlet_boundary(self, side: str, phi: float):
+        """
+        Set the dirichlet boundary.
+
+        Updates differentiation matrix, and boundary condition array
+        args:
+        side: the side to set (left, right (1d) top, bottom (2d))
+        phi: the value to set the boundary
+        """
+        if side == "left" or "right":
+            self.x_differentiation_matrix.set_dirichlet_boundary(
+                side, mesh_type=self.mesh_type
+            )
+            self.x_boundary_condition_array.set_dirichlet_boundary(side, phi)
+
+        if side == "top" or side == "bottom":
+            self.y_differentiation_matrix.set_dirichlet_boundary(
+                side, mesh_type=self.mesh_type
+            )
+            self.y_boundary_condition_array.set_dirichlet_boundary(side, phi)
+
+    def set_neumann_boundary(self, side: str, flux):
+        if side == "left" or "right":
+            self.x_differentiation_matrix.set_neumann_boundary(side, self.mesh_type)
+            self.x_boundary_condition_array.set_neumann_boundary(
+                side=side, flux=flux, cell_width=self.x_grid.cell_width
+            )
+        if side == "top" or side == "bottom":
+            self.y_differentiation_matrix.set_neumann_boundary(
+                side, mesh_type=self.mesh_type
+            )
+            self.y_boundary_condition_array.set_neumann_boundary(
+                side=side, flux=flux, cell_width=self.y_grid.cell_width
+            )
+
     def create_atribute_list(self, atribute_name: str) -> List[str]:
         """
         Create a list of of atributes for each active dimension.
