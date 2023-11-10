@@ -1,5 +1,6 @@
 import numpy as np
 import scipy
+from typing import Sequence, Tuple, List
 
 
 class create_1Dmesh:
@@ -50,7 +51,7 @@ class create_1Dmesh:
 class heat_diffusion_mesh(create_1Dmesh):
     """Create a heat diffusion mesh."""
 
-    def __init__(self, x, n_cells: int, mesh_type: str = "finite_volume"):
+    def __init__(self, x, n_cells: Sequence[int], mesh_type: str = "finite_volume"):
         """
         Initialize a heat diffusion mesh object.
 
@@ -324,7 +325,8 @@ class boundary_condition:
         """Update the boundary contition array for a neuiman boundary."""
         boundary_index = side_selector().boundary_index(side)
         if self.__mesh_type == "finite_volume":
-            self.boundary_condition_array[boundary_index] = flux / cell_width
+            # self.boundary_condition_array[boundary_index] = flux / cell_width
+            self.boundary_condition_array[boundary_index] = flux * cell_width
         elif self.__mesh_type == "finite_difference":
             self.boundary_condition_array[boundary_index] = 2 * flux * cell_width
 
@@ -334,7 +336,7 @@ class boundary_condition:
 
 class cell_phi:
     """
-    An object that stores each cells phi value
+    An object that stores each cells phi value.
     """
 
     def __init__(self, n_cells: int, dim: int, mesh_type: str):
@@ -370,6 +372,7 @@ class cell_phi:
             raise TypeError("The phi type inputed not supported")
 
     def get_phi(self):
+        """Return phi object."""
         return self.phi
 
     def set_dirichlet_boundary(self, side: str, phi: float):
@@ -393,18 +396,18 @@ class side_selector:
 
     def boundary_index(self, side: str):
         """Return the index for the first or last row (or column) based on the side."""
-        if side == "left":
+        if side == "left" or side == "top":
             return 0
-        elif side == "right":
+        elif side == "right" or side == "bottom":
             return -1
         else:
-            raise ValueError("Side must input must be left or right")
+            raise ValueError("Side must input must be left/top or right")
 
     def first_interior_index(self, side: str):
         """Return the index for the first interior cell (1, or -2)."""
-        if side == "left":
+        if side == "left" or side == "top":
             return 1
-        elif side == "right":
+        elif side == "right" or side == "bottom":
             return -2
         else:
             raise ValueError("Side must input must be left or right")
@@ -416,7 +419,7 @@ class mesh_type_validator:
     def validate(self, mesh_type: str):
         """ensures that the mesh type is either a "finite_volume" or "finite_difference"""
         if mesh_type not in ("finite_volume", "finite_difference"):
-            raise ValueError("Side must input must be left or right")
+            raise ValueError(f"{mesh_type} is not finite_volume or finite_difference")
 
 
 def main():

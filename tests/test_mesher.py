@@ -327,12 +327,12 @@ class Test_heat_diffusion_mesh(Test_mesh):
     )
 
     # expected neumann with q = 50
-    expected_boundary_condition_left_neumann = np.array([200, 0, 0, 0])
+    expected_boundary_condition_left_neumann = np.array([12.5, 0, 0, 0])
     expected_boundary_condition_left_neumann_d2matrix = np.array(
         [[-1, 1, 0, 0], [1, -2, 1, 0], [0, 1, -2, 1], [0, 0, 1, -2]]
     )
 
-    expected_boundary_condition_right_neumann = np.array([0, 0, 0, 200])
+    expected_boundary_condition_right_neumann = np.array([0, 0, 0, 12.5])
     expected_boundary_condition_right_neumann_d2matrix = np.array(
         [[-2, 1, 0, 0], [1, -2, 1, 0], [0, 1, -2, 1], [0, 0, 1, -1]]
     )
@@ -532,7 +532,7 @@ def test_finite_difference_dirichlet_set_temperature(five_cell_mesh):
 
 
 @pytest.mark.xfail(reason="feature improvment recomendation")
-def test_finite_difference_dirichlet_overwride_temperature(five_cell_mesh):
+def test_finite_difference_dirichlet_overwrite_temperature(five_cell_mesh):
     """
     Regression test for issue 10
     Description
@@ -629,9 +629,10 @@ class Test_cell_phi:
         ).get_phi()
         np.testing.assert_array_equal(x=actual, y=expected)
 
-    def test_2d_set_phi(self):
+    @pytest.mark.parametrize("mesh", ["finite_volume", "finite_difference"])
+    def test_2d_set_phi(self, mesh):
         expected = np.array([[10, 10, 10], [10, 10, 10], [10, 10, 10], [10, 10, 10]])
-        actual = mesher.cell_phi(n_cells=[3, 4], dim=2, mesh_type="finite_volume")
+        actual = mesher.cell_phi(n_cells=[3, 4], dim=2, mesh_type=mesh)
         actual.set_phi(10)
         np.testing.assert_array_equal(x=actual.get_phi(), y=expected)
 
@@ -642,6 +643,81 @@ class Test_cell_phi:
 
         np.testing.assert_array_equal(x=actual.get_phi(), y=expected)
 
+    def test_2d_phi_right_dirichlet(self):
+        expected = np.array([[0, 0, 10], [0, 0, 10], [0, 0, 10], [0, 0, 10]])
+        actual = mesher.cell_phi(n_cells=[3, 4], dim=2, mesh_type="finite_difference")
+        actual.set_dirichlet_boundary(side="right", phi=10)
+
+        np.testing.assert_array_equal(x=actual.get_phi(), y=expected)
+
+    @pytest.mark.xfail(reason="not implemented")
+    def test_2d_phi_top_dirichlet(self):
+        expected = np.array([[10, 10, 10], [0, 0, 0], [0, 0, 0], [0, 0, 0]])
+        actual = mesher.cell_phi(n_cells=[3, 4], dim=2, mesh_type="finite_difference")
+        actual.set_dirichlet_boundary(side="top", phi=10)
+
+        np.testing.assert_array_equal(x=actual.get_phi(), y=expected)
+
+    @pytest.mark.xfail(reason="not implemented")
+    def test_2d_phi_bottom_dirichlet(self):
+        expected = np.array([[0, 0, 0], [0, 0, 0], [0, 0, 0], [10, 10, 10]])
+        actual = mesher.cell_phi(n_cells=[3, 4], dim=2, mesh_type="finite_difference")
+        actual.set_dirichlet_boundary(side="bottom", phi=10)
+
+        np.testing.assert_array_equal(x=actual.get_phi(), y=expected)
+
     def test_phi_mesh_type_validate(self):
         with pytest.raises(ValueError):
             mesher.cell_phi(n_cells=1, dim=1, mesh_type="unsuported")
+
+
+class Test_boundary_condition_array:
+    @pytest.mark.parametrize(
+        "side,expected",
+        [
+            ("left", np.array([60, 0, 0])),
+            ("top", np.array([60, 0, 0])),
+            ("right", np.array([0, 0, 60])),
+            ("bottom", np.array([0, 0, 60])),
+        ],
+    )
+    def test_boundary_condtion_dirichlet(self, side, expected):
+        actual = mesher.boundary_condition(n_cells=3, mesh_type="finite_volume")
+        actual.set_dirichlet_boundary(side, 30)
+        np.testing.assert_array_equal(x=actual.get_array(), y=expected)
+
+
+class Test_differentiation_matrix:
+    left_dirichlet = np.array([[-3, 1, 0], [1, -2, 1], [0, 1, -2]])
+    right_dirichlet = np.array([[-2, 1, 0], [1, -2, 1], [0, 1, -3]])
+
+    @pytest.mark.parametrize(
+        "side,expected",
+        [
+            ("left", left_dirichlet),
+            ("top", left_dirichlet),
+            ("right", right_dirichlet),
+            ("bottom", right_dirichlet),
+        ],
+    )
+    def test_differentiation_matrix_dirichlet(self, side, expected):
+        actual = mesher.differentiation_matrix(n_cells=3)
+        actual.set_dirichlet_boundary(side, "finite_volume")
+        np.testing.assert_array_equal(x=actual.get_matrix(), y=expected)
+
+    left_neumann = np.array([[-1, 1, 0], [1, -2, 1], [0, 1, -2]])
+    right_neumann = np.array([[-2, 1, 0], [1, -2, 1], [0, 1, -1]])
+
+    @pytest.mark.parametrize(
+        "side,expected",
+        [
+            ("left", left_neumann),
+            ("top", left_neumann),
+            ("right", right_neumann),
+            ("bottom", right_neumann),
+        ],
+    )
+    def test_boundary_condtion_neumann(self, side, expected):
+        actual = mesher.differentiation_matrix(n_cells=3)
+        actual.set_neumann_boundary(side, "finite_volume")
+        np.testing.assert_array_equal(x=actual.get_matrix(), y=expected)
