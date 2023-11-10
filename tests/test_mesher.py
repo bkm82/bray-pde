@@ -629,7 +629,12 @@ class Test_cell_phi:
         ).get_phi()
         np.testing.assert_array_equal(x=actual, y=expected)
 
-    @pytest.mark.xfail
+    def test_2d_set_phi(self):
+        expected = np.array([[10, 10, 10], [10, 10, 10], [10, 10, 10], [10, 10, 10]])
+        actual = mesher.cell_phi(n_cells=[3, 4], dim=2, mesh_type="finite_volume")
+        actual.set_phi(10)
+        np.testing.assert_array_equal(x=actual.get_phi(), y=expected)
+
     def test_2d_phi_left_dirichlet(self):
         expected = np.array([[10, 0, 0], [10, 0, 0], [10, 0, 0], [10, 0, 0]])
         actual = mesher.cell_phi(n_cells=[3, 4], dim=2, mesh_type="finite_difference")

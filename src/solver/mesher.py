@@ -348,6 +348,7 @@ class cell_phi:
         self.__n_cells = n_cells
         mesh_type_validator().validate(mesh_type=mesh_type)
         self.mesh_type = mesh_type
+        self.dim = dim
 
     def set_phi(self, phi):
         """
@@ -357,7 +358,8 @@ class cell_phi:
         phi (int, float, list):list of phi at every x value
         """
         if isinstance(phi, (float, int)):
-            self.phi = phi * np.ones(self.__n_cells)
+            self.phi.fill(phi)
+
         elif isinstance(phi, list):
             if np.array(phi).shape != self.phi.shape:
                 raise ValueError(
@@ -378,7 +380,10 @@ class cell_phi:
             pass
 
         elif self.mesh_type == "finite_difference":
-            self.phi[boundary_index] = phi
+            if self.dim == 2:
+                self.phi[:, boundary_index] = phi
+            else:
+                self.phi[boundary_index] = phi
         else:
             raise ValueError("mesh must be finite_volume or finite_difference")
 
