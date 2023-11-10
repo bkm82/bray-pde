@@ -1,5 +1,6 @@
 from solver.mesher import grid, differentiation_matrix, boundary_condition
 from typing import Sequence, Tuple, List
+import numpy as np
 
 
 class cartesian_mesh:
@@ -44,6 +45,8 @@ class cartesian_mesh:
         self.cordinates = cordinates
         self.mesh_type = mesh_type
         self.discritize()
+        self.set_laplacian()
+        # self.laplacian = self.x_differentiation_matrix.get_matrix() *(1/0.25*0.25)
 
     def validate_inputs(
         self,
@@ -123,7 +126,7 @@ class cartesian_mesh:
         side: the side to set (left, right (1d) top, bottom (2d))
         phi: the value to set the boundary
         """
-        if side == "left" or "right":
+        if side == "left" or side == "right":
             self.x_differentiation_matrix.set_dirichlet_boundary(
                 side, mesh_type=self.mesh_type
             )
@@ -134,20 +137,40 @@ class cartesian_mesh:
                 side, mesh_type=self.mesh_type
             )
             self.y_boundary_condition_array.set_dirichlet_boundary(side, phi)
+        self.set_laplacian()
 
-    def set_neumann_boundary(self, side: str, flux):
-        if side == "left" or "right":
+    def set_neumann_boundary(self, side: str, flux: float):
+        if side == "left" or side == "right":
             self.x_differentiation_matrix.set_neumann_boundary(side, self.mesh_type)
             self.x_boundary_condition_array.set_neumann_boundary(
                 side=side, flux=flux, cell_width=self.x_grid.cell_width
             )
-        if side == "top" or side == "bottom":
+        elif side == "top" or side == "bottom":
             self.y_differentiation_matrix.set_neumann_boundary(
                 side, mesh_type=self.mesh_type
             )
             self.y_boundary_condition_array.set_neumann_boundary(
                 side=side, flux=flux, cell_width=self.y_grid.cell_width
             )
+        self.set_laplacian()
+
+    def set_laplacian(self):
+        if self.dimensions == 1:
+            # d2x = self.x_differentiation_matrix.get_matrix()
+            self.laplacian = self.x_differentiation_matrix.get_matrix() * (
+                1 / self.x_grid.cell_width**2
+            )
+        elif self.dimensions == 2:
+            d2x = self.x_differentiation_matrix.get_matrix() * (
+                1 / self.x_grid.cell_width**2
+            )
+
+            d2y = self.y_differentiation_matrix.get_matrix() * (
+                1 / self.y_grid.cell_width**2
+            )
+            Ix = np.identity(self.x_grid.n_cells)
+            Iy = np.identity(self.y_grid.n_cells)
+            self.laplacian = np.kron(Iy, d2x) + np.kron(d2y, Ix)
 
     def create_atribute_list(self, atribute_name: str) -> List[str]:
         """
