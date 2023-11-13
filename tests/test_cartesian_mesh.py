@@ -34,13 +34,17 @@ class Test_1d_CartesianMesh:
     def test_1d_differentiation_matrix(self, one_d_mesh, differentation_matrix):
         expected = differentation_matrix(4)
         np.testing.assert_array_equal(
-            x=one_d_mesh.x_differentiation_matrix.get_matrix(), y=expected
+            x=one_d_mesh.differentiation_matrix[
+                "x_differentiation_matrix"
+            ].get_matrix(),
+            y=expected,
         )
 
     def test_1d_dirichlet_boundary_condition_array(self, one_d_mesh):
         expected = np.array([0, 0, 0, 0])
         np.testing.assert_array_equal(
-            x=one_d_mesh.x_boundary_condition_array.get_array(), y=expected
+            x=one_d_mesh.boundary_condition["x_boundary_condition_array"].get_array(),
+            y=expected,
         )
 
     @pytest.mark.parametrize(
@@ -60,7 +64,9 @@ class Test_1d_CartesianMesh:
         self, one_d_mesh, side, expected
     ):
         one_d_mesh.set_dirichlet_boundary(side=side, phi=30)
-        actual = one_d_mesh.x_differentiation_matrix.get_matrix()
+        actual = one_d_mesh.differentiation_matrix[
+            "x_differentiation_matrix"
+        ].get_matrix()
         np.testing.assert_array_equal(x=actual, y=expected)
 
     @pytest.mark.parametrize(
@@ -78,7 +84,7 @@ class Test_1d_CartesianMesh:
     )
     def test_set_dirichlet_boundary_boundary_array(self, one_d_mesh, side, expected):
         one_d_mesh.set_dirichlet_boundary(side=side, phi=30)
-        actual = one_d_mesh.x_boundary_condition_array.get_array()
+        actual = one_d_mesh.boundary_condition["x_boundary_condition_array"].get_array()
         np.testing.assert_array_equal(x=actual, y=expected)
 
     @pytest.mark.parametrize(
@@ -96,7 +102,7 @@ class Test_1d_CartesianMesh:
     )
     def test_set_neumann_boundary_boundary_array(self, one_d_mesh, side, expected):
         one_d_mesh.set_neumann_boundary(side=side, flux=30)
-        actual = one_d_mesh.x_boundary_condition_array.get_array()
+        actual = one_d_mesh.boundary_condition["x_boundary_condition_array"].get_array()
         np.testing.assert_array_equal(x=actual, y=expected)
 
     @pytest.mark.parametrize(
@@ -116,7 +122,9 @@ class Test_1d_CartesianMesh:
         self, one_d_mesh, side, expected
     ):
         one_d_mesh.set_neumann_boundary(side=side, flux=30)
-        actual = one_d_mesh.x_differentiation_matrix.get_matrix()
+        actual = one_d_mesh.differentiation_matrix[
+            "x_differentiation_matrix"
+        ].get_matrix()
         np.testing.assert_array_equal(x=actual, y=expected)
 
     # Test a right neuiman, left dirichlet
@@ -161,9 +169,11 @@ class Test_2d_CartesianMesh:
     def test_2d_cell_differentiation_matrix(
         self, two_d_mesh, dimension, n_cells, differentation_matrix
     ):
-        matrix = getattr(two_d_mesh, dimension)
+        # matrix = getattr(two_d_mesh, dimension)
         expected = differentation_matrix(n_cells)
-        np.testing.assert_array_equal(x=matrix.get_matrix(), y=expected)
+        np.testing.assert_array_equal(
+            x=two_d_mesh.differentiation_matrix[dimension].get_matrix(), y=expected
+        )
 
     boundary_array_inputs = [
         ("x_boundary_condition_array", np.array([0, 0, 0])),
@@ -174,9 +184,9 @@ class Test_2d_CartesianMesh:
     def test_2d_cell_boundary_condition_array(
         self, two_d_mesh, dimension, expected, differentation_matrix
     ):
-        matrix = getattr(two_d_mesh, dimension)
-        # expected = differentation_matrix(n_cells)
-        np.testing.assert_array_equal(x=matrix.get_array(), y=expected)
+        np.testing.assert_array_equal(
+            x=two_d_mesh.boundary_condition[dimension].get_array(), y=expected
+        )
 
     left_dirichlet_diff_matrix = np.array([[-3, 1, 0], [1, -2, 1], [0, 1, -2]])
     right_dirichlet_diff_matrix = np.array([[-2, 1, 0], [1, -2, 1], [0, 1, -3]])
@@ -200,8 +210,8 @@ class Test_2d_CartesianMesh:
         self, two_d_mesh, name, side, expected
     ):
         two_d_mesh.set_dirichlet_boundary(side=side, phi=30)
-        matrix = getattr(two_d_mesh, name)
-        actual = matrix.get_matrix()
+        # matrix = getattr(two_d_mesh, name)
+        actual = two_d_mesh.differentiation_matrix[name].get_matrix()
         np.testing.assert_array_equal(x=actual, y=expected)
 
     left_dirichlet_bc_array = np.array([60, 0, 0])
@@ -222,8 +232,7 @@ class Test_2d_CartesianMesh:
         self, two_d_mesh, name, side, expected
     ):
         two_d_mesh.set_dirichlet_boundary(side=side, phi=30)
-        matrix = getattr(two_d_mesh, name)
-        actual = matrix.get_array()
+        actual = two_d_mesh.boundary_condition[name].get_array()
         np.testing.assert_array_equal(x=actual, y=expected)
 
     left_neumann_diff_matrix = np.array([[-1, 1, 0], [1, -2, 1], [0, 1, -2]])
@@ -248,8 +257,8 @@ class Test_2d_CartesianMesh:
         self, two_d_mesh, name, side, expected
     ):
         two_d_mesh.set_neumann_boundary(side=side, flux=-10)
-        matrix = getattr(two_d_mesh, name)
-        actual = matrix.get_matrix()
+        # matrix = getattr(two_d_mesh, name)
+        actual = two_d_mesh.differentiation_matrix[name].get_matrix()
         print(side)
         np.testing.assert_array_equal(x=actual, y=expected)
 
@@ -271,8 +280,7 @@ class Test_2d_CartesianMesh:
         self, two_d_mesh, name, side, expected
     ):
         two_d_mesh.set_neumann_boundary(side=side, flux=-10)
-        matrix = getattr(two_d_mesh, name)
-        actual = matrix.get_array()
+        actual = two_d_mesh.boundary_condition[name].get_array()
         np.testing.assert_array_almost_equal(x=actual, y=expected)
 
     # Test a mesh that was confirmed to be correct manually
