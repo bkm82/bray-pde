@@ -137,6 +137,15 @@ class Test_1d_CartesianMesh:
         ) * (1 / 0.25**2)
         np.testing.assert_array_equal(x=one_d_mesh.laplacian, y=expected)
 
+    # Test a right neuiman, left dirichlet
+    def test_boundary_condition_array(self, one_d_mesh):
+        one_d_mesh.set_dirichlet_boundary(side="right", phi=30)
+        one_d_mesh.set_neumann_boundary(side="left", flux=-10)
+        # one_d_mesh.set_laplacian()
+        expected = np.array([-10 * 0.25, 0, 0, 60]) / (0.25**2)
+
+        np.testing.assert_array_equal(x=one_d_mesh.boundary_condition_array, y=expected)
+
 
 class Test_2d_CartesianMesh:
     @pytest.fixture
@@ -286,15 +295,17 @@ class Test_2d_CartesianMesh:
     # Test a mesh that was confirmed to be correct manually
     @pytest.fixture
     def steady_mesh(self):
-        return CartesianMesh(dimensions=2, cordinates=[(0, 3), (0, 2)], n_cells=[3, 4])
-
-    def test_laplacian_matrix(self, steady_mesh):
+        steady_mesh = CartesianMesh(
+            dimensions=2, cordinates=[(0, 3), (0, 2)], n_cells=[3, 4]
+        )
         steady_mesh.set_dirichlet_boundary(side="left", phi=30)
         steady_mesh.set_dirichlet_boundary(side="right", phi=30)
         steady_mesh.set_dirichlet_boundary(side="bottom", phi=30)
         steady_mesh.set_neumann_boundary(side="top", flux=-10)
 
-        # one_d_mesh.set_laplacian()
+        return steady_mesh
+
+    def test_laplacian_matrix(self, steady_mesh):
         expected = np.array(
             [
                 [-7.0, 1.0, 0.0, 4.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
@@ -314,6 +325,14 @@ class Test_2d_CartesianMesh:
 
         np.testing.assert_array_equal(x=steady_mesh.laplacian, y=expected)
 
+    def test_boundary_condition_array(self, steady_mesh):
+        expected = np.array(
+            [40.0, -20.0, 40.0, 60.0, 0.0, 60.0, 60.0, 0.0, 60.0, 300.0, 240.0, 300.0]
+        )
+        np.testing.assert_array_equal(
+            x=steady_mesh.boundary_condition_array, y=expected
+        )
+
 
 class Test_CartesianMesh_exceptions:
     """Test features expected to raise an exception"""
@@ -330,3 +349,7 @@ class Test_CartesianMesh_exceptions:
     def test_three_dimensions_raises(self, inputs):
         with pytest.raises(ValueError):
             CartesianMesh(**inputs)
+
+    def test_side_selector(self):
+        with pytest.raises(ValueError):
+            CartesianMesh().set_dirichlet_boundary(side="front", phi=10)

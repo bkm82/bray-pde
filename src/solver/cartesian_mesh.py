@@ -1,4 +1,9 @@
-from solver.mesher import grid, differentiation_matrix, boundary_condition
+from solver.mesher import (
+    grid,
+    differentiation_matrix,
+    boundary_condition,
+    side_selector,
+)
 from typing import Sequence, Tuple, List
 import numpy as np
 
@@ -125,25 +130,6 @@ class CartesianMesh:
 
         return boundary_condition_dict
 
-    # def discritize(self):
-    #     """Discritize the mesh for each axis dimension."""
-    #     grid_list = self.create_atribute_list("grid")
-    #     matrix_list = self.create_atribute_list("differentiation_matrix")
-    #     boundary_array_list = self.create_atribute_list("boundary_condition_array")
-
-    #     for index, (
-    #         grid_name,
-    #         differentiation_matrix_name,
-    #         boundary_array_name,
-    #     ) in enumerate(zip(grid_list, matrix_list, boundary_array_list)):
-    #         setattr(
-    #             self,
-    #             boundary_array_name,
-    #             boundary_condition(
-    #                 n_cells=self.n_cells[index], mesh_type=self.mesh_type
-    #             ),
-    #         )
-
     def set_dirichlet_boundary(self, side: str, phi: float):
         """
         Set the dirichlet boundary.
@@ -153,48 +139,44 @@ class CartesianMesh:
         side: the side to set (left, right (1d) top, bottom (2d))
         phi: the value to set the boundary
         """
-        if side == "left" or side == "right":
-            self.differentiation_matrix[
-                "x_differentiation_matrix"
-            ].set_dirichlet_boundary(side, mesh_type=self.mesh_type)
-            self.boundary_condition[
-                "x_boundary_condition_array"
-            ].set_dirichlet_boundary(side, phi)
+        axis = side_selector().axis(side)
 
-        if side == "top" or side == "bottom":
-            self.differentiation_matrix[
-                "y_differentiation_matrix"
-            ].set_dirichlet_boundary(side, mesh_type=self.mesh_type)
-            self.boundary_condition[
-                "y_boundary_condition_array"
-            ].set_dirichlet_boundary(side, phi)
+        self.differentiation_matrix[
+            f"{axis}_differentiation_matrix"
+        ].set_dirichlet_boundary(side=side, mesh_type=self.mesh_type)
+
+        self.boundary_condition[
+            f"{axis}_boundary_condition_array"
+        ].set_dirichlet_boundary(side, phi)
+
         self.set_laplacian()
+        self.set_boundary_condition_array()
 
     def set_neumann_boundary(self, side: str, flux: float):
         """
         Set a neuman boundary.
 
         args:
-        side: str = "left" "right" (1d), top, bottom (2d)
+        side: str = left, right (1d), top, bottom (2d)
         flux: float = flux into the boundary (negative if out)
         """
-        if side == "left" or side == "right":
-            self.differentiation_matrix[
-                "x_differentiation_matrix"
-            ].set_neumann_boundary(side, self.mesh_type)
-            self.boundary_condition["x_boundary_condition_array"].set_neumann_boundary(
-                side=side, flux=flux, cell_width=self.grid["x_grid"].cell_width
-            )
-        elif side == "top" or side == "bottom":
-            self.differentiation_matrix[
-                "y_differentiation_matrix"
-            ].set_neumann_boundary(side, mesh_type=self.mesh_type)
-            self.boundary_condition["y_boundary_condition_array"].set_neumann_boundary(
-                side=side, flux=flux, cell_width=self.grid["y_grid"].cell_width
-            )
+        axis = side_selector().axis(side)
+
+        self.differentiation_matrix[
+            f"{axis}_differentiation_matrix"
+        ].set_neumann_boundary(side, self.mesh_type)
+
+        self.boundary_condition[
+            f"{axis}_boundary_condition_array"
+        ].set_neumann_boundary(
+            side=side, flux=flux, cell_width=self.grid[f"{axis}_grid"].cell_width
+        )
+
         self.set_laplacian()
+        self.set_boundary_condition_array()
 
     def set_laplacian(self):
+        """Combine the differentiation matricies into a single matrix."""
         if self.dimensions == 1:
             # d2x = self.x_differentiation_matrix.get_matrix()
             self.laplacian = self.differentiation_matrix[
@@ -212,20 +194,30 @@ class CartesianMesh:
             Iy = np.identity(self.grid["y_grid"].n_cells)
             self.laplacian = np.kron(Iy, d2x) + np.kron(d2y, Ix)
 
-    def create_atribute_list(self, atribute_name: str) -> List[str]:
-        """
-        Create a list of of atributes for each active dimension.
+    def set_boundary_condition_array(self):
+        """Combine boundary conditions into a single array."""
+        if self.dimensions == 1:
+            self.boundary_condition_array = self.boundary_condition[
+                "x_boundary_condition_array"
+            ].get_array() * (1 / self.grid["x_grid"].cell_width ** 2)
 
-        args:
-        atribute_name:str the atribute name you would like in teh list
+        elif self.dimensions == 2:
+            x_bc_array = self.boundary_condition[
+                "x_boundary_condition_array"
+            ].get_array()
 
-        example:
-        create_atribute_list (differentation_matrix) with dimensions = 2
-        returns ["x_differentiation_matrix", "y_differentiation_matrix"]
-        """
-        attribute_list: List[str] = []
-        for index, dim in enumerate(self.implemented_dimensions):
-            if index <= self.dimensions - 1:
-                attribute_list.insert(index, f"{dim}_{atribute_name}")
+            y_bc_array = self.boundary_condition[
+                "y_boundary_condition_array"
+            ].get_array()
 
-        return attribute_list
+            x_cells = self.grid["x_grid"].n_cells
+            y_cells = self.grid["y_grid"].n_cells
+            dx = self.grid["x_grid"].cell_width
+            dy = self.grid["y_grid"].cell_width
+
+            x_bc_reshape = x_bc_array.reshape(1, x_cells).repeat(y_cells, axis=0)
+            y_bc_reshape = y_bc_array.reshape(y_cells, 1).repeat(x_cells, axis=1)
+
+            self.boundary_condition_array = (
+                (x_bc_reshape * (1 / dx**2)) + (y_bc_reshape * (1 / dy**2))
+            ).reshape(x_cells * y_cells)

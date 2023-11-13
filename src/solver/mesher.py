@@ -412,6 +412,15 @@ class side_selector:
         else:
             raise ValueError("Side must input must be left or right")
 
+    def axis(self, side: str) -> str:
+        """Return the axis"""
+        if side == "left" or side == "right":
+            return "x"
+        elif side == "top" or side == "bottom":
+            return "y"
+        else:
+            raise ValueError("Side must input must be left or right")
+
 
 class mesh_type_validator:
     """Validate that the mesh type is supported."""
