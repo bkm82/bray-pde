@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 import scipy as sp
-from solver.cartesian_mesh import cartesian_mesh
+from solver.cartesian_mesh import CartesianMesh
 import logging
 
 logging.basicConfig(format="(levelname)s:%messages)s", level=logging.DEBUG)
@@ -17,17 +17,17 @@ def differentation_matrix():
     return _differentiation_matrix
 
 
-class Test_1d_cartesian_mesh:
+class Test_1d_CartesianMesh:
     @pytest.fixture
     def one_d_mesh(self):
-        return cartesian_mesh(dimensions=1, cordinates=[(0, 1)], n_cells=[4])
+        return CartesianMesh(dimensions=1, cordinates=[(0, 1)], n_cells=[4])
 
     def test_1d_cell_width(self, one_d_mesh):
-        assert one_d_mesh.x_grid.cell_width == 0.25
+        assert one_d_mesh.grid["x_grid"].cell_width == 0.25
 
     def test_1d_cell_cordinates(self, one_d_mesh):
         np.testing.assert_array_equal(
-            x=one_d_mesh.x_grid.cell_cordinates,
+            x=one_d_mesh.grid["x_grid"].cell_cordinates,
             y=np.array([0.125, 0.375, 0.625, 0.875]),
         )
 
@@ -130,17 +130,16 @@ class Test_1d_cartesian_mesh:
         np.testing.assert_array_equal(x=one_d_mesh.laplacian, y=expected)
 
 
-class Test_2d_cartesian_mesh:
+class Test_2d_CartesianMesh:
     @pytest.fixture
     def two_d_mesh(self):
-        return cartesian_mesh(dimensions=2, cordinates=[(0, 1), (0, 2)], n_cells=[3, 4])
+        return CartesianMesh(dimensions=2, cordinates=[(0, 1), (0, 2)], n_cells=[3, 4])
 
     cell_width_inputs = [("x_grid", 1 / 3), ("y_grid", 0.5)]
 
     @pytest.mark.parametrize("dimension,expected", cell_width_inputs)
     def test_2d_cell_width(self, two_d_mesh, dimension, expected):
-        grid = getattr(two_d_mesh, dimension)
-        assert grid.cell_width == expected
+        assert two_d_mesh.grid[dimension].cell_width == expected
 
     coordinates_inputs = [
         ("x_grid", np.array([1 / 6, 3 / 6, 5 / 6])),
@@ -149,8 +148,9 @@ class Test_2d_cartesian_mesh:
 
     @pytest.mark.parametrize("dimension,expected", coordinates_inputs)
     def test_2d_cell_cordinates(self, two_d_mesh, dimension, expected):
-        grid = getattr(two_d_mesh, dimension)
-        np.testing.assert_array_equal(x=grid.cell_cordinates, y=expected)
+        np.testing.assert_array_equal(
+            x=two_d_mesh.grid[dimension].cell_cordinates, y=expected
+        )
 
     differentiation_matrix_inputs = [
         ("x_differentiation_matrix", 3),
@@ -278,7 +278,7 @@ class Test_2d_cartesian_mesh:
     # Test a mesh that was confirmed to be correct manually
     @pytest.fixture
     def steady_mesh(self):
-        return cartesian_mesh(dimensions=2, cordinates=[(0, 3), (0, 2)], n_cells=[3, 4])
+        return CartesianMesh(dimensions=2, cordinates=[(0, 3), (0, 2)], n_cells=[3, 4])
 
     def test_laplacian_matrix(self, steady_mesh):
         steady_mesh.set_dirichlet_boundary(side="left", phi=30)
@@ -307,7 +307,7 @@ class Test_2d_cartesian_mesh:
         np.testing.assert_array_equal(x=steady_mesh.laplacian, y=expected)
 
 
-class Test_cartesian_mesh_exceptions:
+class Test_CartesianMesh_exceptions:
     """Test features expected to raise an exception"""
 
     exception_inputs = [
@@ -321,4 +321,4 @@ class Test_cartesian_mesh_exceptions:
     @pytest.mark.parametrize("inputs", exception_inputs)
     def test_three_dimensions_raises(self, inputs):
         with pytest.raises(ValueError):
-            cartesian_mesh(**inputs)
+            CartesianMesh(**inputs)
