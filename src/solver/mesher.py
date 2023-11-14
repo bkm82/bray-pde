@@ -36,7 +36,7 @@ class create_1Dmesh:
         self.xcell_center = x_grid.cell_cordinates
 
         self.x_differentiation_matrix = differentiation_matrix(self.n_cells)
-        self.laplacian_matrix = self.x_differentiation_matrix.get_matrix()
+        self.laplacian = self.x_differentiation_matrix.get_matrix()
 
         self.boundary_condition_object = boundary_condition(
             n_cells=self.n_cells, mesh_type=self.mesh_type
@@ -142,7 +142,7 @@ class linear_convection_mesh(create_1Dmesh):
         else:
             raise ValueError("discritization type not supported")
 
-        self.laplacian_matrix = self.x_differentiation_matrix.get_matrix()
+        self.laplacian = self.x_differentiation_matrix.get_matrix()
 
         if convection_coefficient <= 0:
             raise ValueError("only positive convection coefficents are supported")
@@ -163,7 +163,7 @@ class linear_convection_mesh(create_1Dmesh):
             raise ValueError("Only left side implemented")
 
         if self.mesh_type == "finite_volume":
-            self.laplacian_matrix[array_index, array_index] = -1
+            self.laplacian[array_index, array_index] = -1
         elif self.mesh_type == "finite_difference":
             if self.discretization_type == "maccormack":
                 self.predictor_differentiation_matrix[array_index, :] = 0
@@ -176,7 +176,7 @@ class linear_convection_mesh(create_1Dmesh):
 
         For finite volume only
         """
-        self.laplacian_matrix[-1, -3:] = [1.5, -1, 0.5]
+        self.laplacian[-1, -3:] = [1.5, -1, 0.5]
 
 
 class differentiation_matrix:

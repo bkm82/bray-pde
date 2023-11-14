@@ -41,7 +41,7 @@ class Test_maccormac_linear_convection_mesh(Test_mesh):
     # Expected Paramaters
     expected_xcell_center = np.array([0, 0.25, 0.5, 0.75, 1])
     expected_n_cells = 5
-    expected_laplacian_matrix = np.array(
+    expected_laplacian = np.array(
         [
             [1, 0, 0, 0, 0],
             [-1, 1, 0, 0, 0],
@@ -61,7 +61,7 @@ class Test_maccormac_linear_convection_mesh(Test_mesh):
         ]
     )
 
-    expected_left_dirichlet_laplacian_matrix = np.array(
+    expected_left_dirichlet_laplacian = np.array(
         [
             [0, 0, 0, 0, 0],
             [-1, 1, 0, 0, 0],
@@ -70,7 +70,7 @@ class Test_maccormac_linear_convection_mesh(Test_mesh):
             [0, 0, 0, -1, 1],
         ]
     )
-    expected_left_dirichlet_predctor_laplacian_matrix = np.array(
+    expected_left_dirichlet_predctor_laplacian = np.array(
         [
             [0, 0, 0, 0, 0],
             [0, -1, 1, 0, 0],
@@ -94,10 +94,8 @@ class Test_maccormac_linear_convection_mesh(Test_mesh):
             discretization_type="maccormack",
         )
 
-    def test_maccormack_laplacian_matrix(self, mesh_fixture):
-        np.testing.assert_array_equal(
-            mesh_fixture.laplacian_matrix, self.expected_laplacian_matrix
-        )
+    def test_maccormack_laplacian(self, mesh_fixture):
+        np.testing.assert_array_equal(mesh_fixture.laplacian, self.expected_laplacian)
 
     def test_maccormack_predictor_differentiation_matrix(self, mesh_fixture):
         np.testing.assert_array_equal(
@@ -105,11 +103,11 @@ class Test_maccormac_linear_convection_mesh(Test_mesh):
             self.expected_predictor_differentiation_matrix,
         )
 
-    def test_mcormak_left_dirichlet_laplacian_matrix(self, mesh_fixture):
+    def test_mcormak_left_dirichlet_laplacian(self, mesh_fixture):
         mesh_fixture.set_dirichlet_boundary("left", 5)
         np.testing.assert_array_equal(
-            mesh_fixture.laplacian_matrix,
-            self.expected_left_dirichlet_laplacian_matrix,
+            mesh_fixture.laplacian,
+            self.expected_left_dirichlet_laplacian,
         )
 
     def test_mcormak_left_dirichlet_predictor_differentiation_matrix(
@@ -118,7 +116,7 @@ class Test_maccormac_linear_convection_mesh(Test_mesh):
         mesh_fixture.set_dirichlet_boundary("left", 5)
         np.testing.assert_array_equal(
             mesh_fixture.predictor_differentiation_matrix,
-            self.expected_left_dirichlet_predctor_laplacian_matrix,
+            self.expected_left_dirichlet_predctor_laplacian,
         )
 
 
@@ -130,7 +128,7 @@ class Test_central_linear_convection_mesh(Test_mesh):
     # Expected Paramaters
     expected_xcell_center = np.array([0, 0.25, 0.5, 0.75, 1])
     expected_n_cells = 5
-    expected_laplacian_matrix = np.array(
+    expected_laplacian = np.array(
         [
             [0, -0.5, 0, 0, 0],
             [0.5, 0, -0.5, 0, 0],
@@ -139,7 +137,7 @@ class Test_central_linear_convection_mesh(Test_mesh):
             [0, 0, 0, 0.5, 0],
         ]
     )
-    expected_left_dirichlet_laplacian_matrix = np.array(
+    expected_left_dirichlet_laplacian = np.array(
         [
             [0, 0, 0, 0, 0],
             [0.5, 0, -0.5, 0, 0],
@@ -149,7 +147,7 @@ class Test_central_linear_convection_mesh(Test_mesh):
         ]
     )
 
-    expected_right_laplacian_matrix = np.array(
+    expected_right_laplacian = np.array(
         [
             [0, -0.5, 0, 0, 0],
             [0.5, 0, -0.5, 0, 0],
@@ -172,16 +170,14 @@ class Test_central_linear_convection_mesh(Test_mesh):
             discretization_type="central",
         )
 
-    def test_central_laplacian_matrix(self, mesh_fixture):
-        np.testing.assert_array_equal(
-            mesh_fixture.laplacian_matrix, self.expected_laplacian_matrix
-        )
+    def test_central_laplacian(self, mesh_fixture):
+        np.testing.assert_array_equal(mesh_fixture.laplacian, self.expected_laplacian)
 
-    def test_central_left_dirichlet_laplacian_matrix(self, mesh_fixture):
+    def test_central_left_dirichlet_laplacian(self, mesh_fixture):
         mesh_fixture.set_dirichlet_boundary("left", 5)
         np.testing.assert_array_equal(
-            mesh_fixture.laplacian_matrix,
-            self.expected_left_dirichlet_laplacian_matrix,
+            mesh_fixture.laplacian,
+            self.expected_left_dirichlet_laplacian,
         )
 
     def test_central_left_dirichlet_boundary_condtion(self, mesh_fixture):
@@ -200,11 +196,11 @@ class Test_central_linear_convection_mesh(Test_mesh):
             self.expected_left_dirichlet_phi,
         )
 
-    def test_right_laplacian_matrix(self, mesh_fixture):
+    def test_right_laplacian(self, mesh_fixture):
         mesh_fixture.set_right_boundary()
         np.testing.assert_array_equal(
-            mesh_fixture.laplacian_matrix,
-            self.expected_right_laplacian_matrix,
+            mesh_fixture.laplacian,
+            self.expected_right_laplacian,
         )
 
     def test_discritization_error(self):
@@ -232,20 +228,20 @@ class Test_linear_convection_mesh(Test_mesh):
             convection_coefficient=1,
         )
 
-    expected_laplacian_matrix = np.array(
+    expected_laplacian = np.array(
         [[-1, 0, 0, 0], [1, -1, 0, 0], [0, 1, -1, 0], [0, 0, 1, -1]]
     )
 
-    expected_left_dirichlet_laplacian_matrix = np.array(
+    expected_left_dirichlet_laplacian = np.array(
         [[0, 0, 0, 0], [1, -1, 0, 0], [0, 1, -1, 0], [0, 0, 1, -1]]
     )
     expected_left_boundary_condition_array = np.array([0, 0, 0, 0])
 
-    def test_initiate_laplacian_matrix(self, mesh_fixture):
+    def test_initiate_laplacian(self, mesh_fixture):
         # mesh_fixture.set_centeral_
         np.testing.assert_allclose(
-            actual=mesh_fixture.laplacian_matrix,
-            desired=self.expected_laplacian_matrix,
+            actual=mesh_fixture.laplacian,
+            desired=self.expected_laplacian,
             atol=0.000001,
         )
 
@@ -300,8 +296,8 @@ class Test_linear_convection_mesh(Test_mesh):
     def test_left_dirichlet_differentiaton_matrix(self, mesh_fixture):
         mesh_fixture.set_dirichlet_boundary("left", 5)
         np.testing.assert_array_equal(
-            mesh_fixture.laplacian_matrix,
-            self.expected_left_dirichlet_laplacian_matrix,
+            mesh_fixture.laplacian,
+            self.expected_left_dirichlet_laplacian,
         )
 
     def test_right_dirichlet_boundary(self, mesh_fixture):
@@ -317,7 +313,7 @@ class Test_heat_diffusion_mesh(Test_mesh):
             self.x_range, n_cells=self.n_cells, mesh_type=self.mesh_type
         )
 
-    expected_laplacian_matrix = np.array(
+    expected_laplacian = np.array(
         [[-2, 1, 0, 0], [1, -2, 1, 0], [0, 1, -2, 1], [0, 0, 1, -2]]
     )
 
@@ -346,10 +342,10 @@ class Test_heat_diffusion_mesh(Test_mesh):
         mesh_fixture.set_thermal_diffusivity(4)
         assert mesh_fixture.thermal_diffusivity == 4
 
-    def test_initiate_laplacian_matrix(self, mesh_fixture):
+    def test_initiate_laplacian(self, mesh_fixture):
         np.testing.assert_allclose(
-            actual=mesh_fixture.laplacian_matrix,
-            desired=self.expected_laplacian_matrix,
+            actual=mesh_fixture.laplacian,
+            desired=self.expected_laplacian,
             atol=0.000001,
         )
 
@@ -377,7 +373,7 @@ class Test_heat_diffusion_mesh(Test_mesh):
         mesh_fixture.set_dirichlet_boundary("left", 50)
 
         np.testing.assert_allclose(
-            actual=mesh_fixture.laplacian_matrix,
+            actual=mesh_fixture.laplacian,
             desired=self.expected_boundary_condition_left_dirichlet_d2matrix,
         )
 
@@ -392,7 +388,7 @@ class Test_heat_diffusion_mesh(Test_mesh):
         mesh_fixture.set_dirichlet_boundary("right", 50)
 
         np.testing.assert_allclose(
-            actual=mesh_fixture.laplacian_matrix,
+            actual=mesh_fixture.laplacian,
             desired=self.expected_boundary_condition_right_dirichlet_d2matrix,
         )
 
@@ -408,7 +404,7 @@ class Test_heat_diffusion_mesh(Test_mesh):
         mesh_fixture.set_neumann_boundary("left", 50)
 
         np.testing.assert_allclose(
-            actual=mesh_fixture.laplacian_matrix,
+            actual=mesh_fixture.laplacian,
             desired=self.expected_boundary_condition_left_neumann_d2matrix,
         )
 
@@ -431,7 +427,7 @@ class Test_heat_diffusion_mesh(Test_mesh):
         mesh_fixture.set_neumann_boundary("right", 50)
 
         np.testing.assert_allclose(
-            actual=mesh_fixture.laplacian_matrix,
+            actual=mesh_fixture.laplacian,
             desired=self.expected_boundary_condition_right_neumann_d2matrix,
         )
 
@@ -457,7 +453,7 @@ class Test_finite_difference(Test_heat_diffusion_mesh):
     # Expected Paramaters
     expected_xcell_center = np.array([0, 0.25, 0.5, 0.75, 1])
     expected_n_cells = 5
-    expected_laplacian_matrix = np.array(
+    expected_laplacian = np.array(
         [
             [-2, 1, 0, 0, 0],
             [1, -2, 1, 0, 0],
@@ -573,7 +569,7 @@ class Test_upwind_linear_convection_mesh_finite_volume(Test_linear_convection_me
     # Expected Paramaters
     expected_xcell_center = np.array([0.125, 0.375, 0.625, 0.875])
     expected_n_cells = 4
-    expected_laplacian_matrix = np.array(
+    expected_laplacian = np.array(
         [
             [-1, 0, 0, 0],
             [1, -1, 0, 0],
@@ -581,7 +577,7 @@ class Test_upwind_linear_convection_mesh_finite_volume(Test_linear_convection_me
             [0, 0, 1, -1],
         ]
     )
-    expected_left_dirichlet_laplacian_matrix = np.array(
+    expected_left_dirichlet_laplacian = np.array(
         [
             [-1, 0, 0, 0],
             [1, -1, 0, 0],
@@ -590,7 +586,7 @@ class Test_upwind_linear_convection_mesh_finite_volume(Test_linear_convection_me
         ]
     )
 
-    expected_right_laplacian_matrix = np.array(
+    expected_right_laplacian = np.array(
         [
             [-1, 0, 0, 0],
             [1, -1, 0, 0],
