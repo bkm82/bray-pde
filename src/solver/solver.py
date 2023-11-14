@@ -1,10 +1,55 @@
 import numpy as np
 import pandas as pd
 from typing import List
+from solver.cartesian_mesh import CartesianMesh
 
 
-class main_solver:
-    """main solver class"""
+class Stepper(object):
+    """A stepper object to move the time series forward in time by one time point."""
+
+    def explicit_step(self, k, laplacian, boundary_condition_array, phi):
+        """Solve the form y = ax + b.
+
+        y = returned
+        a = [k*laplacian + I]
+        x = phi
+        b = k + boundary_condition_array
+        """
+        identity_matrix = np.identity(laplacian.shape[0])
+        a = k * laplacian + identity_matrix
+        b = k * boundary_condition_array
+        return a @ phi + b
+
+    def implicit_step(self, k, laplacian, boundary_condition_array, phi):
+        """Solve the form ay = x + b.
+
+        y = returned
+        a = [k*laplacian + I]
+        x = phi
+        b = k + boundary_condition_array
+        """
+        # solve the form ay = x+b where x= current temp, y= new temp
+        identity_matrix = np.identity(laplacian.shape[0])
+        a = -k * laplacian + identity_matrix
+        b = k * boundary_condition_array
+        return np.linalg.solve(a, (phi + b))
+
+    def take_step(self, method, k, laplacian, boundary_condition_array, phi):
+        kwags = {
+            "k": k,
+            "laplacian": laplacian,
+            "boundary_condition_array": boundary_condition_array,
+            "phi": phi,
+        }
+
+        if method == "explicit":
+            return self.explicit_step(**kwags)
+        if method == "implicit":
+            return self.implicit_step(**kwags)
+
+
+class Solver(Stepper, CartesianMesh):
+    """main solver class."""
 
     def __init__(self, mesh, initial_time=0, time_step_size=1, method="explicit"):
         """Initiate the main solver:
@@ -23,22 +68,14 @@ class main_solver:
         self.laplacian = self.mesh.laplacian
         self.boundary_condition_array = self.mesh.boundary_condition_array
 
-    def solver_take_step(self, k, atribute):
-        laplacian = self.laplacian
-        identity_matrix = np.identity(laplacian.shape[0])
-        # identity_matrix =
-        if self.method == "explicit":
-            # solve the form y = ax + b
-            a = k * laplacian + identity_matrix
-            b = k * self.boundary_condition_array
-
-            return a @ atribute + b
-
-        if self.method == "implicit":
-            # solve the form ay = x+b where x= current temp, y= new temp
-            a = -k * laplacian + identity_matrix
-            b = k * self.mesh.boundary_condition_array
-            return np.linalg.solve(a, (atribute + b))
+    def take_step(self, k, atribute):
+        return super().take_step(
+            method=self.method,
+            k=k,
+            laplacian=self.laplacian,
+            boundary_condition_array=self.boundary_condition_array,
+            phi=atribute,
+        )
 
     def save_state(self, *args, **kwargs):
         """
@@ -75,40 +112,7 @@ class main_solver:
             self.save_dictionary[key] = value
 
 
-class CartesianSolver:
-    def __init__(self, mesh, initial_time=0, time_step_size=1, method="implicit"):
-        super().__init__(mesh, initial_time, time_step_size, method)
-
-    def solve(self, t_final, t_initial=0):
-        """
-        Run the solver for unitil the final time is reached.
-
-        Inputs:
-        t_initial = the initial time (default 0)
-        t_final = the final time
-        """
-        self.current_time = t_initial
-        self.update_save_dictionary(
-            phi=self.mesh.phi,
-        )
-
-        self.save_state(**self.save_dictionary)
-        while self.current_time < t_final:
-            self.take_step()
-            self.current_time = self.current_time + self.time_step_size
-
-            self.update_save_dictionary(
-                phi=self.mesh.phi,
-                courant=self.courant_coefficent,
-                discritization=self.mesh.discretization_type,
-            )
-            self.save_state(**self.save_dictionary)
-
-        # # Save the data into a single data frame for ploting
-        self.saved_data = pd.concat(self.saved_state_list)
-
-
-class solver_1d(main_solver):
+class solver_1d(Solver):
     def __init__(self, mesh, initial_time=0, time_step_size=1, method="explicit"):
         super().__init__(mesh, initial_time, time_step_size, method)
 
@@ -124,8 +128,7 @@ class solver_1d(main_solver):
             * self.time_step_size
             / (self.mesh.delta_x**2)
         )
-
-        self.mesh.temperature = self.solver_take_step(k, self.mesh.temperature)
+        self.mesh.temperature = super().take_step(k, self.mesh.temperature)
 
     def solve(self, t_final, t_initial=0):
         """
@@ -144,13 +147,13 @@ class solver_1d(main_solver):
             self.take_step()
             self.current_time = self.current_time + self.time_step_size
             self.update_save_dictionary(temperature=self.mesh.temperature)
-            self.save_state(**self.save_dictionary)
+            super().save_state(**self.save_dictionary)
 
         # # Save the data into a single data frame for ploting
         self.saved_data = pd.concat(self.saved_state_list)
 
 
-class linear_convection_solver(main_solver):
+class linear_convection_solver(Solver):
     def __init__(self, mesh, initial_time=0, time_step_size=1, method="explicit"):
         super().__init__(mesh, initial_time, time_step_size, method)
 
@@ -166,7 +169,7 @@ class linear_convection_solver(main_solver):
         if self.mesh.discretization_type == "maccormack":
             self.mesh.phi = self.maccormack_take_step(k, self.mesh.phi)
         else:
-            self.mesh.phi = self.solver_take_step(k, self.mesh.phi)
+            self.mesh.phi = super().take_step(k, self.mesh.phi)
 
     def maccormack_take_step(self, k, atribute):
         laplacian = self.mesh.laplacian
