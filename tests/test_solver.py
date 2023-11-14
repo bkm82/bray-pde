@@ -4,6 +4,7 @@ import pytest
 from solver.solver import solver_1d
 from solver.mesher import heat_diffusion_mesh
 from solver import solver
+from solver import cartesian_mesh
 from unittest.mock import patch, MagicMock
 
 
@@ -351,6 +352,20 @@ def test_maccormack_take_step(maccormack_solver):
     expected_phi = [1, 1, 1, 0, 0]
 
     np.testing.assert_array_equal(maccormack_solver.mesh.phi, expected_phi)
+
+
+class TestCartesianMesh_Integration:
+    @pytest.fixture
+    def CartesianMesh(self):
+        mesh = cartesian_mesh.CartesianMesh()
+        mesh.set_dirichlet_boundary("left", 30)
+        mesh.set_dirichlet_boundary("bottom", 30)
+        mesh.set_dirichlet_boundary("right", 30)
+        mesh.set_neumann_boundary("top", -10)
+        return mesh
+
+    def test_solve_steady(self):
+        pass
 
 
 if __name__ == "__main__":

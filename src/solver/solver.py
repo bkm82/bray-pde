@@ -1,24 +1,36 @@
 import numpy as np
 import pandas as pd
+from typing import List
 
 
 class main_solver:
+    """main solver class"""
+
     def __init__(self, mesh, initial_time=0, time_step_size=1, method="explicit"):
+        """Initiate the main solver:
+
+        args:
+        mesh: mesh object (reqires laplacian and boundary_condition_array atributes)
+        initial_time:
+        """
         self.initial_time = initial_time
         self.time_step_size = time_step_size
         self.method = method
-        self.mesh = mesh
+
         self.saved_state_list = []
         self.current_time = initial_time
+        self.mesh = mesh
+        self.laplacian = self.mesh.laplacian
+        self.boundary_condition_array = self.mesh.boundary_condition_array
 
     def solver_take_step(self, k, atribute):
-        laplacian = self.mesh.laplacian
-        identity_matrix = np.identity(self.mesh.n_cells)
+        laplacian = self.laplacian
+        identity_matrix = np.identity(laplacian.shape[0])
         # identity_matrix =
         if self.method == "explicit":
             # solve the form y = ax + b
             a = k * laplacian + identity_matrix
-            b = k * self.mesh.boundary_condition_array
+            b = k * self.boundary_condition_array
 
             return a @ atribute + b
 
@@ -64,7 +76,36 @@ class main_solver:
 
 
 class CartesianSolver:
-    pass
+    def __init__(self, mesh, initial_time=0, time_step_size=1, method="implicit"):
+        super().__init__(mesh, initial_time, time_step_size, method)
+
+    def solve(self, t_final, t_initial=0):
+        """
+        Run the solver for unitil the final time is reached.
+
+        Inputs:
+        t_initial = the initial time (default 0)
+        t_final = the final time
+        """
+        self.current_time = t_initial
+        self.update_save_dictionary(
+            phi=self.mesh.phi,
+        )
+
+        self.save_state(**self.save_dictionary)
+        while self.current_time < t_final:
+            self.take_step()
+            self.current_time = self.current_time + self.time_step_size
+
+            self.update_save_dictionary(
+                phi=self.mesh.phi,
+                courant=self.courant_coefficent,
+                discritization=self.mesh.discretization_type,
+            )
+            self.save_state(**self.save_dictionary)
+
+        # # Save the data into a single data frame for ploting
+        self.saved_data = pd.concat(self.saved_state_list)
 
 
 class solver_1d(main_solver):
@@ -157,13 +198,6 @@ class linear_convection_solver(main_solver):
         self.courant_coefficent = (
             self.mesh.convection_coefficent * self.time_step_size / (self.mesh.delta_x)
         )
-        discritization_type = self.mesh.discretization_type
-
-        # if discritization_type == "maccormack":
-        #     self.update_save_dictionary(
-        #         phi=self.mesh.phi,
-        #         courant=self.courant_coefficent,
-        #         discritization_type = "maccormack")
 
         self.update_save_dictionary(
             phi=self.mesh.phi,

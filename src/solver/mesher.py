@@ -339,7 +339,7 @@ class cell_phi:
     An object that stores each cells phi value.
     """
 
-    def __init__(self, n_cells: int, dim: int, mesh_type: str):
+    def __init__(self, n_cells: list[int] | int, dim: int, mesh_type: str):
         """
         Create phi object and store n_cells.
 
@@ -418,7 +418,7 @@ class side_selector:
         elif side == "right" or side == "bottom":
             return -2
 
-    def axis(self, side: str) -> str:
+    def axis(self, side: str):
         """Return the axis."""
         self.side_validate(side)
         if side == "left" or side == "right":
