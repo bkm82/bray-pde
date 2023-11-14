@@ -63,6 +63,10 @@ class main_solver:
             self.save_dictionary[key] = value
 
 
+class CartesianSolver:
+    pass
+
+
 class solver_1d(main_solver):
     def __init__(self, mesh, initial_time=0, time_step_size=1, method="explicit"):
         super().__init__(mesh, initial_time, time_step_size, method)

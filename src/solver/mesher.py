@@ -362,7 +362,7 @@ class cell_phi:
         if isinstance(phi, (float, int)):
             self.phi.fill(phi)
 
-        elif isinstance(phi, list):
+        elif isinstance(phi, (list)):
             if np.array(phi).shape != self.phi.shape:
                 raise ValueError(
                     f"Inputed shape {np.array(phi).shape} does not match phi shape {self.phi.shape} "
@@ -384,7 +384,10 @@ class cell_phi:
 
         elif self.mesh_type == "finite_difference":
             if self.dim == 2:
-                self.phi[:, boundary_index] = phi
+                if side in ["left", "right"]:
+                    self.phi[:, boundary_index] = phi
+                elif side in ["top", "bottom"]:
+                    self.phi[boundary_index, :] = phi
             else:
                 self.phi[boundary_index] = phi
         else:
@@ -394,32 +397,34 @@ class cell_phi:
 class side_selector:
     """Set the array index to modify based on the boundary side."""
 
+    def side_validate(self, side: str):
+        "Ensure the side is a valid side."
+        if side not in ["left", "right", "top", "bottom"]:
+            raise ValueError(f"{side} is not left, right, top or bottom")
+
     def boundary_index(self, side: str):
         """Return the index for the first or last row (or column) based on the side."""
+        self.side_validate(side)
         if side == "left" or side == "top":
             return 0
         elif side == "right" or side == "bottom":
             return -1
-        else:
-            raise ValueError("Side must input must be left/top or right")
 
     def first_interior_index(self, side: str):
         """Return the index for the first interior cell (1, or -2)."""
+        self.side_validate(side)
         if side == "left" or side == "top":
             return 1
         elif side == "right" or side == "bottom":
             return -2
-        else:
-            raise ValueError("Side must input must be left or right")
 
     def axis(self, side: str) -> str:
-        """Return the axis"""
+        """Return the axis."""
+        self.side_validate(side)
         if side == "left" or side == "right":
             return "x"
         elif side == "top" or side == "bottom":
             return "y"
-        else:
-            raise ValueError("Side must input must be left or right")
 
 
 class mesh_type_validator:

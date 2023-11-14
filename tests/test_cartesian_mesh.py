@@ -146,6 +146,11 @@ class Test_1d_CartesianMesh:
 
         np.testing.assert_array_equal(x=one_d_mesh.boundary_condition_array, y=expected)
 
+    def test_set_phi(self, one_d_mesh):
+        one_d_mesh.phi.set_phi(10)
+        expected = np.array([10, 10, 10, 10])
+        np.testing.assert_array_equal(x=one_d_mesh.phi.get_phi(), y=expected)
+
 
 class Test_2d_CartesianMesh:
     @pytest.fixture
@@ -160,7 +165,7 @@ class Test_2d_CartesianMesh:
 
     coordinates_inputs = [
         ("x_grid", np.array([1 / 6, 3 / 6, 5 / 6])),
-        ("y_grid", np.array([0.25, 0.75, 1.25, 1.75])),
+        ("y_grid", np.array([1.75, 1.25, 0.75, 0.25])),
     ]
 
     @pytest.mark.parametrize("dimension,expected", coordinates_inputs)
@@ -333,6 +338,27 @@ class Test_2d_CartesianMesh:
             x=steady_mesh.boundary_condition_array, y=expected
         )
 
+    def test_set_phi(self, two_d_mesh):
+        expected = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9], [10, 11, 12]])
+        two_d_mesh.phi.set_phi(expected.tolist())
+        np.testing.assert_array_equal(x=two_d_mesh.phi.get_phi(), y=expected)
+
+    @pytest.mark.xfail(reason="finite difference not implemented")
+    def test_finite_diff_mesh(self):
+        fd_mesh = CartesianMesh(
+            dimensions=2,
+            cordinates=[(0, 3), (0, 2)],
+            n_cells=[3, 4],
+            mesh_type="finite_difference",
+        )
+        fd_mesh.set_dirichlet_boundary(side="left", phi=10)
+        fd_mesh.set_dirichlet_boundary(side="right", phi=20)
+        fd_mesh.set_dirichlet_boundary(side="bottom", phi=30)
+        fd_mesh.set_dirichlet_boundary(side="top", phi=40)
+
+        expected = np.array([[40, 40, 40], [10, 0, 20], [10, 0, 20], [30, 30, 30]])
+        np.testing.assert_array_equal(x=fd_mesh.phi.get_phi(), y=expected)
+
 
 class Test_CartesianMesh_exceptions:
     """Test features expected to raise an exception"""
@@ -342,7 +368,7 @@ class Test_CartesianMesh_exceptions:
         ({"dimensions": 2, "cordinates": [(0, 1)]}),
         ({"dimensions": 2, "n_cells": [5]}),
         ({"dimensions": 1}),
-        ({"mesh_type": "finite_difference"}),
+        # ({"mesh_type": "finite_difference"}),
     ]
 
     @pytest.mark.parametrize("inputs", exception_inputs)

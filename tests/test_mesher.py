@@ -268,6 +268,11 @@ class Test_linear_convection_mesh(Test_mesh):
         mesh_fixture.phi.set_phi(phi=5)
         np.testing.assert_equal(mesh_fixture.phi.get_phi(), [5, 5, 5, 5])
 
+    def test_phi_nparray(self, mesh_fixture):
+        expected = np.array([5, 5, 5, 5])
+        mesh_fixture.phi.set_phi(expected.tolist())
+        np.testing.assert_equal(mesh_fixture.phi.get_phi(), [5, 5, 5, 5])
+
     def test_set_phi_float_lenght(self, mesh_fixture):
         mesh_fixture.phi.set_phi(phi=5.0)
         with np.testing.assert_raises(AssertionError):
@@ -650,7 +655,6 @@ class Test_cell_phi:
 
         np.testing.assert_array_equal(x=actual.get_phi(), y=expected)
 
-    @pytest.mark.xfail(reason="not implemented")
     def test_2d_phi_top_dirichlet(self):
         expected = np.array([[10, 10, 10], [0, 0, 0], [0, 0, 0], [0, 0, 0]])
         actual = mesher.cell_phi(n_cells=[3, 4], dim=2, mesh_type="finite_difference")
@@ -658,7 +662,6 @@ class Test_cell_phi:
 
         np.testing.assert_array_equal(x=actual.get_phi(), y=expected)
 
-    @pytest.mark.xfail(reason="not implemented")
     def test_2d_phi_bottom_dirichlet(self):
         expected = np.array([[0, 0, 0], [0, 0, 0], [0, 0, 0], [10, 10, 10]])
         actual = mesher.cell_phi(n_cells=[3, 4], dim=2, mesh_type="finite_difference")

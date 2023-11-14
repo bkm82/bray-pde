@@ -3,6 +3,7 @@ from solver.mesher import (
     differentiation_matrix,
     boundary_condition,
     side_selector,
+    cell_phi,
 )
 from typing import Sequence, Tuple, List
 import numpy as np
@@ -49,9 +50,9 @@ class CartesianMesh:
         self.dimensions = dimensions
         self.cordinates = cordinates
         self.mesh_type = mesh_type
-        # self.discritize()
         self.grid = self.initalize_grid()
         self.differentiation_matrix = self.initalize_differentiation_matrix()
+        self.initalize_phi()
         self.boundary_condition = self.initalize_boundary_condition()
         self.set_laplacian()
 
@@ -95,7 +96,11 @@ class CartesianMesh:
                 cordinates=self.cordinates[index],
                 mesh_type=self.mesh_type,
             )
-
+            # flip the y cordinates so the origin is in the top left corner
+            if index == 1:
+                grid_dict["y_grid"].cell_cordinates = np.flip(
+                    grid_dict["y_grid"].cell_cordinates
+                )
         return grid_dict
 
     def initalize_differentiation_matrix(self):
@@ -130,6 +135,9 @@ class CartesianMesh:
 
         return boundary_condition_dict
 
+    def initalize_phi(self):
+        self.phi = cell_phi(self.n_cells, self.dimensions, self.mesh_type)
+
     def set_dirichlet_boundary(self, side: str, phi: float):
         """
         Set the dirichlet boundary.
@@ -151,6 +159,7 @@ class CartesianMesh:
 
         self.set_laplacian()
         self.set_boundary_condition_array()
+        self.phi.set_dirichlet_boundary(side, phi)
 
     def set_neumann_boundary(self, side: str, flux: float):
         """
