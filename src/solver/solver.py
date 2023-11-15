@@ -4,21 +4,8 @@ from typing import List
 from solver.cartesian_mesh import CartesianMesh
 
 
-class Stepper(object):
-    """A stepper object to move the time series forward in time by one time point."""
-
-    def explicit_step(self, k, laplacian, boundary_condition_array, phi):
-        """Solve the form y = ax + b.
-
-        y = returned
-        a = [k*laplacian + I]
-        x = phi
-        b = k + boundary_condition_array
-        """
-        identity_matrix = np.identity(laplacian.shape[0])
-        a = k * laplacian + identity_matrix
-        b = k * boundary_condition_array
-        return a @ phi + b
+class ImplicitStep(object):
+    """An object to take an implicit step"""
 
     def implicit_step(self, k, laplacian, boundary_condition_array, phi):
         """Solve the form ay = x + b.
@@ -34,21 +21,62 @@ class Stepper(object):
         b = k * boundary_condition_array
         return np.linalg.solve(a, (phi + b))
 
-    def take_step(self, method, k, laplacian, boundary_condition_array, phi):
-        kwags = {
-            "k": k,
-            "laplacian": laplacian,
-            "boundary_condition_array": boundary_condition_array,
-            "phi": phi,
-        }
 
+class ExplicitStep(object):
+    """An object to take an explicit step."""
+
+    def explicit_step(self, k, laplacian, boundary_condition_array, phi):
+        """Solve the form y = ax + b.
+
+        y = returned
+        a = [k*laplacian + I]
+        x = phi
+        b = k + boundary_condition_array
+        """
+        identity_matrix = np.identity(laplacian.shape[0])
+        a = k * laplacian + identity_matrix
+        b = k * boundary_condition_array
+        return a @ phi + b
+
+
+class MaccormacStep(object):
+    def maccormack_take_step(
+        self, k, laplacian, predictor_laplacian, boundary_condition_array, phi
+    ):
+        laplacian = laplacian
+        identity_matrix = np.identity(laplacian.shape[0])
+        predictor_matrix = predictor_laplacian
+        if self.method == "explicit":
+            predictor = (identity_matrix - k * predictor_matrix) @ phi
+
+            return 0.5 * (phi + ((identity_matrix - k * laplacian) @ predictor))
+
+        elif self.method == "implicit":
+            raise Exception("implicit not implemented for maccormack")
+        else:
+            raise Exception("implicit or explicit method needed")
+
+
+class Stepper(ImplicitStep, ExplicitStep):
+    """A stepper object to move the time series forward in time by one time point."""
+
+    def take_step(self, method, **kwags):
+        """Take the appropriate step depending on the method."""
         if method == "explicit":
-            return self.explicit_step(**kwags)
+            return super().explicit_step(**kwags)
         if method == "implicit":
-            return self.implicit_step(**kwags)
+            return super().implicit_step(**kwags)
 
 
-class Solver(Stepper, CartesianMesh):
+class MacormacStepper(Stepper):
+    """A class macormac stepper"""
+
+    def take_step(self, method, **kwags):
+        pass
+        # if self.mesh.discretization_type == "maccormack":
+
+
+class Solver(Stepper):
     """main solver class."""
 
     def __init__(self, mesh, initial_time=0, time_step_size=1, method="explicit"):
