@@ -5,8 +5,11 @@ from solver.mesher import (
     side_selector,
     cell_phi,
 )
+from solver.cartesian_solver import CartesianSolver
 from typing import Sequence, Tuple, List
 import numpy as np
+
+# from cartesian_solver import CartesianSolver
 
 
 class CartesianMesh:
@@ -192,13 +195,15 @@ class CartesianMesh:
                 "x_differentiation_matrix"
             ].get_matrix() * (1 / self.grid["x_grid"].cell_width ** 2)
         elif self.dimensions == 2:
-            d2x = self.differentiation_matrix[
+            self.d2x_unscaled = self.differentiation_matrix[
                 "x_differentiation_matrix"
-            ].get_matrix() * (1 / self.grid["x_grid"].cell_width ** 2)
-
-            d2y = self.differentiation_matrix[
+            ].get_matrix()
+            self.d2y_unscaled = self.differentiation_matrix[
                 "y_differentiation_matrix"
-            ].get_matrix() * (1 / self.grid["y_grid"].cell_width ** 2)
+            ].get_matrix()
+            d2x = self.d2x_unscaled * (1 / self.grid["x_grid"].cell_width ** 2)
+
+            d2y = self.d2y_unscaled * (1 / self.grid["y_grid"].cell_width ** 2)
             Ix = np.identity(self.grid["x_grid"].n_cells)
             Iy = np.identity(self.grid["y_grid"].n_cells)
             self.laplacian = np.kron(Iy, d2x) + np.kron(d2y, Ix)
@@ -224,9 +229,10 @@ class CartesianMesh:
             dx = self.grid["x_grid"].cell_width
             dy = self.grid["y_grid"].cell_width
 
-            x_bc_reshape = x_bc_array.reshape(1, x_cells).repeat(y_cells, axis=0)
-            y_bc_reshape = y_bc_array.reshape(y_cells, 1).repeat(x_cells, axis=1)
+            self.x_bc_reshape = x_bc_array.reshape(1, x_cells).repeat(y_cells, axis=0)
+            self.y_bc_reshape = y_bc_array.reshape(y_cells, 1).repeat(x_cells, axis=1)
 
             self.boundary_condition_array = (
-                (x_bc_reshape * (1 / dx**2)) + (y_bc_reshape * (1 / dy**2))
+                (self.x_bc_reshape * (1 / dx**2))
+                + (self.y_bc_reshape * (1 / dy**2))
             ).reshape(x_cells * y_cells)

@@ -151,6 +151,14 @@ class Test_1d_CartesianMesh:
         expected = np.array([10, 10, 10, 10])
         np.testing.assert_array_equal(x=one_d_mesh.phi.get_phi(), y=expected)
 
+    @pytest.mark.skip
+    def test_solve(self, one_d_mesh):
+        one_d_mesh.set_dirichlet_boundary(side="left", phi=40)
+        one_d_mesh.set_dirichlet_boundary(side="right", phi=0)
+        expected = np.array([35, 25, 15, 5])
+        actual = one_d_mesh.solve()
+        np.testing.assert_array_equal(x=actual, y=expected)
+
 
 class Test_2d_CartesianMesh:
     @pytest.fixture
