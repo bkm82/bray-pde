@@ -1,10 +1,11 @@
 import numpy as np
 import pandas as pd
 import pytest
-from solver.solver import solver_1d
+from solver.solver import solver_1d, SteadySolver, Solver
 from solver.mesher import heat_diffusion_mesh
 from solver import solver
 from solver import cartesian_mesh
+
 from unittest.mock import patch, MagicMock
 
 
@@ -354,18 +355,77 @@ def test_maccormack_take_step(maccormack_solver):
     np.testing.assert_array_equal(maccormack_solver.mesh.phi, expected_phi)
 
 
+@pytest.fixture
+def solved_temp_1d():
+    return np.array([25, 15, 5])
+
+
+class TestSteadySolver:
+    @pytest.fixture
+    def lp(self):
+        return np.array([[-3, 1, 0], [1, -2, 1], [0, 1, -3]])
+
+    @pytest.fixture
+    def bc(self):
+        return np.array([60, 0, 0])
+
+    # @pytest.fixture
+    # def solved_temp(self):
+    #     return np.array([25, 15, 5])
+
+    def test_solve_steady(self, lp, bc, solved_temp_1d):
+        expectd = solved_temp_1d
+        actual = SteadySolver().solve(laplacian=lp, boundary_condition_array=bc)
+        np.testing.assert_array_equal(x=actual, y=expectd)
+
+
 class TestCartesianMesh_Integration:
     @pytest.fixture
-    def CartesianMesh(self):
-        mesh = cartesian_mesh.CartesianMesh()
+    def CartesianMesh_1d(self):
+        mesh = cartesian_mesh.CartesianMesh(
+            dimensions=1, n_cells=[3], cordinates=[(0, 1)]
+        )
         mesh.set_dirichlet_boundary("left", 30)
-        mesh.set_dirichlet_boundary("bottom", 30)
+        mesh.set_dirichlet_boundary("right", 0)
+        return mesh
+
+    def test_solve_steady(
+        self, CartesianMesh_1d, solved_temp_1d
+    ):  # CartesianMesh_1d, solved_temp_1d):
+        actual = solver.Solver(mesh=CartesianMesh_1d)
+        actual.solve_steady()
+        actual_phi = actual.mesh.phi.get_phi()
+        expected = solved_temp_1d
+        np.testing.assert_array_equal(x=actual_phi, y=expected)
+
+    @pytest.fixture
+    def CartesianMesh_2d(self):
+        mesh = cartesian_mesh.CartesianMesh(
+            dimensions=2, n_cells=[3, 4], cordinates=[(0, 1), (0, 2)]
+        )
+        mesh.set_dirichlet_boundary("left", 30)
         mesh.set_dirichlet_boundary("right", 30)
+        mesh.set_dirichlet_boundary("bottom", 30)
         mesh.set_neumann_boundary("top", -10)
         return mesh
 
-    def test_solve_steady(self):
-        pass
+    @pytest.fixture
+    def steady_2d_solved(self):
+        return np.array(
+            [
+                [28.72076498, 27.94615599, 28.72076498],
+                [29.70707761, 29.46041556, 29.70707761],
+                [29.93022914, 29.86469587, 29.93022914],
+                [29.98686165, 29.97407644, 29.98686165],
+            ]
+        )
+
+    def test_solve_steady_2d(self, CartesianMesh_2d, steady_2d_solved):
+        actual = solver.Solver(mesh=CartesianMesh_2d)
+        actual.solve_steady()
+        actual_phi = actual.mesh.phi.get_phi()
+        expected = steady_2d_solved
+        np.testing.assert_array_almost_equal(x=actual_phi, y=expected)
 
 
 if __name__ == "__main__":

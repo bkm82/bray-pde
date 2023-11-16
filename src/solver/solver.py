@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 from typing import List
 from solver.cartesian_mesh import CartesianMesh
+from solver.utilities import MeshReshaper
 
 
 class ImplicitStep(object):
@@ -37,6 +38,11 @@ class ExplicitStep(object):
         a = k * laplacian + identity_matrix
         b = k * boundary_condition_array
         return a @ phi + b
+
+
+class SteadySolver(object):
+    def solve(self, laplacian, boundary_condition_array):
+        return np.linalg.solve(laplacian, -boundary_condition_array)
 
 
 class Stepper(object):
@@ -97,6 +103,7 @@ class Solver(Saver):
         time_step_size=1,
         method="explicit",
         stepper=Stepper(),
+        steady_solver=SteadySolver(),
     ):
         """Initiate the main solver:
 
@@ -114,6 +121,7 @@ class Solver(Saver):
         self.laplacian = self.mesh.laplacian
         self.boundary_condition_array = self.mesh.boundary_condition_array
         self.stepper = stepper
+        self.steady_solver = steady_solver
 
     def take_step(self, k, atribute):
         return self.stepper.take_step(
@@ -123,6 +131,17 @@ class Solver(Saver):
             boundary_condition_array=self.boundary_condition_array,
             phi=atribute,
         )
+
+    def solve_steady(self):
+        """Call the steady solver"""
+        phi_shape = self.mesh.phi.get_phi().shape
+
+        solved_phi = self.steady_solver.solve(
+            laplacian=self.laplacian,
+            boundary_condition_array=self.boundary_condition_array,
+        )
+        phi_reshape = np.reshape(solved_phi, phi_shape)
+        self.mesh.phi.set_phi(phi_reshape.tolist())
 
     def solve(self, t_final, t_initial=0):
         """

@@ -369,7 +369,7 @@ class cell_phi:
                 )
             self.phi = np.array(phi)
         else:
-            raise TypeError("The phi type inputed not supported")
+            raise TypeError(f"The phi type inputed {type(phi)} not supported")
 
     def get_phi(self):
         """Return phi object."""
