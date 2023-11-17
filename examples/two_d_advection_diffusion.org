@@ -102,8 +102,6 @@ solver.cartesian_mesh:DEBUG:set_boundary_condition_array:generation in set bc (3
 solver.cartesian_mesh:DEBUG:set_boundary_condition_array:combined boundary condition array(30,)
 
  Mesh Size:course
-
- Mesh Size:course
 solver.utilities:INFO:flux:
  Left Flux: 7.008780696924443 W
  Right Flux: 7.008780696924457 W
@@ -158,8 +156,8 @@ Due to the finite volume scheme, the total flux error and the sum of each cells 
   x_range = (0,5)
   y_range = (0,2)
   mesh_type = "finite_volume"
-  # conductivity = 0.456 ## W/mK
-  conductivity = 1
+  conductivity = 0.456 ## W/mK
+  diffusivity = 0.146*10**(-6) #m^2/s
   temp_left = 30  ## decrees celcius
   temp_right = 30 ## degrees celcius
   temp_bottom = 30 # degrees celsius
@@ -168,7 +166,7 @@ Due to the finite volume scheme, the total flux error and the sum of each cells 
   generation_mesh_dict = {}
   energy_balance_dict = {}
   def gen_function (x, y):
-      return(0*y + 1*x+50)
+      return(0*y+ np.exp(-(x-2.5)))
   for mesh_size , cells in mesh_size_dict.items():
       x_cells , y_cells  = cells
 
@@ -177,7 +175,8 @@ Due to the finite volume scheme, the total flux error and the sum of each cells 
           n_cells=[x_cells, y_cells],
           cordinates=[x_range, y_range],
           mesh_type= mesh_type,
-          conductivity = conductivity
+          conductivity = conductivity,
+          diffusivity = diffusivity
       )
 
       generation_mesh_dict[mesh_size].set_dirichlet_boundary(side="left", phi=temp_left)
@@ -204,32 +203,35 @@ solver.cartesian_mesh:DEBUG:set_boundary_condition_array:generation in set bc (1
 solver.cartesian_mesh:DEBUG:set_boundary_condition_array:combined boundary condition array(10,)
 solver.cartesian_mesh:DEBUG:set_boundary_condition_array:generation in set bc (10,)
 solver.cartesian_mesh:DEBUG:set_boundary_condition_array:combined boundary condition array(10,)
-solver.cartesian_mesh:DEBUG:set_generation:grid:{'x_grid': <solver.mesher.grid object at 0x7faf4c3584f0>, 'y_grid': <solver.mesher.grid object at 0x7faf4c358550>}
+solver.cartesian_mesh:DEBUG:set_generation:grid:{'x_grid': <solver.mesher.grid object at 0x7f14d3d64e80>, 'y_grid': <solver.mesher.grid object at 0x7f14d3d674f0>}
 solver.cartesian_mesh:DEBUG:set_generation:grid_dict:{'x': array([[0.5],
        [1.5],
        [2.5],
        [3.5],
        [4.5]]), 'y': array([[1.5, 0.5]])}
-solver.cartesian_mesh:DEBUG:set_generation:generation:[[50.5 50.5]
- [51.5 51.5]
- [52.5 52.5]
- [53.5 53.5]
- [54.5 54.5]]
-solver.cartesian_mesh:DEBUG:set_generation:generation reshape:[50.5 51.5 52.5 53.5 54.5 50.5 51.5 52.5 53.5 54.5]
-solver.cartesian_mesh:DEBUG:set_generation:boundary_condition_array:[ 50. -10. -10. -10.  50. 120.  60.  60.  60. 120.]
+solver.cartesian_mesh:DEBUG:set_generation:generation:[[7.3890561  7.3890561 ]
+ [2.71828183 2.71828183]
+ [1.         1.        ]
+ [0.36787944 0.36787944]
+ [0.13533528 0.13533528]]
+solver.cartesian_mesh:DEBUG:set_generation:generation reshape:[7.3890561  2.71828183 1.         0.36787944 0.13533528 7.3890561
+ 2.71828183 1.         0.36787944 0.13533528]
+solver.cartesian_mesh:DEBUG:set_generation:boundary_condition_array:[ 5.55824561e-06 -3.20175439e-06 -3.20175439e-06 -3.20175439e-06
+  5.55824561e-06  1.75200000e-05  8.76000000e-06  8.76000000e-06
+  8.76000000e-06  1.75200000e-05]
 solver.cartesian_mesh:DEBUG:set_boundary_condition_array:generation in set bc (10,)
 solver.cartesian_mesh:DEBUG:set_boundary_condition_array:combined boundary condition array(10,)
 
  Mesh Size:course
 solver.utilities:INFO:flux:
- Left Flux: -94.41798291329252 W
- Right Flux: -99.92335925737852 W
- Bottom Flux: -280.65865782932883 W
- Generation: 525.0 W
+ Left Flux: 2.6868331904552454 W
+ Right Flux: 12.121434734395674 W
+ Bottom Flux: 11.970626771553594 W
+ Generation: 23.221105303595504 W
  Top Flux: -50.0 W
- Cell Sum Squared Error: 1.2116903504194741e-26 W
- Flux leaving boundarys: -524.9999999999999W
- Total Flux: 1.1368683772161603e-13
+ Cell Sum Squared Error: 1.0252726577544338e-28 W
+ Flux leaving boundarys: -23.22110530359549W
+ Total Flux: 1.1546319456101628e-14
 #+end_example
 
 #+ATTR_LATEX: :options frame=single

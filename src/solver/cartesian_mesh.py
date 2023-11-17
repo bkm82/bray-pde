@@ -13,11 +13,11 @@ import logging
 
 # create logging configuration
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 
 # Create a console handler
 console_handler = logging.StreamHandler()
-console_handler.setLevel(logging.DEBUG)
+console_handler.setLevel(logging.INFO)
 
 # Set the formatter for the console handler
 formatter = logging.Formatter(
@@ -269,9 +269,9 @@ class CartesianMesh:
                 (self.x_bc_reshape * (1 / dx**2))
                 + (self.y_bc_reshape * (1 / dy**2))
             ) * self.diffusivity
-            self.boundary_condition_array = (
-                square_boundary_condition.reshape(x_cells * y_cells) + self.generation
-            )
+            self.boundary_condition_array = square_boundary_condition.reshape(
+                x_cells * y_cells
+            ) + self.generation * (self.diffusivity / self.conductivity)
 
             logger.debug(
                 f"combined boundary condition array{self.boundary_condition_array.shape}"
