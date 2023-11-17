@@ -38,6 +38,7 @@ class CartesianMesh:
         n_cells: List[int] = [4, 4],
         cordinates: Sequence[Tuple[float, float]] = [(0, 1), (0, 1)],
         mesh_type: str = "finite_volume",
+        conductivity: float = 0,
     ) -> None:
         """
         Init the cartesian mesh object.
@@ -58,6 +59,8 @@ class CartesianMesh:
         self.initalize_phi()
         self.boundary_condition = self.initalize_boundary_condition()
         self.set_laplacian()
+        self.boundary_condition_dict = {}
+        self.conductivity = conductivity
 
     def validate_inputs(
         self,
@@ -160,6 +163,7 @@ class CartesianMesh:
             f"{axis}_boundary_condition_array"
         ].set_dirichlet_boundary(side, phi)
 
+        self.boundary_condition_dict[side] = "dirichlet"
         self.set_laplacian()
         self.set_boundary_condition_array()
         self.phi.set_dirichlet_boundary(side, phi)
@@ -183,6 +187,7 @@ class CartesianMesh:
         ].set_neumann_boundary(
             side=side, flux=flux, cell_width=self.grid[f"{axis}_grid"].cell_width
         )
+        self.boundary_condition_dict[side] = "neumann"
 
         self.set_laplacian()
         self.set_boundary_condition_array()

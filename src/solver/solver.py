@@ -2,7 +2,8 @@ import numpy as np
 import pandas as pd
 from typing import List
 from solver.cartesian_mesh import CartesianMesh
-from solver.utilities import MeshReshaper
+
+# from solver.utilities import MeshReshaper
 
 
 class ImplicitStep(object):

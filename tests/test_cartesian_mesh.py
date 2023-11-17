@@ -106,6 +106,15 @@ class Test_1d_CartesianMesh:
         np.testing.assert_array_equal(x=actual, y=expected)
 
     @pytest.mark.parametrize(
+        "side,bc_type", [("left", "dirichlet"), ("right", "neumann")]
+    )
+    def test_save_boundary_conditon(self, one_d_mesh, side, bc_type):
+        one_d_mesh.set_dirichlet_boundary(side="left", phi=30),
+        one_d_mesh.set_neumann_boundary(side="right", flux=30)
+        actual = one_d_mesh.boundary_condition_dict[side]
+        assert actual == bc_type
+
+    @pytest.mark.parametrize(
         "side,expected",
         [
             (
@@ -350,6 +359,27 @@ class Test_2d_CartesianMesh:
         expected = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9], [10, 11, 12]])
         two_d_mesh.phi.set_phi(expected.tolist())
         np.testing.assert_array_equal(x=two_d_mesh.phi.get_phi(), y=expected)
+
+    @pytest.mark.parametrize(
+        "side,bc_type",
+        [
+            ("left", "dirichlet"),
+            ("right", "neumann"),
+            ("top", "neumann"),
+            ("bottom", "dirichlet"),
+        ],
+    )
+    def test_save_boundary_conditon(self, two_d_mesh, side, bc_type):
+        two_d_mesh.set_dirichlet_boundary(side="left", phi=30),
+        two_d_mesh.set_neumann_boundary(side="right", flux=30),
+        two_d_mesh.set_neumann_boundary(side="top", flux=30)
+        two_d_mesh.set_dirichlet_boundary(side="bottom", phi=30)
+        actual = two_d_mesh.boundary_condition_dict[side]
+        assert actual == bc_type
+
+    def test_conudctivity(self):
+        mesh = CartesianMesh(conductivity=10)
+        assert mesh.conductivity == 10
 
     @pytest.mark.xfail(reason="finite difference not implemented")
     def test_finite_diff_mesh(self):

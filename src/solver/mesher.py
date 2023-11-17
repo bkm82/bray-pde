@@ -259,6 +259,10 @@ class maccormack_differentiation_matrix(differentiation_matrix):
         )
 
 
+class flux_differentiation_matrix:
+    pass
+
+
 class grid:
     """
     A 1d uniformly discritzed grid object.
