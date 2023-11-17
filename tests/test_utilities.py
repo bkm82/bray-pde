@@ -106,19 +106,18 @@ class TestEnergyBalance:
         )
         return mesh
 
-    @pytest.fixture
-    def left_flux(self):
-        return 4.965199833748016
-
-    @pytest.fixture
-    def right_flux(self):
-        return 4.965199833748016
-
     @pytest.mark.parametrize(
-        "side,actual", [("left", left_flux), ("right", right_flux)]
+        "side,expected_fixture",
+        [
+            ("left", 4.965199833748016),
+            ("right", 4.965199833748016),
+            ("bottom", 0.06960033250395742),
+            ("top", -10),
+            ("all", 0.00000001),
+        ],
     )
-    def test_left_energy_balance(self, cartesian_mesh, side, actual):
+    def test_left_energy_balance(self, cartesian_mesh, side, expected_fixture):
         actual = utilities.EnergyBalance(mesh=cartesian_mesh).flux(side)
-        expected = actual
+        expected = expected_fixture
         logging.debug(f"actual:{actual}, expected:{expected}")
-        assert math.isclose(actual, expected, abs_tol=0.0000001)
+        assert math.isclose(actual, expected, abs_tol=0.000001)

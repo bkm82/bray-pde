@@ -38,7 +38,7 @@ class CartesianMesh:
         n_cells: List[int] = [4, 4],
         cordinates: Sequence[Tuple[float, float]] = [(0, 1), (0, 1)],
         mesh_type: str = "finite_volume",
-        conductivity: float = 0,
+        conductivity: float = 1,
     ) -> None:
         """
         Init the cartesian mesh object.

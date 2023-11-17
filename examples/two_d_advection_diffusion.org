@@ -1,0 +1,152 @@
+#+TITLE: Code Project
+#+AUTHOR: Bray Moll
+#+OPTIONS: toc:nil
+#+SETUPFILE: ~/masters/bray-standard-latex-export.org
+#+BIBLIOGRAPHY: citations.bib
+
+
+* Problem Constats
+Based on the problem description, at atmospheric pressure the thermal diffusivity ranges from $0.155 *10^{-6} \frac{m^2}{s}$ at 50 degrees celcius, to 0.143 * 10^-6 m^2/s at 20 degrees celsius. A constant thermal diffusivity of $0.146 * 10^{-6} /frac{m^2}{s}$ for water at standard temperature and pressure (25 degrees celcius at atmospheric pressure) was used for this project as the error introduced due to this symplifying assumption was determined to be acceptable [cite:@TheEngineeringToolBox]
+
+The water thermal conductivity taken to be a constant at $0.456 \frac{W}{mK}$ again coresponding to a temperature of 25 degrees celcius. [cite:@Water_Conductivity_EngineeringToolBox]
+
+#+ATTR_LATEX: :options frame=single
+#+BEGIN_SRC python :results output :exports both :session Python-Session
+  from solver.cartesian_mesh import CartesianMesh
+  from solver.solver import Solver
+  from solver.utilities import EnergyBalance
+  from matplotlib import pyplot as plt
+  import numpy as np
+  import logging
+
+  #create logging configuration
+  logger = logging.getLogger(__name__)
+  logger.setLevel(logging.INFO)
+
+  # Create a console handler
+  console_handler = logging.StreamHandler()
+  console_handler.setLevel(logging.INFO)
+
+  # Set the formatter for the console handler
+  formatter = logging.Formatter(
+    "%(message)s",
+  )
+  console_handler.setFormatter(formatter)
+
+  # Add the console handler to the logger
+  logger.addHandler(console_handler)
+ #+END_SRC
+
+
+
+ #+RESULTS:
+\newpage
+* Part 1 Steady State
+#+ATTR_LATEX: :options frame=single
+#+BEGIN_SRC python :results output :exports both :session Python-Session
+  #Define a various mesh sizes with non equal cell widths and heights
+  mesh_size_dict = {
+      "course":(10,3),
+      "medium": (20,8),
+      "fine":(100,10),
+      "ultra_fine":(200,50)
+  }
+  # Define Problem constants
+  x_range = (0,5)
+  y_range = (0,1)
+  mesh_type = "finite_volume"
+  conductivity = 0.456 ## W/mK
+  temp_left = 30  ## decrees celcius
+  temp_right = 30 ## degrees celcius
+  temp_bottom = 30 # degrees celsius
+  top_flux = -10 #W/m
+
+  mesh_dict = {}
+  energy_balance_dict = {}
+  for mesh_size , cells in mesh_size_dict.items():
+      x_cells , y_cells  = cells
+
+      mesh_dict[mesh_size] = CartesianMesh(
+          dimensions=2,
+          n_cells=[x_cells, y_cells],
+          cordinates=[x_range, y_range],
+          mesh_type= mesh_type,
+          conductivity = conductivity
+      )
+
+      mesh_dict[mesh_size].set_dirichlet_boundary(side="left", phi=temp_left)
+      mesh_dict[mesh_size].set_dirichlet_boundary(side="right", phi=temp_right)
+      mesh_dict[mesh_size].set_dirichlet_boundary(side="bottom", phi=temp_bottom)
+      mesh_dict[mesh_size].set_neumann_boundary(side="top", flux = top_flux/conductivity)
+
+      # Solve the steady Case
+      Solver(mesh = mesh_dict[mesh_size]).solve_steady()
+      energy_balance_dict[mesh_size] = EnergyBalance(mesh = mesh_dict[mesh_size])
+      logger.info(f"\n Mesh Size:{mesh_size}")
+      total_flux = energy_balance_dict[mesh_size].flux("all")
+
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+
+ Mesh Size:course
+solver.utilities:INFO:flux:
+ Left Flux: 7.008780696924452 W
+ Right Flux: 7.008780696924445 W
+ Bottom Flux: 1.2477240696755088 W
+ Top Flux: -50.0 W
+ Total Flux: 9.769962616701378e-15
+
+ Mesh Size:medium
+solver.utilities:INFO:flux:
+ Left Flux: 7.330052111172117 W
+ Right Flux: 7.330052111172048 W
+ Bottom Flux: 0.160590998770073 W
+ Top Flux: -50.0 W
+ Total Flux: -1.1368683772161603e-13
+
+ Mesh Size:fine
+solver.utilities:INFO:flux:
+ Left Flux: 7.4108981645058325 W
+ Right Flux: 7.410898164505689 W
+ Bottom Flux: 0.1002326613074913 W
+ Top Flux: -49.99999999999999 W
+ Total Flux: 6.465938895416912e-13
+
+ Mesh Size:ultra_fine
+solver.utilities:INFO:flux:
+ Left Flux: 7.417294624354214 W
+ Right Flux: 7.417294624354719 W
+ Bottom Flux: 0.00399505449634753 W
+ Top Flux: -50.0 W
+ Total Flux: 2.701483481359901e-11
+#+end_example
+
+
+
+#+ATTR_LATEX: :options frame=single
+#+BEGIN_SRC python :results graphics file :file steady.png :exports results :session Python-Session
+  fig, ax = plt.subplots(len(mesh_dict), figsize= (10,12))
+  i = 0
+  for  mesh_size, mesh in mesh_dict.items():
+
+      x_cords = mesh.grid["x_grid"].cell_cordinates
+      y_cords = mesh.grid["y_grid"].cell_cordinates
+      logger.debug(x_cords)
+      xv, yv = np.meshgrid(x_cords, y_cords)
+      axis = plt.subplot(len(mesh_dict),1,i+1)
+      axis.set_title(mesh_size)
+      steady = axis.pcolormesh(xv, yv, mesh.phi.get_phi())
+
+      i = i +1
+
+
+      fig.colorbar(steady, label = "temperature (celcius)")
+  plt.savefig("steady.png")
+
+
+#+END_SRC
+
+#+RESULTS:
+[[file:steady.png]]
