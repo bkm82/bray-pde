@@ -1,4 +1,4 @@
-#+TITLE: Homework 5
+q#+TITLE: Homework 5
 #+AUTHOR: Bray Moll
 #+OPTIONS: toc:nil
 #+SETUPFILE: ~/masters/bray-standard-latex-export.org

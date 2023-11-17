@@ -48,9 +48,16 @@ class EnergyBalance:
         self.x_width = self.mesh.grid["x_grid"].cell_width
         self.y_width = self.mesh.grid["y_grid"].cell_width
         self.phi = self.mesh.phi.get_phi()
+        self.generation = self.set_generation()
         self.x_flux = self.set_x_flux()
         self.y_flux = self.set_y_flux()
         self.cell_flux = self.set_cell_flux()
+
+    def set_generation(self):
+        generation = self.mesh.generation.reshape(self.phi.shape) * (
+            self.y_width * self.x_width
+        )
+        return generation
 
     def set_x_flux(self):
         x_flux_diff_matrix = np.zeros((self.x_cells, self.x_cells))
@@ -108,7 +115,7 @@ class EnergyBalance:
             self.mesh.conductivity * self.y_width / self.x_width
         )
 
-        return cell_x_flux + cell_y_flux
+        return cell_x_flux + cell_y_flux + self.generation
 
     # cell_flux_se = np.sum((cell_flux**2))
 
@@ -123,14 +130,18 @@ class EnergyBalance:
             return np.sum(self.y_flux[-1, :])
         if side == "cells":
             return np.sum((self.cell_flux**2))
+        if side == "generation":
+            return np.sum(self.generation)
         if side == "all":
-            total_flux = np.sum(self.y_flux + self.x_flux)
+            total_flux = np.sum(self.y_flux + self.x_flux + self.generation)
             logger.info(
                 f"\n Left Flux: {np.sum(self.x_flux[:,0])} W  \
                 \n Right Flux: {np.sum(self.x_flux[:,-1])} W  \
-                \n Bottom Flux: {np.sum(self.x_flux[-1,:])} W  \
+                \n Bottom Flux: {np.sum(self.y_flux[-1,:])} W  \
+                \n Generation: {np.sum(self.generation)} W \
                 \n Top Flux: {np.sum(self.y_flux[0,:])} W  \
                 \n Cell Sum Squared Error: {np.sum((self.cell_flux**2))} W \
+                \n Flux leaving boundarys: {np.sum(self.y_flux+ self.x_flux)}W \
                 \n Total Flux: {total_flux}"
             )
 

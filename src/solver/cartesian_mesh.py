@@ -58,6 +58,7 @@ class CartesianMesh:
         cordinates: Sequence[Tuple[float, float]] = [(0, 1), (0, 1)],
         mesh_type: str = "finite_volume",
         conductivity: float = 1,
+        diffusivity: float = 1,
     ) -> None:
         """
         Init the cartesian mesh object.
@@ -73,6 +74,7 @@ class CartesianMesh:
         self.dimensions = dimensions
         self.cordinates = cordinates
         self.mesh_type = mesh_type
+        self.diffusivity = diffusivity
         self.grid = self.initalize_grid()
         self.differentiation_matrix = self.initalize_differentiation_matrix()
         self.initalize_phi()
@@ -218,7 +220,7 @@ class CartesianMesh:
             # d2x = self.x_differentiation_matrix.get_matrix()
             self.laplacian = self.differentiation_matrix[
                 "x_differentiation_matrix"
-            ].get_matrix() * (1 / self.grid["x_grid"].cell_width ** 2)
+            ].get_matrix() * (self.diffusivity / self.grid["x_grid"].cell_width ** 2)
         elif self.dimensions == 2:
             self.d2x_unscaled = self.differentiation_matrix[
                 "x_differentiation_matrix"
@@ -226,9 +228,13 @@ class CartesianMesh:
             self.d2y_unscaled = self.differentiation_matrix[
                 "y_differentiation_matrix"
             ].get_matrix()
-            d2x = self.d2x_unscaled * (1 / self.grid["x_grid"].cell_width ** 2)
+            d2x = self.d2x_unscaled * (
+                self.diffusivity / self.grid["x_grid"].cell_width ** 2
+            )
 
-            d2y = self.d2y_unscaled * (1 / self.grid["y_grid"].cell_width ** 2)
+            d2y = self.d2y_unscaled * (
+                self.diffusivity / self.grid["y_grid"].cell_width ** 2
+            )
             Ix = np.identity(self.grid["x_grid"].n_cells)
             Iy = np.identity(self.grid["y_grid"].n_cells)
             self.laplacian = np.kron(Iy, d2x) + np.kron(d2y, Ix)
@@ -240,7 +246,7 @@ class CartesianMesh:
         if self.dimensions == 1:
             self.boundary_condition_array = self.boundary_condition[
                 "x_boundary_condition_array"
-            ].get_array() * (1 / self.grid["x_grid"].cell_width ** 2)
+            ].get_array() * (self.diffusivity / self.grid["x_grid"].cell_width ** 2)
 
         elif self.dimensions == 2:
             x_bc_array = self.boundary_condition[
@@ -258,11 +264,18 @@ class CartesianMesh:
 
             self.x_bc_reshape = x_bc_array.reshape(1, x_cells).repeat(y_cells, axis=0)
             self.y_bc_reshape = y_bc_array.reshape(y_cells, 1).repeat(x_cells, axis=1)
-            logger.debug(f"generation in set bc {self.generation}")
-            self.boundary_condition_array = (
+            logger.debug(f"generation in set bc {self.generation.shape}")
+            square_boundary_condition = (
                 (self.x_bc_reshape * (1 / dx**2))
                 + (self.y_bc_reshape * (1 / dy**2))
-            ).reshape(x_cells * y_cells) + self.generation
+            ) * self.diffusivity
+            self.boundary_condition_array = (
+                square_boundary_condition.reshape(x_cells * y_cells) + self.generation
+            )
+
+            logger.debug(
+                f"combined boundary condition array{self.boundary_condition_array.shape}"
+            )
 
     def set_generation(self, function):
         """
@@ -271,6 +284,8 @@ class CartesianMesh:
         note: the function must contain all of the axis even if it is a zero
         """
         grid_dict = {}
+        dx = self.grid["x_grid"].cell_width
+        dy = self.grid["y_grid"].cell_width
         logger.debug(f"grid:{self.grid}")
         for i, (names, cordinate_value) in enumerate(self.grid.items()):
             grid_dict[(Parser().parse(names))] = cordinate_value.cell_cordinates[
@@ -279,8 +294,9 @@ class CartesianMesh:
                 + (None,) * (len(self.grid.items()) - i - 1)
             ]
 
-            logger.debug(f"grid_dict:{grid_dict}")
-        self.generation = function(**grid_dict).flatten(order="F")
-        logger.debug(f"generation:{function(**grid_dict).shape}")
+        logger.debug(f"grid_dict:{grid_dict}")
+        self.generation = (function(**grid_dict)).flatten(order="F")
+        logger.debug(f"generation:{function(**grid_dict)}")
+        logger.debug(f"generation reshape:{self.generation}")
         logger.debug(f"boundary_condition_array:{self.boundary_condition_array}")
         self.set_boundary_condition_array()

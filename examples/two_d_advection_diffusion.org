@@ -4,8 +4,8 @@
 #+SETUPFILE: ~/masters/bray-standard-latex-export.org
 #+BIBLIOGRAPHY: citations.bib
 
-
-* Problem Constats
+* Problem Description
+* Problem Constants
 Based on the problem description, at atmospheric pressure the thermal diffusivity ranges from $0.155 *10^{-6} \frac{m^2}{s}$ at 50 degrees celcius, to 0.143 * 10^-6 m^2/s at 20 degrees celsius. A constant thermal diffusivity of $0.146 * 10^{-6} /frac{m^2}{s}$ for water at standard temperature and pressure (25 degrees celcius at atmospheric pressure) was used for this project as the error introduced due to this symplifying assumption was determined to be acceptable [cite:@TheEngineeringToolBox]
 
 The water thermal conductivity taken to be a constant at $0.456 \frac{W}{mK}$ again coresponding to a temperature of 25 degrees celcius. [cite:@Water_Conductivity_EngineeringToolBox]
@@ -18,6 +18,7 @@ The water thermal conductivity taken to be a constant at $0.456 \frac{W}{mK}$ ag
   from matplotlib import pyplot as plt
   import numpy as np
   import logging
+  import math
 
   #create logging configuration
   logger = logging.getLogger(__name__)
@@ -47,15 +48,16 @@ The water thermal conductivity taken to be a constant at $0.456 \frac{W}{mK}$ ag
   #Define a various mesh sizes with non equal cell widths and heights
   mesh_size_dict = {
       "course":(10,3),
-      "medium": (20,8),
-      "fine":(100,10),
-      "ultra_fine":(200,50)
+      # "medium": (20,8),
+      # "fine":(100,10),
+      # "ultra_fine":(200,50)
   }
   # Define Problem constants
   x_range = (0,5)
   y_range = (0,1)
   mesh_type = "finite_volume"
   conductivity = 0.456 ## W/mK
+  diffusivity = 0.146*10**(-6) #m^2/s
   temp_left = 30  ## decrees celcius
   temp_right = 30 ## degrees celcius
   temp_bottom = 30 # degrees celsius
@@ -71,7 +73,8 @@ The water thermal conductivity taken to be a constant at $0.456 \frac{W}{mK}$ ag
           n_cells=[x_cells, y_cells],
           cordinates=[x_range, y_range],
           mesh_type= mesh_type,
-          conductivity = conductivity
+          conductivity = conductivity,
+          diffusivity = diffusivity
       )
 
       mesh_dict[mesh_size].set_dirichlet_boundary(side="left", phi=temp_left)
@@ -89,42 +92,27 @@ The water thermal conductivity taken to be a constant at $0.456 \frac{W}{mK}$ ag
 
 #+RESULTS:
 #+begin_example
+solver.cartesian_mesh:DEBUG:set_boundary_condition_array:generation in set bc (30,)
+solver.cartesian_mesh:DEBUG:set_boundary_condition_array:combined boundary condition array(30,)
+solver.cartesian_mesh:DEBUG:set_boundary_condition_array:generation in set bc (30,)
+solver.cartesian_mesh:DEBUG:set_boundary_condition_array:combined boundary condition array(30,)
+solver.cartesian_mesh:DEBUG:set_boundary_condition_array:generation in set bc (30,)
+solver.cartesian_mesh:DEBUG:set_boundary_condition_array:combined boundary condition array(30,)
+solver.cartesian_mesh:DEBUG:set_boundary_condition_array:generation in set bc (30,)
+solver.cartesian_mesh:DEBUG:set_boundary_condition_array:combined boundary condition array(30,)
+
+ Mesh Size:course
 
  Mesh Size:course
 solver.utilities:INFO:flux:
- Left Flux: 7.008780696924452 W
- Right Flux: 7.008780696924445 W
- Bottom Flux: 1.2477240696755088 W
+ Left Flux: 7.008780696924443 W
+ Right Flux: 7.008780696924457 W
+ Bottom Flux: 35.98243860615108 W
+ Generation: 0.0 W
  Top Flux: -50.0 W
- Cell Sum Squared Error: 1.891483820663395e-27 W
- Total Flux: 9.769962616701378e-15
-
- Mesh Size:medium
-solver.utilities:INFO:flux:
- Left Flux: 7.330052111172117 W
- Right Flux: 7.330052111172048 W
- Bottom Flux: 0.160590998770073 W
- Top Flux: -50.0 W
- Cell Sum Squared Error: 1.9650737453303355e-26 W
- Total Flux: -1.1368683772161603e-13
-
- Mesh Size:fine
-solver.utilities:INFO:flux:
- Left Flux: 7.4108981645058325 W
- Right Flux: 7.410898164505689 W
- Bottom Flux: 0.1002326613074913 W
- Top Flux: -49.99999999999999 W
- Cell Sum Squared Error: 1.246851995820145e-25 W
- Total Flux: 6.465938895416912e-13
-
- Mesh Size:ultra_fine
-solver.utilities:INFO:flux:
- Left Flux: 7.417294624354214 W
- Right Flux: 7.417294624354719 W
- Bottom Flux: 0.00399505449634753 W
- Top Flux: -50.0 W
- Cell Sum Squared Error: 1.162619624125233e-24 W
- Total Flux: 2.701483481359901e-11
+ Cell Sum Squared Error: 3.097737174553367e-27 W
+ Flux leaving boundarys: -2.1760371282653068e-14W
+ Total Flux: -2.1760371282653068e-14
 #+end_example
 
 Due to the finite volume scheme, the total flux error and the sum of each cells squared error is relativly independent of mesh size. The overall error increases slightly with the higher number of points due to the numerical round off error present with the higher number of calcualtions.
@@ -154,3 +142,118 @@ Due to the finite volume scheme, the total flux error and the sum of each cells 
 
 #+RESULTS:
 [[file:steady.png]]
+
+
+* Part 2: With Generation
+
+#+BEGIN_SRC python :results output :exports both :session Python-Session
+  #Define a various mesh sizes with non equal cell widths and heights
+  mesh_size_dict = {
+      "course":(5,2),
+      # "medium": (20,8),
+      # "fine":(100,10),
+      # "ultra_fine":(200,50)
+  }
+  # Define Problem constants
+  x_range = (0,5)
+  y_range = (0,2)
+  mesh_type = "finite_volume"
+  # conductivity = 0.456 ## W/mK
+  conductivity = 1
+  temp_left = 30  ## decrees celcius
+  temp_right = 30 ## degrees celcius
+  temp_bottom = 30 # degrees celsius
+  top_flux = -10 #W/m
+
+  generation_mesh_dict = {}
+  energy_balance_dict = {}
+  def gen_function (x, y):
+      return(0*y + 1*x+50)
+  for mesh_size , cells in mesh_size_dict.items():
+      x_cells , y_cells  = cells
+
+      generation_mesh_dict[mesh_size] = CartesianMesh(
+          dimensions=2,
+          n_cells=[x_cells, y_cells],
+          cordinates=[x_range, y_range],
+          mesh_type= mesh_type,
+          conductivity = conductivity
+      )
+
+      generation_mesh_dict[mesh_size].set_dirichlet_boundary(side="left", phi=temp_left)
+      generation_mesh_dict[mesh_size].set_dirichlet_boundary(side="right", phi=temp_right)
+      generation_mesh_dict[mesh_size].set_dirichlet_boundary(side="bottom", phi=temp_bottom)
+      generation_mesh_dict[mesh_size].set_neumann_boundary(side="top", flux = top_flux/conductivity)
+      generation_mesh_dict[mesh_size].set_generation(function = gen_function)
+
+      # Solve the steady Case
+      Solver(mesh = generation_mesh_dict[mesh_size]).solve_steady()
+      energy_balance_dict[mesh_size] = EnergyBalance(mesh = generation_mesh_dict[mesh_size])
+      logger.info(f"\n Mesh Size:{mesh_size}")
+      total_flux = energy_balance_dict[mesh_size].flux("all")
+
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+solver.cartesian_mesh:DEBUG:set_boundary_condition_array:generation in set bc (10,)
+solver.cartesian_mesh:DEBUG:set_boundary_condition_array:combined boundary condition array(10,)
+solver.cartesian_mesh:DEBUG:set_boundary_condition_array:generation in set bc (10,)
+solver.cartesian_mesh:DEBUG:set_boundary_condition_array:combined boundary condition array(10,)
+solver.cartesian_mesh:DEBUG:set_boundary_condition_array:generation in set bc (10,)
+solver.cartesian_mesh:DEBUG:set_boundary_condition_array:combined boundary condition array(10,)
+solver.cartesian_mesh:DEBUG:set_boundary_condition_array:generation in set bc (10,)
+solver.cartesian_mesh:DEBUG:set_boundary_condition_array:combined boundary condition array(10,)
+solver.cartesian_mesh:DEBUG:set_generation:grid:{'x_grid': <solver.mesher.grid object at 0x7faf4c3584f0>, 'y_grid': <solver.mesher.grid object at 0x7faf4c358550>}
+solver.cartesian_mesh:DEBUG:set_generation:grid_dict:{'x': array([[0.5],
+       [1.5],
+       [2.5],
+       [3.5],
+       [4.5]]), 'y': array([[1.5, 0.5]])}
+solver.cartesian_mesh:DEBUG:set_generation:generation:[[50.5 50.5]
+ [51.5 51.5]
+ [52.5 52.5]
+ [53.5 53.5]
+ [54.5 54.5]]
+solver.cartesian_mesh:DEBUG:set_generation:generation reshape:[50.5 51.5 52.5 53.5 54.5 50.5 51.5 52.5 53.5 54.5]
+solver.cartesian_mesh:DEBUG:set_generation:boundary_condition_array:[ 50. -10. -10. -10.  50. 120.  60.  60.  60. 120.]
+solver.cartesian_mesh:DEBUG:set_boundary_condition_array:generation in set bc (10,)
+solver.cartesian_mesh:DEBUG:set_boundary_condition_array:combined boundary condition array(10,)
+
+ Mesh Size:course
+solver.utilities:INFO:flux:
+ Left Flux: -94.41798291329252 W
+ Right Flux: -99.92335925737852 W
+ Bottom Flux: -280.65865782932883 W
+ Generation: 525.0 W
+ Top Flux: -50.0 W
+ Cell Sum Squared Error: 1.2116903504194741e-26 W
+ Flux leaving boundarys: -524.9999999999999W
+ Total Flux: 1.1368683772161603e-13
+#+end_example
+
+#+ATTR_LATEX: :options frame=single
+#+BEGIN_SRC python :results graphics file :file generation.png :exports results :session Python-Session
+  fig, ax = plt.subplots(len(generation_mesh_dict), figsize= (10,12))
+  i = 0
+  for  mesh_size, mesh in generation_mesh_dict.items():
+
+      x_cords = mesh.grid["x_grid"].cell_cordinates
+      y_cords = mesh.grid["y_grid"].cell_cordinates
+      logger.debug(x_cords)
+      xv, yv = np.meshgrid(x_cords, y_cords)
+      axis = plt.subplot(len(generation_mesh_dict),1,i+1)
+      axis.set_title(mesh_size)
+      steady = axis.pcolormesh(xv, yv, mesh.phi.get_phi())
+
+      i = i +1
+
+
+      fig.colorbar(steady, label = "temperature (celcius)")
+  plt.savefig("generation.png")
+
+
+#+END_SRC
+
+#+RESULTS:
+[[file:generation.png]]
