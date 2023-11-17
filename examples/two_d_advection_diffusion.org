@@ -96,6 +96,7 @@ solver.utilities:INFO:flux:
  Right Flux: 7.008780696924445 W
  Bottom Flux: 1.2477240696755088 W
  Top Flux: -50.0 W
+ Cell Sum Squared Error: 1.891483820663395e-27 W
  Total Flux: 9.769962616701378e-15
 
  Mesh Size:medium
@@ -104,6 +105,7 @@ solver.utilities:INFO:flux:
  Right Flux: 7.330052111172048 W
  Bottom Flux: 0.160590998770073 W
  Top Flux: -50.0 W
+ Cell Sum Squared Error: 1.9650737453303355e-26 W
  Total Flux: -1.1368683772161603e-13
 
  Mesh Size:fine
@@ -112,6 +114,7 @@ solver.utilities:INFO:flux:
  Right Flux: 7.410898164505689 W
  Bottom Flux: 0.1002326613074913 W
  Top Flux: -49.99999999999999 W
+ Cell Sum Squared Error: 1.246851995820145e-25 W
  Total Flux: 6.465938895416912e-13
 
  Mesh Size:ultra_fine
@@ -120,10 +123,11 @@ solver.utilities:INFO:flux:
  Right Flux: 7.417294624354719 W
  Bottom Flux: 0.00399505449634753 W
  Top Flux: -50.0 W
+ Cell Sum Squared Error: 1.162619624125233e-24 W
  Total Flux: 2.701483481359901e-11
 #+end_example
 
-
+Due to the finite volume scheme, the total flux error and the sum of each cells squared error is relativly independent of mesh size. The overall error increases slightly with the higher number of points due to the numerical round off error present with the higher number of calcualtions.
 
 #+ATTR_LATEX: :options frame=single
 #+BEGIN_SRC python :results graphics file :file steady.png :exports results :session Python-Session

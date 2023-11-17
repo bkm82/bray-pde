@@ -50,6 +50,7 @@ class EnergyBalance:
         self.phi = self.mesh.phi.get_phi()
         self.x_flux = self.set_x_flux()
         self.y_flux = self.set_y_flux()
+        self.cell_flux = self.set_cell_flux()
 
     def set_x_flux(self):
         x_flux_diff_matrix = np.zeros((self.x_cells, self.x_cells))
@@ -87,6 +88,30 @@ class EnergyBalance:
             * (self.mesh.conductivity * self.x_width / self.y_width)
         ).reshape(self.phi.shape)
 
+    def set_cell_flux(self):
+        """Determine the heat flux for each cell."""
+        x_identity = np.identity(self.x_cells)
+        y_identity = np.identity(self.y_cells)
+
+        d2y = np.kron(self.mesh.d2y_unscaled, x_identity)
+
+        cell_y_flux = (
+            d2y @ self.phi.flatten() + self.mesh.y_bc_reshape.flatten()
+        ).reshape(self.phi.shape) * (
+            self.mesh.conductivity * self.x_width / self.y_width
+        )
+
+        d2x = np.kron(y_identity, self.mesh.d2x_unscaled)
+        cell_x_flux = (
+            d2x @ self.phi.flatten() + self.mesh.x_bc_reshape.flatten()
+        ).reshape(self.phi.shape) * (
+            self.mesh.conductivity * self.y_width / self.x_width
+        )
+
+        return cell_x_flux + cell_y_flux
+
+    # cell_flux_se = np.sum((cell_flux**2))
+
     def flux(self, side: str):
         if side == "left":
             return np.sum(self.x_flux[:, 0])
@@ -96,6 +121,8 @@ class EnergyBalance:
             return np.sum(self.y_flux[0, :])
         if side == "bottom":
             return np.sum(self.y_flux[-1, :])
+        if side == "cells":
+            return np.sum((self.cell_flux**2))
         if side == "all":
             total_flux = np.sum(self.y_flux + self.x_flux)
             logger.info(
@@ -103,6 +130,7 @@ class EnergyBalance:
                 \n Right Flux: {np.sum(self.x_flux[:,-1])} W  \
                 \n Bottom Flux: {np.sum(self.x_flux[-1,:])} W  \
                 \n Top Flux: {np.sum(self.y_flux[0,:])} W  \
+                \n Cell Sum Squared Error: {np.sum((self.cell_flux**2))} W \
                 \n Total Flux: {total_flux}"
             )
 

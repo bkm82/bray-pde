@@ -114,6 +114,7 @@ class TestEnergyBalance:
             ("bottom", 0.06960033250395742),
             ("top", -10),
             ("all", 0.00000001),
+            ("cells", 0.00000001),
         ],
     )
     def test_left_energy_balance(self, cartesian_mesh, side, expected_fixture):
