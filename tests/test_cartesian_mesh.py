@@ -381,6 +381,22 @@ class Test_2d_CartesianMesh:
         mesh = CartesianMesh(conductivity=10)
         assert mesh.conductivity == 10
 
+    def test_generation_function(self, steady_mesh):
+        """test that the function f = x modifies the bc array"""
+
+        expected = np.array(
+            [40.5, -18.5, 42.5, 60.5, 1.5, 62.5, 60.5, 1.5, 62.5, 300.5, 241.5, 302.5]
+        )
+        steady_mesh.set_dirichlet_boundary
+
+        def gen_function(x, y):
+            return 0 * y + x
+
+        steady_mesh.set_generation(function=gen_function)
+        np.testing.assert_array_equal(
+            x=steady_mesh.boundary_condition_array, y=expected
+        )
+
     @pytest.mark.xfail(reason="finite difference not implemented")
     def test_finite_diff_mesh(self):
         fd_mesh = CartesianMesh(

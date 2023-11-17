@@ -6,8 +6,27 @@ from solver.mesher import (
     cell_phi,
 )
 from solver.cartesian_solver import CartesianSolver
+from solver.utilities import Parser
 from typing import Sequence, Tuple, List
 import numpy as np
+import logging
+
+# create logging configuration
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+
+# Create a console handler
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.DEBUG)
+
+# Set the formatter for the console handler
+formatter = logging.Formatter(
+    "%(name)s:%(levelname)s:%(funcName)s:%(message)s",
+)
+console_handler.setFormatter(formatter)
+
+# Add the console handler to the logger
+logger.addHandler(console_handler)
 
 # from cartesian_solver import CartesianSolver
 
@@ -167,6 +186,7 @@ class CartesianMesh:
         self.set_laplacian()
         self.set_boundary_condition_array()
         self.phi.set_dirichlet_boundary(side, phi)
+        self.generation = np.zeros(self.n_cells).flatten()
 
     def set_neumann_boundary(self, side: str, flux: float):
         """
@@ -215,6 +235,8 @@ class CartesianMesh:
 
     def set_boundary_condition_array(self):
         """Combine boundary conditions into a single array."""
+        if not hasattr(self, "generation"):
+            self.generation = np.zeros(self.n_cells).flatten()
         if self.dimensions == 1:
             self.boundary_condition_array = self.boundary_condition[
                 "x_boundary_condition_array"
@@ -236,8 +258,29 @@ class CartesianMesh:
 
             self.x_bc_reshape = x_bc_array.reshape(1, x_cells).repeat(y_cells, axis=0)
             self.y_bc_reshape = y_bc_array.reshape(y_cells, 1).repeat(x_cells, axis=1)
-
+            logger.debug(f"generation in set bc {self.generation}")
             self.boundary_condition_array = (
                 (self.x_bc_reshape * (1 / dx**2))
                 + (self.y_bc_reshape * (1 / dy**2))
-            ).reshape(x_cells * y_cells)
+            ).reshape(x_cells * y_cells) + self.generation
+
+    def set_generation(self, function):
+        """
+        set a generation function
+
+        note: the function must contain all of the axis even if it is a zero
+        """
+        grid_dict = {}
+        logger.debug(f"grid:{self.grid}")
+        for i, (names, cordinate_value) in enumerate(self.grid.items()):
+            grid_dict[(Parser().parse(names))] = cordinate_value.cell_cordinates[
+                (None,) * i
+                + (slice(None),)
+                + (None,) * (len(self.grid.items()) - i - 1)
+            ]
+
+            logger.debug(f"grid_dict:{grid_dict}")
+        self.generation = function(**grid_dict).flatten(order="F")
+        logger.debug(f"generation:{function(**grid_dict).shape}")
+        logger.debug(f"boundary_condition_array:{self.boundary_condition_array}")
+        self.set_boundary_condition_array()

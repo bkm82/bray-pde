@@ -122,3 +122,10 @@ class TestEnergyBalance:
         expected = expected_fixture
         logging.debug(f"actual:{actual}, expected:{expected}")
         assert math.isclose(actual, expected, abs_tol=0.000001)
+
+
+class TestAxisParse:
+    @pytest.mark.parametrize("input_str,expected", [("x_grid", "x"), ("y_grid", "y")])
+    def test_axis_parse(self, input_str, expected):
+        actual = utilities.Parser().parse(input_str)
+        assert actual == expected

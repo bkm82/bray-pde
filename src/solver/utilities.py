@@ -144,3 +144,9 @@ class EnergyBalance:
         else:
             recieved = self.mesh.boundary_condition_dict[side]
             raise ValueError(f"Boundary conditions needed, got {recieved}")
+
+
+class Parser:
+    def parse(self, string: str):
+        x = string.split("_")
+        return x[0]
