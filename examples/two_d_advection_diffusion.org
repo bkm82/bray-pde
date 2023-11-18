@@ -24,37 +24,24 @@ The water thermal conductivity taken to be a constant at $0.456 \frac{W}{mK}$ ag
   logger = logging.getLogger(__name__)
   logger.setLevel(logging.INFO)
 
-  # Create a console handler
-  console_handler = logging.StreamHandler()
+   console_handler = logging.StreamHandler()
   console_handler.setLevel(logging.INFO)
-
-  # Set the formatter for the console handler
   formatter = logging.Formatter(
     "%(message)s",
   )
   console_handler.setFormatter(formatter)
-
-  # Add the console handler to the logger
   logger.addHandler(console_handler)
- #+END_SRC
 
-
-
- #+RESULTS:
-\newpage
-* Part 1 Steady State
-#+ATTR_LATEX: :options frame=single
-#+BEGIN_SRC python :results output :exports both :session Python-Session
   #Define a various mesh sizes with non equal cell widths and heights
   mesh_size_dict = {
-      "course":(10,3),
-      # "medium": (20,8),
-      # "fine":(100,10),
-      # "ultra_fine":(200,50)
+     "course":(5,2),
+     "medium": (20,8),
+     "fine":(100,10),
+     "ultra_fine":(200,50)
   }
   # Define Problem constants
   x_range = (0,5)
-  y_range = (0,1)
+  y_range = (0,2)
   mesh_type = "finite_volume"
   conductivity = 0.456 ## W/mK
   diffusivity = 0.146*10**(-6) #m^2/s
@@ -62,7 +49,14 @@ The water thermal conductivity taken to be a constant at $0.456 \frac{W}{mK}$ ag
   temp_right = 30 ## degrees celcius
   temp_bottom = 30 # degrees celsius
   top_flux = -10 #W/m
+ #+END_SRC
 
+ #+RESULTS:
+
+* Part 1 Steady State
+#+ATTR_LATEX: :options frame=single
+#+BEGIN_SRC python :results output :exports both :session Python-Session
+  #Define a various mesh sizes with non equal cell widths and heights
   mesh_dict = {}
   energy_balance_dict = {}
   for mesh_size , cells in mesh_size_dict.items():
@@ -87,30 +81,54 @@ The water thermal conductivity taken to be a constant at $0.456 \frac{W}{mK}$ ag
       energy_balance_dict[mesh_size] = EnergyBalance(mesh = mesh_dict[mesh_size])
       logger.info(f"\n Mesh Size:{mesh_size}")
       total_flux = energy_balance_dict[mesh_size].flux("all")
-
 #+END_SRC
 
 #+RESULTS:
 #+begin_example
-solver.cartesian_mesh:DEBUG:set_boundary_condition_array:generation in set bc (30,)
-solver.cartesian_mesh:DEBUG:set_boundary_condition_array:combined boundary condition array(30,)
-solver.cartesian_mesh:DEBUG:set_boundary_condition_array:generation in set bc (30,)
-solver.cartesian_mesh:DEBUG:set_boundary_condition_array:combined boundary condition array(30,)
-solver.cartesian_mesh:DEBUG:set_boundary_condition_array:generation in set bc (30,)
-solver.cartesian_mesh:DEBUG:set_boundary_condition_array:combined boundary condition array(30,)
-solver.cartesian_mesh:DEBUG:set_boundary_condition_array:generation in set bc (30,)
-solver.cartesian_mesh:DEBUG:set_boundary_condition_array:combined boundary condition array(30,)
 
  Mesh Size:course
 solver.utilities:INFO:flux:
- Left Flux: 7.008780696924443 W
- Right Flux: 7.008780696924457 W
- Bottom Flux: 35.98243860615108 W
+ Left Flux: 13.22286661143331 W
+ Right Flux: 13.222866611433307 W
+ Bottom Flux: 23.55426677713341 W
  Generation: 0.0 W
  Top Flux: -50.0 W
- Cell Sum Squared Error: 3.097737174553367e-27 W
- Flux leaving boundarys: -2.1760371282653068e-14W
- Total Flux: -2.1760371282653068e-14
+ Cell Sum Squared Error: 1.733152060673851e-28 W
+ Flux leaving boundarys: 2.7533531010703882e-14W
+ Total Flux: 2.7533531010703882e-14
+
+ Mesh Size:medium
+solver.utilities:INFO:flux:
+ Left Flux: 14.166375634427117 W
+ Right Flux: 14.166375634427105 W
+ Bottom Flux: 21.667248731146003 W
+ Generation: 0.0 W
+ Top Flux: -50.0 W
+ Cell Sum Squared Error: 8.806630704153606e-27 W
+ Flux leaving boundarys: 2.2737367544323206e-13W
+ Total Flux: 2.2737367544323206e-13
+
+ Mesh Size:fine
+solver.utilities:INFO:flux:
+ Left Flux: 14.210873241110075 W
+ Right Flux: 14.21087324111019 W
+ Bottom Flux: 21.578253517775686 W
+ Generation: 0.0 W
+ Top Flux: -49.99999999999999 W
+ Cell Sum Squared Error: 3.622942926157899e-25 W
+ Flux leaving boundarys: -4.035882739117369e-12W
+ Total Flux: -4.035882739117369e-12
+
+ Mesh Size:ultra_fine
+solver.utilities:INFO:flux:
+ Left Flux: 14.221818115200453 W
+ Right Flux: 14.221818115200096 W
+ Bottom Flux: 21.55636376958232 W
+ Generation: 0.0 W
+ Top Flux: -50.0 W
+ Cell Sum Squared Error: 1.0682860358038386e-24 W
+ Flux leaving boundarys: -1.7138290786533616e-11W
+ Total Flux: -1.7138290786533616e-11
 #+end_example
 
 Due to the finite volume scheme, the total flux error and the sum of each cells squared error is relativly independent of mesh size. The overall error increases slightly with the higher number of points due to the numerical round off error present with the higher number of calcualtions.
@@ -141,35 +159,14 @@ Due to the finite volume scheme, the total flux error and the sum of each cells 
 #+RESULTS:
 [[file:steady.png]]
 
-
 * Part 2: With Generation
-
 #+BEGIN_SRC python :results output :exports both :session Python-Session
-  #Define a various mesh sizes with non equal cell widths and heights
-  mesh_size_dict = {
-      "course":(5,2),
-      # "medium": (20,8),
-      # "fine":(100,10),
-      # "ultra_fine":(200,50)
-  }
-  # Define Problem constants
-  x_range = (0,5)
-  y_range = (0,2)
-  mesh_type = "finite_volume"
-  conductivity = 0.456 ## W/mK
-  diffusivity = 0.146*10**(-6) #m^2/s
-  temp_left = 30  ## decrees celcius
-  temp_right = 30 ## degrees celcius
-  temp_bottom = 30 # degrees celsius
-  top_flux = -10 #W/m
-
   generation_mesh_dict = {}
-  energy_balance_dict = {}
+  generation_energy_balance_dict = {}
   def gen_function (x, y):
-      return(0*y+ np.exp(-(x-2.5)))
+      return(0*y+ 50*np.exp(-(x-2.5)**2))
   for mesh_size , cells in mesh_size_dict.items():
       x_cells , y_cells  = cells
-
       generation_mesh_dict[mesh_size] = CartesianMesh(
           dimensions=2,
           n_cells=[x_cells, y_cells],
@@ -185,53 +182,60 @@ Due to the finite volume scheme, the total flux error and the sum of each cells 
       generation_mesh_dict[mesh_size].set_neumann_boundary(side="top", flux = top_flux/conductivity)
       generation_mesh_dict[mesh_size].set_generation(function = gen_function)
 
-      # Solve the steady Case
+      # Solve the steady Case with generation
       Solver(mesh = generation_mesh_dict[mesh_size]).solve_steady()
-      energy_balance_dict[mesh_size] = EnergyBalance(mesh = generation_mesh_dict[mesh_size])
+      generation_energy_balance_dict[mesh_size] = EnergyBalance(mesh = generation_mesh_dict[mesh_size])
       logger.info(f"\n Mesh Size:{mesh_size}")
-      total_flux = energy_balance_dict[mesh_size].flux("all")
+      total_flux = generation_energy_balance_dict[mesh_size].flux("all")
 
 #+END_SRC
 
 #+RESULTS:
 #+begin_example
-solver.cartesian_mesh:DEBUG:set_boundary_condition_array:generation in set bc (10,)
-solver.cartesian_mesh:DEBUG:set_boundary_condition_array:combined boundary condition array(10,)
-solver.cartesian_mesh:DEBUG:set_boundary_condition_array:generation in set bc (10,)
-solver.cartesian_mesh:DEBUG:set_boundary_condition_array:combined boundary condition array(10,)
-solver.cartesian_mesh:DEBUG:set_boundary_condition_array:generation in set bc (10,)
-solver.cartesian_mesh:DEBUG:set_boundary_condition_array:combined boundary condition array(10,)
-solver.cartesian_mesh:DEBUG:set_boundary_condition_array:generation in set bc (10,)
-solver.cartesian_mesh:DEBUG:set_boundary_condition_array:combined boundary condition array(10,)
-solver.cartesian_mesh:DEBUG:set_generation:grid:{'x_grid': <solver.mesher.grid object at 0x7f14d3d64e80>, 'y_grid': <solver.mesher.grid object at 0x7f14d3d674f0>}
-solver.cartesian_mesh:DEBUG:set_generation:grid_dict:{'x': array([[0.5],
-       [1.5],
-       [2.5],
-       [3.5],
-       [4.5]]), 'y': array([[1.5, 0.5]])}
-solver.cartesian_mesh:DEBUG:set_generation:generation:[[7.3890561  7.3890561 ]
- [2.71828183 2.71828183]
- [1.         1.        ]
- [0.36787944 0.36787944]
- [0.13533528 0.13533528]]
-solver.cartesian_mesh:DEBUG:set_generation:generation reshape:[7.3890561  2.71828183 1.         0.36787944 0.13533528 7.3890561
- 2.71828183 1.         0.36787944 0.13533528]
-solver.cartesian_mesh:DEBUG:set_generation:boundary_condition_array:[ 5.55824561e-06 -3.20175439e-06 -3.20175439e-06 -3.20175439e-06
-  5.55824561e-06  1.75200000e-05  8.76000000e-06  8.76000000e-06
-  8.76000000e-06  1.75200000e-05]
-solver.cartesian_mesh:DEBUG:set_boundary_condition_array:generation in set bc (10,)
-solver.cartesian_mesh:DEBUG:set_boundary_condition_array:combined boundary condition array(10,)
 
  Mesh Size:course
 solver.utilities:INFO:flux:
- Left Flux: 2.6868331904552454 W
- Right Flux: 12.121434734395674 W
- Bottom Flux: 11.970626771553594 W
- Generation: 23.221105303595504 W
+ Left Flux: -11.837760937388989 W
+ Right Flux: -11.837760937388977 W
+ Bottom Flux: -103.5634941372573 W
+ Generation: 177.2390160120353 W
  Top Flux: -50.0 W
- Cell Sum Squared Error: 1.0252726577544338e-28 W
- Flux leaving boundarys: -23.22110530359549W
- Total Flux: 1.1546319456101628e-14
+ Cell Sum Squared Error: 1.8696496491803743e-27 W
+ Flux leaving boundarys: -177.23901601203528W
+ Total Flux: 4.973799150320701e-14
+
+ Mesh Size:medium
+solver.utilities:INFO:flux:
+ Left Flux: -9.16253262420672 W
+ Right Flux: -9.162532624206637 W
+ Bottom Flux: -108.85304539486289 W
+ Generation: 177.17811064327657 W
+ Top Flux: -50.0 W
+ Cell Sum Squared Error: 4.5973915567369873e-26 W
+ Flux leaving boundarys: -177.17811064327626W
+ Total Flux: 2.984279490192421e-13
+
+ Mesh Size:fine
+solver.utilities:INFO:flux:
+ Left Flux: -9.111117016689013 W
+ Right Flux: -9.111117016688649 W
+ Bottom Flux: -108.95122150070219 W
+ Generation: 177.17345553406557 W
+ Top Flux: -49.99999999999999 W
+ Cell Sum Squared Error: 2.407755321345137e-24 W
+ Flux leaving boundarys: -177.17345553407984W
+ Total Flux: -1.4267698134062812e-11
+
+ Mesh Size:ultra_fine
+solver.utilities:INFO:flux:
+ Left Flux: -9.008837767940745 W
+ Right Flux: -9.008837767942454 W
+ Bottom Flux: -109.15562944250365 W
+ Generation: 177.1733049783401 W
+ Top Flux: -50.0 W
+ Cell Sum Squared Error: 7.590451080422885e-24 W
+ Flux leaving boundarys: -177.17330497838685W
+ Total Flux: -4.672529030358419e-11
 #+end_example
 
 #+ATTR_LATEX: :options frame=single
@@ -259,3 +263,7 @@ solver.utilities:INFO:flux:
 
 #+RESULTS:
 [[file:generation.png]]
+
+In the generation case you can see the overall energy balance still holds for the finite volume discritization regardless of discritization size. As expected, the energy generated is balanced by the energy leaving the control volume. The source term was strong enough to have a flux out of the control volume on the 4 dirichilet boundaries. Of note in this case is that even though the generation term was constant in the Y axis, the temperature distribution is shifted towards the upper bound due to the fixed flux of $10 W/m$ being less than the bottom flux (which is ~ $20 \frac{W}{m}$ but would not be constant across the boundary. Also of note, the maximum temperature reached was ~ 90 degrees celcius which is approaching a range where, depending on the application, the assumption of a constant thermal conductivity could be introducing a non-negligable amound of error into calculating the solution.
+
+* Part 3: Transient
