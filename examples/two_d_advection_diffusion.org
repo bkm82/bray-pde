@@ -6,7 +6,7 @@
 
 * Problem Description
 * Problem Constants
-Based on the problem description, at atmospheric pressure the thermal diffusivity ranges from $0.155 *10^{-6} \frac{m^2}{s}$ at 50 degrees celcius, to 0.143 * 10^-6 m^2/s at 20 degrees celsius. A constant thermal diffusivity of $0.146 * 10^{-6} /frac{m^2}{s}$ for water at standard temperature and pressure (25 degrees celcius at atmospheric pressure) was used for this project as the error introduced due to this symplifying assumption was determined to be acceptable [cite:@TheEngineeringToolBox]
+Based on the problem description, at atmospheric pressure the thermal diffusivity ranges from $0.155 *10^{-6} \frac{m^2}{s}$ at 50 degrees celcius, to $0.143 * 10^ {-6} \frac{m^2}{s}$ at 20 degrees celsius. A constant thermal diffusivity of $0.146 * 10^{-6} /frac{m^2}{s}$ for water at standard temperature and pressure (25 degrees celcius at atmospheric pressure) was used for this project as the error introduced due to this symplifying assumption was determined to be acceptable [cite:@TheEngineeringToolBox]
 
 The water thermal conductivity taken to be a constant at $0.456 \frac{W}{mK}$ again coresponding to a temperature of 25 degrees celcius. [cite:@Water_Conductivity_EngineeringToolBox]
 
@@ -24,7 +24,7 @@ The water thermal conductivity taken to be a constant at $0.456 \frac{W}{mK}$ ag
   logger = logging.getLogger(__name__)
   logger.setLevel(logging.INFO)
 
-   console_handler = logging.StreamHandler()
+  console_handler = logging.StreamHandler()
   console_handler.setLevel(logging.INFO)
   formatter = logging.Formatter(
     "%(message)s",
@@ -41,7 +41,7 @@ The water thermal conductivity taken to be a constant at $0.456 \frac{W}{mK}$ ag
   }
   # Define Problem constants
   x_range = (0,5)
-  y_range = (0,2)
+  y_range = (0,1)
   mesh_type = "finite_volume"
   conductivity = 0.456 ## W/mK
   diffusivity = 0.146*10**(-6) #m^2/s
@@ -88,47 +88,47 @@ The water thermal conductivity taken to be a constant at $0.456 \frac{W}{mK}$ ag
 
  Mesh Size:course
 solver.utilities:INFO:flux:
- Left Flux: 13.22286661143331 W
- Right Flux: 13.222866611433307 W
- Bottom Flux: 23.55426677713341 W
+ Left Flux: 5.984599731767105 W
+ Right Flux: 5.984599731767105 W
+ Bottom Flux: 38.03080053646583 W
  Generation: 0.0 W
  Top Flux: -50.0 W
- Cell Sum Squared Error: 1.733152060673851e-28 W
- Flux leaving boundarys: 2.7533531010703882e-14W
- Total Flux: 2.7533531010703882e-14
+ Cell Sum Squared Error: 8.131861707906003e-28 W
+ Flux leaving boundarys: 4.440892098500626e-14W
+ Total Flux: 4.440892098500626e-14
 
  Mesh Size:medium
 solver.utilities:INFO:flux:
- Left Flux: 14.166375634427117 W
- Right Flux: 14.166375634427105 W
- Bottom Flux: 21.667248731146003 W
+ Left Flux: 7.330052111172102 W
+ Right Flux: 7.330052111172095 W
+ Bottom Flux: 35.339895777655755 W
  Generation: 0.0 W
  Top Flux: -50.0 W
- Cell Sum Squared Error: 8.806630704153606e-27 W
- Flux leaving boundarys: 2.2737367544323206e-13W
- Total Flux: 2.2737367544323206e-13
+ Cell Sum Squared Error: 2.2277109653610886e-26 W
+ Flux leaving boundarys: -5.684341886080802e-14W
+ Total Flux: -5.684341886080802e-14
 
  Mesh Size:fine
 solver.utilities:INFO:flux:
- Left Flux: 14.210873241110075 W
- Right Flux: 14.21087324111019 W
- Bottom Flux: 21.578253517775686 W
+ Left Flux: 7.410898164506065 W
+ Right Flux: 7.4108981645061895 W
+ Bottom Flux: 35.178203670991046 W
  Generation: 0.0 W
  Top Flux: -49.99999999999999 W
- Cell Sum Squared Error: 3.622942926157899e-25 W
- Flux leaving boundarys: -4.035882739117369e-12W
- Total Flux: -4.035882739117369e-12
+ Cell Sum Squared Error: 1.7166707559454444e-25 W
+ Flux leaving boundarys: 3.304023721284466e-12W
+ Total Flux: 3.304023721284466e-12
 
  Mesh Size:ultra_fine
 solver.utilities:INFO:flux:
- Left Flux: 14.221818115200453 W
- Right Flux: 14.221818115200096 W
- Bottom Flux: 21.55636376958232 W
+ Left Flux: 7.417294624355647 W
+ Right Flux: 7.417294624356283 W
+ Bottom Flux: 35.165410751328 W
  Generation: 0.0 W
  Top Flux: -50.0 W
- Cell Sum Squared Error: 1.0682860358038386e-24 W
- Flux leaving boundarys: -1.7138290786533616e-11W
- Total Flux: -1.7138290786533616e-11
+ Cell Sum Squared Error: 1.6155439387848486e-24 W
+ Flux leaving boundarys: 3.991829089500243e-11W
+ Total Flux: 3.991829089500243e-11
 #+end_example
 
 Due to the finite volume scheme, the total flux error and the sum of each cells squared error is relativly independent of mesh size. The overall error increases slightly with the higher number of points due to the numerical round off error present with the higher number of calcualtions.
@@ -160,6 +160,7 @@ Due to the finite volume scheme, the total flux error and the sum of each cells 
 [[file:steady.png]]
 
 * Part 2: With Generation
+#+ATTR_LATEX: :options frame=single
 #+BEGIN_SRC python :results output :exports both :session Python-Session
   generation_mesh_dict = {}
   generation_energy_balance_dict = {}
@@ -267,3 +268,97 @@ solver.utilities:INFO:flux:
 In the generation case you can see the overall energy balance still holds for the finite volume discritization regardless of discritization size. As expected, the energy generated is balanced by the energy leaving the control volume. The source term was strong enough to have a flux out of the control volume on the 4 dirichilet boundaries. Of note in this case is that even though the generation term was constant in the Y axis, the temperature distribution is shifted towards the upper bound due to the fixed flux of $10 W/m$ being less than the bottom flux (which is ~ $20 \frac{W}{m}$ but would not be constant across the boundary. Also of note, the maximum temperature reached was ~ 90 degrees celcius which is approaching a range where, depending on the application, the assumption of a constant thermal conductivity could be introducing a non-negligable amound of error into calculating the solution.
 
 * Part 3: Transient
+
+To obtain a rough estimate the time to perform the simulation we can use the formula
+\begin{equation*}
+\frac{Water Mass * (T _{final} - T _{start}) * Specific Heat}{Cooling Rate}
+\end{equation*}
+
+Aproximating the cooling rate as being the average of its starting rate (50W from the top) and 0W (steady state) = 25W.
+
+The temperatures are 30 celcius and the average temperature seen in the steady state case.
+At these temperatures, the isobaric and isochoric specific heats are aproximatly equivalent at 4.1379 kJ/kgK [cite:@Water_Specific_Heat_EngineeringToolBox]
+
+\begin{equation*}
+\frac{5 (m) * 1 (m) * L (m) * \frac{1000 kg}{m^3} * (T _{final} -30 )K * 41379 \frac{J}{kgK}}{-25 \frac{J}{s m} * L(m)} =
+\end{equation*}
+where L is the lenght into the page
+#+ATTR_LATEX: :options frame=single
+#+BEGIN_SRC python :results output :exports both :session Python-Session
+
+  average_final_temp =np.mean(mesh_dict["fine"].phi.get_phi())
+  time_estimate = ((5*1)*1000*(average_final_temp - 30)*41379)/(-25)
+  logger.info(f"Time Estimate: {time_estimate}s")
+#+END_SRC
+
+#+RESULTS:
+: Time Estimate: 90780724.92607749s
+
+Recalling that for an explicit solver we need
+\begin{equation*}
+\Delta t \le \frac{\Delta x ^2}{2\alpha ^2}
+\end{equation*}
+With a realistic $\Delta x = 0.01$ and our thermal diffusivity of $0.146 *10 ^{-6} \frac{m^2}{s}$ an Explicit solver would require a time step size on the order of 100 seconds which would require roughly 1 million time steps for the finer mesh.
+For this reason an implicit solver was chosen.
+
+#+ATTR_LATEX: :options frame=single
+#+BEGIN_SRC python :results output :exports both :session Python-Session
+  #Define a various mesh sizes with non equal cell widths and heights
+
+  transient_mesh = CartesianMesh(
+    dimensions = 2,
+    n_cells = [5, 3],
+    cordinates = [(0,5), (0,1)],
+    mesh_type = "finite_volume",
+    conductivity = conductivity,
+    diffusivity = diffusivity
+  )
+
+  transient_mesh.set_dirichlet_boundary(side="left", phi=temp_left)
+  transient_mesh.set_dirichlet_boundary(side="right", phi=temp_left)
+  transient_mesh.set_dirichlet_boundary(side="bottom", phi=temp_left)
+  transient_mesh.set_neumann_boundary(side="top", flux=-10/conductivity)
+  transient_mesh.phi.set_phi(30)
+  logger.debug(f"Initial phi {transient_mesh.phi.get_phi()}")
+  logger.info(f"Steady Average Temerpature phi {average_final_temp}")
+
+  transient_solver = Solver(
+      mesh = transient_mesh,
+      method = "implicit",
+      time_step_size = 10000
+  )
+  record_time_step_time = 1000000
+  for i in range(0,10):
+      time = transient_solver.current_time
+      transient_solver.solve(
+          t_initial = time,
+          t_final = time + record_time_step_time)
+      current_average_temp = np.mean(transient_mesh.phi.get_phi())
+      error = (current_average_temp - average_final_temp) / (average_final_temp)
+      logger.info(f"Time : {transient_solver.current_time}, Average Temp {current_average_temp}, error: {error}")
+
+  logger.debug(f"Phi{transient_mesh.phi.get_phi()}")
+
+
+
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+Steady Average Temerpature phi 19.030580134116644
+Time : 1000000, Average Temp 27.123986513792133, error: 0.42528426998219654
+Time : 2000000, Average Temp 25.121032931216217, error: 0.3200350569545198
+Time : 3000000, Average Temp 23.815001439905192, error: 0.25140701292712486
+Time : 4000000, Average Temp 22.963709383736486, error: 0.20667416452369802
+Time : 5000000, Average Temp 22.405777293578748, error: 0.17735650388352037
+Time : 6000000, Average Temp 22.03847238495372, error: 0.15805573081005272
+Time : 7000000, Average Temp 21.79588528248911, error: 0.1453085049895577
+Time : 8000000, Average Temp 21.635304170596473, error: 0.13687044841109544
+Time : 9000000, Average Temp 21.528836714146742, error: 0.13127590238572942
+Time : 10000000, Average Temp 21.458167356552842, error: 0.1275624392597573
+#+end_example
+
+#+RESULTS:
+: Phi[[18.46918729 13.50821284 12.62067166 13.50821284 18.46918729]
+:  [23.75403917 20.32979331 19.68961931 20.32979331 23.75403917]
+:  [28.02119147 26.81585625 26.58426971 26.81585625 28.02119147]]
