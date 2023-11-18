@@ -84,15 +84,6 @@ class Saver(object):
             saved_state_dictionary[key] = value
         self.saved_state_list.append(pd.DataFrame(saved_state_dictionary))
 
-    def update_save_dictionary(self, **kwargs):
-        self.save_dictionary = {
-            "method": self.method,
-            "time_step_size": self.time_step_size,
-            "time": self.current_time,
-        }
-        for key, value in kwargs.items():
-            self.save_dictionary[key] = value
-
 
 class Solver(Saver):
     """main solver class."""
@@ -154,8 +145,23 @@ class Solver(Saver):
         """
         self.current_time = t_initial
         while self.current_time < t_final:
-            self.take_step()
-            self.current_time = self.current_time + self.time_step_size
+            phi = self.mesh.phi.get_phi()
+            phi.shape = phi.shape
+            solved_phi = self.take_step(k=self.step_size, atribute=phi.flatten())
+
+            phi_reshape = np.reshape(solved_phi, phi.shape)
+            self.mesh.phi.set_phi(phi_reshape.tolist())
+
+            self.current_time = self.current_time + self.step_size
+
+    def update_save_dictionary(self, **kwargs):
+        self.save_dictionary = {
+            "method": self.method,
+            "time_step_size": self.step_size,
+            "time": self.current_time,
+        }
+        for key, value in kwargs.items():
+            self.save_dictionary[key] = value
 
 
 class solver_1d(Solver):

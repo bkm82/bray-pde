@@ -427,6 +427,17 @@ class TestCartesianMesh_Integration:
         expected = steady_2d_solved
         np.testing.assert_array_almost_equal(x=actual_phi, y=expected)
 
+    def test_solve_unsteady_2d(self, CartesianMesh_2d, steady_2d_solved):
+        actual = solver.Solver(
+            mesh=CartesianMesh_2d,
+            method="implicit",
+        )
+        actual.solve(t_final=20)
+        actual_phi = actual.mesh.phi.get_phi()
+        expected = steady_2d_solved
+        # verify it matches the steady case
+        np.testing.assert_array_almost_equal(x=actual_phi, y=expected)
+
 
 if __name__ == "__main__":
     pytest.main()

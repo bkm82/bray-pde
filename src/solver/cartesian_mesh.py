@@ -80,7 +80,7 @@ class CartesianMesh:
         self.initalize_phi()
         self.boundary_condition = self.initalize_boundary_condition()
         self.set_laplacian()
-        self.boundary_condition_dict = {}
+        self.boundary_condition_dict: dict[str, str] = {}
         self.conductivity = conductivity
 
     def validate_inputs(
