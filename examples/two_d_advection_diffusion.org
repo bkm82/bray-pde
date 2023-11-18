@@ -196,47 +196,47 @@ Due to the finite volume scheme, the total flux error and the sum of each cells 
 
  Mesh Size:course
 solver.utilities:INFO:flux:
- Left Flux: -11.837760937388989 W
- Right Flux: -11.837760937388977 W
- Bottom Flux: -103.5634941372573 W
- Generation: 177.2390160120353 W
+ Left Flux: 3.050929235793739 W
+ Right Flux: 3.050929235793736 W
+ Bottom Flux: -44.721366477605116 W
+ Generation: 88.61950800601765 W
  Top Flux: -50.0 W
- Cell Sum Squared Error: 1.8696496491803743e-27 W
- Flux leaving boundarys: -177.23901601203528W
- Total Flux: 4.973799150320701e-14
+ Cell Sum Squared Error: 1.3769936879182083e-27 W
+ Flux leaving boundarys: -88.61950800601764W
+ Total Flux: 1.9984014443252818e-14
 
  Mesh Size:medium
 solver.utilities:INFO:flux:
- Left Flux: -9.16253262420672 W
- Right Flux: -9.162532624206637 W
- Bottom Flux: -108.85304539486289 W
- Generation: 177.17811064327657 W
+ Left Flux: 4.701073325592375 W
+ Right Flux: 4.70107332559235 W
+ Bottom Flux: -47.991201972823 W
+ Generation: 88.58905532163828 W
  Top Flux: -50.0 W
- Cell Sum Squared Error: 4.5973915567369873e-26 W
- Flux leaving boundarys: -177.17811064327626W
- Total Flux: 2.984279490192421e-13
+ Cell Sum Squared Error: 2.551527219976484e-26 W
+ Flux leaving boundarys: -88.58905532163827W
+ Total Flux: 1.2878587085651816e-14
 
  Mesh Size:fine
 solver.utilities:INFO:flux:
- Left Flux: -9.111117016689013 W
- Right Flux: -9.111117016688649 W
- Bottom Flux: -108.95122150070219 W
- Generation: 177.17345553406557 W
+ Left Flux: 4.785512273955572 W
+ Right Flux: 4.785512273955726 W
+ Bottom Flux: -48.157752314938016 W
+ Generation: 88.58672776703278 W
  Top Flux: -49.99999999999999 W
- Cell Sum Squared Error: 2.407755321345137e-24 W
- Flux leaving boundarys: -177.17345553407984W
- Total Flux: -1.4267698134062812e-11
+ Cell Sum Squared Error: 3.4356761443066776e-25 W
+ Flux leaving boundarys: -88.58672776702672W
+ Total Flux: 6.0751403907488566e-12
 
  Mesh Size:ultra_fine
 solver.utilities:INFO:flux:
- Left Flux: -9.008837767940745 W
- Right Flux: -9.008837767942454 W
- Bottom Flux: -109.15562944250365 W
- Generation: 177.1733049783401 W
+ Left Flux: 4.804574739708152 W
+ Right Flux: 4.804574739708852 W
+ Bottom Flux: -48.195801968524805 W
+ Generation: 88.58665248917005 W
  Top Flux: -50.0 W
- Cell Sum Squared Error: 7.590451080422885e-24 W
- Flux leaving boundarys: -177.17330497838685W
- Total Flux: -4.672529030358419e-11
+ Cell Sum Squared Error: 3.482364056824771e-24 W
+ Flux leaving boundarys: -88.5866524891078W
+ Total Flux: 6.225775450729998e-11
 #+end_example
 
 #+ATTR_LATEX: :options frame=single
@@ -292,7 +292,7 @@ where L is the lenght into the page
 #+END_SRC
 
 #+RESULTS:
-: Time Estimate: 90780724.92607749s
+: Time Estimate: 67171960.47650723s
 
 Recalling that for an explicit solver we need
 \begin{equation*}
@@ -307,7 +307,7 @@ For this reason an implicit solver was chosen.
 
   transient_mesh = CartesianMesh(
     dimensions = 2,
-    n_cells = [5, 3],
+    n_cells = [80, 12],
     cordinates = [(0,5), (0,1)],
     mesh_type = "finite_volume",
     conductivity = conductivity,
@@ -318,24 +318,39 @@ For this reason an implicit solver was chosen.
   transient_mesh.set_dirichlet_boundary(side="right", phi=temp_left)
   transient_mesh.set_dirichlet_boundary(side="bottom", phi=temp_left)
   transient_mesh.set_neumann_boundary(side="top", flux=-10/conductivity)
+
+  #Set the initial condition
   transient_mesh.phi.set_phi(30)
+
   logger.debug(f"Initial phi {transient_mesh.phi.get_phi()}")
   logger.info(f"Steady Average Temerpature phi {average_final_temp}")
 
+  #Create the implicit solver
   transient_solver = Solver(
       mesh = transient_mesh,
       method = "implicit",
       time_step_size = 10000
   )
-  record_time_step_time = 1000000
-  for i in range(0,10):
+
+  record_time_step_time = 500000
+  max_time = 50000000
+  transient_dict[0] = transient_mesh.phi.get_phi()
+  time = 0
+  while time < max_time:
       time = transient_solver.current_time
       transient_solver.solve(
           t_initial = time,
           t_final = time + record_time_step_time)
       current_average_temp = np.mean(transient_mesh.phi.get_phi())
-      error = (current_average_temp - average_final_temp) / (average_final_temp)
-      logger.info(f"Time : {transient_solver.current_time}, Average Temp {current_average_temp}, error: {error}")
+      error = (
+          current_average_temp - average_final_temp) / (average_final_temp) *100
+      logger.info(f"Time : {transient_solver.current_time} s, Average Temp {current_average_temp}, error: {round(error,2)}%")
+      transient_dict[time+record_time_step_time] = transient_mesh.phi.get_phi()
+      if error < 0.1:
+          break
+
+      if time >= max_time:
+          logger.warning(f"The max time was reached without convergance")
 
   logger.debug(f"Phi{transient_mesh.phi.get_phi()}")
 
@@ -345,20 +360,59 @@ For this reason an implicit solver was chosen.
 
 #+RESULTS:
 #+begin_example
-Steady Average Temerpature phi 19.030580134116644
-Time : 1000000, Average Temp 27.123986513792133, error: 0.42528426998219654
-Time : 2000000, Average Temp 25.121032931216217, error: 0.3200350569545198
-Time : 3000000, Average Temp 23.815001439905192, error: 0.25140701292712486
-Time : 4000000, Average Temp 22.963709383736486, error: 0.20667416452369802
-Time : 5000000, Average Temp 22.405777293578748, error: 0.17735650388352037
-Time : 6000000, Average Temp 22.03847238495372, error: 0.15805573081005272
-Time : 7000000, Average Temp 21.79588528248911, error: 0.1453085049895577
-Time : 8000000, Average Temp 21.635304170596473, error: 0.13687044841109544
-Time : 9000000, Average Temp 21.528836714146742, error: 0.13127590238572942
-Time : 10000000, Average Temp 21.458167356552842, error: 0.1275624392597573
+Steady Average Temerpature phi 21.883327234042966
+Time : 500000 s, Average Temp 28.535267554470284, error: 30.4%
+Time : 1000000 s, Average Temp 27.268397546435594, error: 24.61%
+Time : 1500000 s, Average Temp 26.22997299732739, error: 19.86%
+Time : 2000000 s, Average Temp 25.3933422332038, error: 16.04%
+Time : 2500000 s, Average Temp 24.720514075546923, error: 12.97%
+Time : 3000000 s, Average Temp 24.17868791987837, error: 10.49%
+Time : 3500000 s, Average Temp 23.741637048545964, error: 8.49%
+Time : 4000000 s, Average Temp 23.38860713122911, error: 6.88%
+Time : 4500000 s, Average Temp 23.10312964767548, error: 5.57%
+Time : 5000000 s, Average Temp 22.872078322334737, error: 4.52%
+Time : 5500000 s, Average Temp 22.684949712392886, error: 3.66%
+Time : 6000000 s, Average Temp 22.533312966793243, error: 2.97%
+Time : 6500000 s, Average Temp 22.410384452649232, error: 2.41%
+Time : 7000000 s, Average Temp 22.310695589073646, error: 1.95%
+Time : 7500000 s, Average Temp 22.22983135278154, error: 1.58%
+Time : 8000000 s, Average Temp 22.164223107456003, error: 1.28%
+Time : 8500000 s, Average Temp 22.110983651304984, error: 1.04%
+Time : 9000000 s, Average Temp 22.067775360645264, error: 0.84%
+Time : 9500000 s, Average Temp 22.032704457817463, error: 0.68%
+Time : 10000000 s, Average Temp 22.004236014472575, error: 0.55%
+Time : 10500000 s, Average Temp 21.981125486248704, error: 0.45%
+Time : 11000000 s, Average Temp 21.962363474600636, error: 0.36%
+Time : 11500000 s, Average Temp 21.947131102737938, error: 0.29%
+Time : 12000000 s, Average Temp 21.934763928817294, error: 0.24%
+Time : 12500000 s, Average Temp 21.92472273889567, error: 0.19%
+Time : 13000000 s, Average Temp 21.916569892386672, error: 0.15%
+Time : 13500000 s, Average Temp 21.909950154298546, error: 0.12%
+Time : 14000000 s, Average Temp 21.904575156636994, error: 0.1%
 #+end_example
 
+
+#+ATTR_LATEX: :options frame=single
+#+BEGIN_SRC python :results graphics file :file transient.png :exports both :session Python-Session
+  fig, axes = plt.subplots(4, figsize= (10,12))
+  dict_length = len(transient_dict)
+  i = 0
+  for  row, ax in zip([500000,5000000, 10000000, 14000000], axes.flat):
+
+      x_cords = transient_mesh.grid["x_grid"].cell_cordinates
+      y_cords = transient_mesh.grid["y_grid"].cell_cordinates
+      logger.debug(row)
+      xv, yv = np.meshgrid(x_cords, y_cords)
+      #axis = plt.subplot(3,1,i+1)
+      #axis.set_title(row)
+      im = ax.pcolormesh(xv, yv, transient_dict[row])
+      ax.set_title(f"time {row}s")
+      i = i +1
+
+  fig.colorbar(im, ax = axes.ravel().tolist(), label = "temperature (celcius)")
+  plt.savefig("transient.png")
+
+#+END_SRC
+
 #+RESULTS:
-: Phi[[18.46918729 13.50821284 12.62067166 13.50821284 18.46918729]
-:  [23.75403917 20.32979331 19.68961931 20.32979331 23.75403917]
-:  [28.02119147 26.81585625 26.58426971 26.81585625 28.02119147]]
+[[file:transient.png]]
