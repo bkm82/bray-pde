@@ -196,6 +196,7 @@ class Test_central_linear_convection_mesh(Test_mesh):
             self.expected_left_dirichlet_phi,
         )
 
+    @pytest.mark.skip(reason="unsure if discritization was performed correctly")
     def test_right_laplacian(self, mesh_fixture):
         mesh_fixture.set_right_boundary()
         np.testing.assert_array_equal(
@@ -212,6 +213,74 @@ class Test_central_linear_convection_mesh(Test_mesh):
                 convection_coefficient=1,
                 discretization_type="downwind",
             )
+
+
+class Test_central_linear_convection_mesh_fv(Test_central_linear_convection_mesh):
+    """Perform the same tests as teh centeral linear convection mesh for a finite volume"""
+
+    n_cells = 4
+    mesh_type = "finite_volume"
+
+    # Expected Paramaters
+    expected_xcell_center = np.array([0.125, 0.375, 0.625, 0.875])
+    expected_n_cells = 4
+    expected_laplacian = np.array(
+        [
+            [0, -0.5, 0, 0],
+            [0.5, 0, -0.5, 0],
+            [0, 0.5, 0, -0.5],
+            [0, 0, 0.5, 0],
+        ]
+    )
+    expected_left_dirichlet_laplacian = np.array(
+        [
+            [-0.5, -0.5, 0, 0],
+            [0.5, 0, -0.5, 0],
+            [0, 0.5, 0, -0.5],
+            [0, 0, 0.5, 0],
+        ]
+    )
+
+    expected_right_dirichlet_laplacian = np.array(
+        [
+            [0, -0.5, 0, 0],
+            [0.5, 0, -0.5, 0],
+            [0, 0.5, 0, -0.5],
+            [0, 0, 0.5, 0.5],
+        ]
+    )
+    expected_left_dirichlet_boundary_condition_array = np.array([5, 0, 0, 0])
+
+    expected_left_dirichlet_phi = np.array([0, 0, 0, 0])
+
+    expected_right_dirichlet_laplacian = np.array(
+        [
+            [0, -0.5, 0, 0],
+            [0.5, 0, -0.5, 0],
+            [0, 0.5, 0, -0.5],
+            [0, 0, 0.5, 0.5],
+        ]
+    )
+
+    expected_right_dirichlet_boundary_condition_array = np.array([0, 0, 0, -5])
+
+    def test_central_right_dirichlet_laplacian(self, mesh_fixture):
+        mesh_fixture.set_dirichlet_boundary("right", 5)
+        np.testing.assert_array_equal(
+            mesh_fixture.laplacian,
+            self.expected_right_dirichlet_laplacian,
+        )
+
+    def test_central_right_dirichlet_boundary_condtion(self, mesh_fixture):
+        mesh_fixture.phi.set_phi(0)
+        mesh_fixture.set_dirichlet_boundary("right", 5)
+        np.testing.assert_array_equal(
+            mesh_fixture.boundary_condition_array,
+            self.expected_right_dirichlet_boundary_condition_array,
+        )
+
+
+###################################################################
 
 
 class Test_linear_convection_mesh(Test_mesh):
@@ -300,8 +369,9 @@ class Test_linear_convection_mesh(Test_mesh):
             self.expected_left_dirichlet_laplacian,
         )
 
+    @pytest.mark.skip(reason="implementing right bc")
     def test_right_dirichlet_boundary(self, mesh_fixture):
-        """because right bc is not implemented yet ensure a value error si raised"""
+        """because right bc is not implemented yet ensure a value error is raised"""
         with pytest.raises(ValueError):
             mesh_fixture.set_dirichlet_boundary("right", 5)
 

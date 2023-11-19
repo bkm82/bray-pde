@@ -2,6 +2,7 @@ import pytest
 import numpy as np
 import scipy as sp
 from solver.cartesian_mesh import CartesianMesh
+from solver.solver import Solver
 import logging
 
 logging.basicConfig(format="(levelname)s:%messages)s", level=logging.DEBUG)
@@ -160,13 +161,31 @@ class Test_1d_CartesianMesh:
         expected = np.array([10, 10, 10, 10])
         np.testing.assert_array_equal(x=one_d_mesh.phi.get_phi(), y=expected)
 
-    @pytest.mark.skip
     def test_solve(self, one_d_mesh):
         one_d_mesh.set_dirichlet_boundary(side="left", phi=40)
         one_d_mesh.set_dirichlet_boundary(side="right", phi=0)
         expected = np.array([35, 25, 15, 5])
-        actual = one_d_mesh.solve()
-        np.testing.assert_array_equal(x=actual, y=expected)
+        actual_solver = Solver(mesh=one_d_mesh)
+        actual_solver.solve_steady()
+        actual = one_d_mesh.phi.get_phi()
+
+        np.testing.assert_array_almost_equal(x=actual, y=expected)
+
+    def test_solve_unsteady(self, one_d_mesh):
+        one_d_mesh.set_dirichlet_boundary(side="left", phi=40)
+        one_d_mesh.set_dirichlet_boundary(side="right", phi=0)
+        expected = np.array([35, 25, 15, 5])
+        actual_solver = Solver(mesh=one_d_mesh, method="explicit", time_step_size=0.01)
+        actual_solver.solve(10)
+        actual = one_d_mesh.phi.get_phi()
+
+        np.testing.assert_array_almost_equal(x=actual, y=expected)
+
+    @pytest.mark.skip
+    def test_velocity_differentiation_matrix(self):
+        mesh = CartesianMesh(dimensions=1, n_cells=[4], cordinates=[(1, 0)], velocity=5)
+
+        mesh.convective_mesh.differentiation
 
 
 class Test_2d_CartesianMesh:

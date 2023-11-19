@@ -21,6 +21,7 @@ class ImplicitStep(object):
         identity_matrix = np.identity(laplacian.shape[0])
         a = -k * laplacian + identity_matrix
         b = k * boundary_condition_array
+
         return np.linalg.solve(a, (phi + b))
 
 

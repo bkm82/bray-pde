@@ -1,6 +1,24 @@
 import numpy as np
 import scipy
+import logging
 from typing import Sequence, Tuple, List
+
+# create logging configuration
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+
+# Create a console handler
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.DEBUG)
+
+# Set the formatter for the console handler
+formatter = logging.Formatter(
+    "%(name)s:%(levelname)s:%(funcName)s:%(message)s",
+)
+console_handler.setFormatter(formatter)
+
+# Add the console handler to the logger
+logger.addHandler(console_handler)
 
 
 class create_1Dmesh:
@@ -153,17 +171,29 @@ class linear_convection_mesh(create_1Dmesh):
     def set_dirichlet_boundary(self, side: str, phi: float):
         """Update boundary array and D2 for a dirichlet boundary."""
         self.x_differentiation_matrix.set_dirichlet_boundary(side, self.mesh_type)
-        self.boundary_condition_object.set_dirichlet_boundary(side=side, phi=phi / 2)
+        # self.boundary_condition_object.set_dirichlet_boundary(side=side, phi=phi / 2)
         self.phi.set_dirichlet_boundary(side, phi)
+        side_selector().side_validate(side)
+        array_index = side_selector().boundary_index(side)
 
-        if side == "left":
-            array_index = 0
-
+        if side == "right":
+            sign = -1
+        elif side == "left":
+            sign = 1
         else:
-            raise ValueError("Only left side implemented")
+            raise ValueError("oops, you shouldnt be here")
+        self.boundary_condition_object.set_dirichlet_boundary(
+            side=side, phi=sign * phi / 2
+        )
 
         if self.mesh_type == "finite_volume":
-            self.laplacian[array_index, array_index] = -1
+            if self.discretization_type == "central":
+                self.laplacian[array_index, array_index] = (-1 / 2) * sign
+            elif self.discretization_type == "upwind":
+                self.laplacian[array_index, array_index] = -1
+            else:
+                raise ValueError("oops, unsupported mesh type")
+
         elif self.mesh_type == "finite_difference":
             if self.discretization_type == "maccormack":
                 self.predictor_differentiation_matrix[array_index, :] = 0

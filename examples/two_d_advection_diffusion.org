@@ -5,8 +5,83 @@
 #+BIBLIOGRAPHY: citations.bib
 
 * Problem Description
+** Integral Equation
+This problem considers the 2 dimensional advection diffusion equation, which in its integral form can be written as
+\begin{equation}
+\frac{d}{dt} \int _\Omega \phi  d\Omega = - \int _S \phi \textbf{V} \cdot \textbf{n} dS  \int _S \alpha \nabla \phi \cdot \textbf{n} dS + \int _\Omega Q d\Omega
+\end{equation}
+
+** Descriptions
+Part 1 condsiders the steady state problem with no advection or generation terms for a thin water column with the spatial domain of  $x \epsilon(0,5m)$ and $y \epsilon(0,1m)$ with a dirichlet boundary conditions of $30^{\circ} c$ on the left, bottom, and top surface and a neumann boundary condition of $q = 10 \frac{W}{m^2}$ on the top surface
+
+Part 2 condsiders the same formulation as part 1 with an added source term $Q = 50e^{-(x-\frac{L}{2})^2}$
+
+Part 3 considers the unsteady case of part 1, starting from an initial condition of $T(0,x,y) = 30^{\circ} c$ until a steady state is achieved
+
+Part 4 considers the advection-diffusion problem with a left dirichelet boundary condition of $50 ^{\circ} c$, for three constant velocities $\textbf{V} = [1,0], [10,0], [100,0] m/s$
+** Discritized Equations
+The first term of equation 1 discritized on a cartesian structured grid by approximating the volumetric inegral's average as being its center point and discritizing the time derivative using a forward discritization.
+\begin{equation}
+\frac{d}{d t} \int _\Omega  \phi d\Omega = \frac{d}{d t} \bar{\phi}\Delta x \Delta y \approx \frac{d}{d t} \phi _i\Delta x \Delta y \approx \frac{\phi^{n+1} _i - \phi ^ n _i}{\Delta t} \Delta x \Delta y + O(\Delta t)
+\end{equation}
+
+Due to the velocitys all being in the positive x direction, the second term can be discritized using an upwind discritization.
+\begin{equation}
+ -\int _S \phi \textbf{V} \cdot \textbf{n} dS   \approx u_x(\phi_L - \phi _i) \Delta y +O(\Delta x , \Delta t)
+\end{equation}
+where u_x is the velocity magnitude in the x direction and $\phi _W$ coresponds to value of phi for the cell next to the current cell in the the west cardinal dircetion. Of note, the $\Delta x$ discritization here will make the entire equation 1st order accurate spatial discritization. Note: The convection of refering to the cells surrounding the current cell as N = North, E = East, W = West, S = South
+and the lowercase equivalent refering to the respective face intersections between will be used throuhout this report)
+
+the third diffusive flux term can be discritized using the central difference. Assuming a constant diffusivity paramater this results in
+
+\begin{equation}
+ \int _S \alpha \nabla \phi \cdot \textbf{n} dS \approx \alpha \frac{\phi _L -2 \phi _i +\phi _R}{\Delta x} \Delta y + \alpha \frac{\phi _S -2 \phi _i +\phi _N}{\Delta y} \Delta x + O(\Delta x^2 ,\Delta y^2)
+\end{equation}
+
+The last source term can again be approximated as the value at its mid point
+
+\begin{equation}
+\int _\Omega Q d\Omega \approx Q_i\Delta x \Delta y
+\end{equation}
+
+Combining the equations 2 - 5 and deviding both sided by $\Delta x \Delta y$ and multipying the source term (given in units of $\frac{W}{m^2}$) by $\frac{\alpha}{k}$ results in the final discritized equation
+\begin{equation}
+\frac{\phi^{n+1} _i - \phi ^ n _i}{\Delta t} = \frac{u_x(\phi_L - \phi _i)}{\Delta x} + \alpha \frac{\phi _L -2 \phi _i +\phi _R}{\Delta x ^2} + \alpha \frac{\phi _S -2 \phi _i +\phi _N}{\Delta y^2} + \ Q_i \frac{\alpha}{k} +O(\Delta t, \Delta x, \Delta y)
+\end{equation}
+
+Finally, the source term was given in
+
+** Boundary Conditions
+For the boundary conditions, we can modify equation 6 on the boundaries using the ghost cell approach using the known quantities. Shown here for the left dirichlet boundaries
+\begin{equation}
+\frac{\phi _L+ \phi _i}{2} = T_{left}
+\end{equation}
+allows solving for the dirichlet equations on the boundaries
+\begin{equation}
+\phi _L = 2T_{left}-\phi _i
+\end{equation}
+Simillarly for the right
+\begin{equation}
+\phi _R = 2T_{right}-\phi _i
+\end{equation}
+and bottom boundaries
+\begin{equation}
+\phi _S = 2T_{bottom}-\phi _i
+\end{equation}
+The neumann boundary can be determined from the flux term
+\begin{equation}
+q = k \frac{\delta T}{\delta y} \approx k \frac{\phi _N - \phi _i}{\Delta y}
+\end{equation}
+where k is the materials thermal conductivity.
+Solving for $\phi _n$
+\begin{equation}
+\phi _N = \frac{q \Delta y}{k} +\phi _i
+\end{equation}
+
+
+\newpage
 * Problem Constants
-Based on the problem description, at atmospheric pressure the thermal diffusivity ranges from $0.155 *10^{-6} \frac{m^2}{s}$ at 50 degrees celcius, to $0.143 * 10^ {-6} \frac{m^2}{s}$ at 20 degrees celsius. A constant thermal diffusivity of $0.146 * 10^{-6} /frac{m^2}{s}$ for water at standard temperature and pressure (25 degrees celcius at atmospheric pressure) was used for this project as the error introduced due to this symplifying assumption was determined to be acceptable [cite:@TheEngineeringToolBox]
+Based on the problem description, at atmospheric pressure the thermal diffusivity ranges from $0.155 *10^{-6} \frac{m^2}{s}$ at 50 degrees celcius, to $0.143 * 10^ {-6} \frac{m^2}{s}$ at 20 degrees celsius. A constant thermal diffusivity of $0.146 * 10^{-6} /frac{m^2}{s}$ for water at standard temperature and pressure (25 degrees celcius at atmospheric pressure) was used for this project as the error introduced due to this symplifying assumption was determined to be acceptable [cite:@Water_Diffusion_EngineeringToolbox]
 
 The water thermal conductivity taken to be a constant at $0.456 \frac{W}{mK}$ again coresponding to a temperature of 25 degrees celcius. [cite:@Water_Conductivity_EngineeringToolBox]
 
@@ -15,6 +90,7 @@ The water thermal conductivity taken to be a constant at $0.456 \frac{W}{mK}$ ag
   from solver.cartesian_mesh import CartesianMesh
   from solver.solver import Solver
   from solver.utilities import EnergyBalance
+  from solver.mesher import linear_convection_mesh
   from matplotlib import pyplot as plt
   import numpy as np
   import logging
@@ -22,10 +98,10 @@ The water thermal conductivity taken to be a constant at $0.456 \frac{W}{mK}$ ag
 
   #create logging configuration
   logger = logging.getLogger(__name__)
-  logger.setLevel(logging.INFO)
+  logger.setLevel(logging.DEBUG)
 
   console_handler = logging.StreamHandler()
-  console_handler.setLevel(logging.INFO)
+  console_handler.setLevel(logging.DEBUG)
   formatter = logging.Formatter(
     "%(message)s",
   )
@@ -280,7 +356,7 @@ The temperatures are 30 celcius and the average temperature seen in the steady s
 At these temperatures, the isobaric and isochoric specific heats are aproximatly equivalent at 4.1379 kJ/kgK [cite:@Water_Specific_Heat_EngineeringToolBox]
 
 \begin{equation*}
-\frac{5 (m) * 1 (m) * L (m) * \frac{1000 kg}{m^3} * (T _{final} -30 )K * 41379 \frac{J}{kgK}}{-25 \frac{J}{s m} * L(m)} =
+\frac{5 (m) * 1 (m) * \frac{1000 kg}{m^3} * (T _{final} -30 )K * 41379 \frac{J}{kgK}}{-25 \frac{J}{s m^2} } =
 \end{equation*}
 where L is the lenght into the page
 #+ATTR_LATEX: :options frame=single
@@ -294,12 +370,17 @@ where L is the lenght into the page
 #+RESULTS:
 : Time Estimate: 67171960.47650723s
 
-Recalling that for an explicit solver we need
+This time estimate can also be obtained using the einstein's approximation equations [cite:@Diffusion_Time_Calculator]
+
+\begin{equation}
+ t \approx \frac{x ^2}{alpha} = \frac{1 m^2}{2* 0.146 *10^{-6}\frac{m^2}{s}} \approx 0.2 *10 ^6 seconds
+\end{equation}
+
+This shows that the time scales of interest are on the order of 1 million seconds. Recalling that for an explicit solver we need
 \begin{equation*}
 \Delta t \le \frac{\Delta x ^2}{2\alpha ^2}
 \end{equation*}
-With a realistic $\Delta x = 0.01$ and our thermal diffusivity of $0.146 *10 ^{-6} \frac{m^2}{s}$ an Explicit solver would require a time step size on the order of 100 seconds which would require roughly 1 million time steps for the finer mesh.
-For this reason an implicit solver was chosen.
+With a realistic desired discritization size of $\Delta x = 0.01$ and our thermal diffusivity of $0.146 *10 ^{-6} \frac{m^2}{s}$ an Explicit solver would require a time step size on the order of 100 seconds which would require roughly 10^4 time steps for the finer meshes.For this reason an implicit solver was chosen.
 
 #+ATTR_LATEX: :options frame=single
 #+BEGIN_SRC python :results output :exports both :session Python-Session
@@ -416,3 +497,132 @@ Time : 14000000 s, Average Temp 21.904575156636994, error: 0.1%
 
 #+RESULTS:
 [[file:transient.png]]
+
+* Part 4: Advection Diffusion
+
+
+
+#+ATTR_LATEX: :options frame=single
+#+BEGIN_SRC python :results none:exports both :session Python-Session
+  x_cells = 40
+  y_cells = 20
+  diffusivity = 0.146
+  transient_mesh = CartesianMesh(
+    dimensions = 2,
+    n_cells = [x_cells, y_cells],
+    cordinates = [(0,5), (0,1)],
+    mesh_type = "finite_volume",
+    conductivity = conductivity,
+    diffusivity = diffusivity
+  )
+
+  transient_mesh.set_dirichlet_boundary(side="left", phi=50)
+  transient_mesh.set_dirichlet_boundary(side="right", phi=temp_right)
+  transient_mesh.set_dirichlet_boundary(side="bottom", phi=temp_bottom)
+
+  transient_mesh.set_neumann_boundary(side="top", flux=-10/conductivity)
+
+  #Set the initial condition
+  transient_mesh.phi.set_phi(30)
+
+  #Create a laplacian and boundary condition to update the diffuison mesh
+  ux = 1
+  convection_mesh = linear_convection_mesh(
+      x = x_range,
+      n_cells= x_cells,
+      mesh_type= "finite_volume",
+      discretization_type= "upwind")
+
+  convection_mesh.set_dirichlet_boundary("left", phi = 50)
+
+
+  dx = transient_mesh.grid["x_grid"].cell_width
+  Iy = np.identity(y_cells)
+
+  twod_x_lap = (ux/dx) * np.kron(Iy,convection_mesh.laplacian)
+  #logger.debug(f"{twod_x_lap}")
+
+
+  twod_x_bc = (ux/(dx)) * convection_mesh.boundary_condition_array.reshape(1,x_cells).repeat(y_cells, axis = 0).flatten()
+
+  #logger.debug(f"{(ux/dx) * convection_mesh.boundary_condition_array.reshape(1,x_cells).repeat(y_cells, axis = 0)}")
+
+
+
+
+  #add the convective portion to the mesh
+  #logger.debug(f"conv laplacian:\n {twod_x_lap}")
+  #logger.debug(f"laplacian: pre add conv \n {transient_mesh.laplacian}")
+  transient_mesh.laplacian = transient_mesh.laplacian + twod_x_lap
+  #logger.debug(f"laplacian: post add conv \n {transient_mesh.laplacian}")
+  transient_mesh.boundary_condition_array = transient_mesh.boundary_condition_array + twod_x_bc
+  ##############################################################
+  solver_step_size = 5/(100*ux)
+  round_threshold = 2+ len(str(round(solver_step_size)))
+
+  logger.debug(f"sover_step_size: {solver_step_size}")
+
+  #Create the implicit solver
+  transient_solver = Solver(
+      mesh = transient_mesh,
+      method = "implicit",
+      time_step_size = solver_step_size
+
+  )
+  transient_list = []
+  record_time_step_time = solver_step_size * 10
+
+  max_time = solver_step_size *1000
+  #transient_solver.solve_steady()
+  transient_dict[0] = transient_mesh.phi.get_phi().copy()
+  #logger.debug(f"dict_0 {transient_dict[0]}")
+
+  transient_mesh.phi.set_phi(30)
+  time = 0
+  while time < max_time:
+
+      transient_solver.solve(
+          t_initial = time,
+          t_final = time + record_time_step_time)
+
+      time = round(
+          transient_solver.current_time,
+          round_threshold
+      )
+
+      logger.debug(f"time : {time}")
+
+      #transient_dict[time] = transient_mesh.phi.get_phi()
+      transient_list.append({time:transient_mesh.phi.get_phi()})
+
+
+#+END_SRC
+
+#+RESULTS:
+
+
+#+ATTR_LATEX: :options frame=single
+#+BEGIN_SRC python :results graphics file :file advection_transient.png :exports both :session Python-Session
+  fig, axes = plt.subplots(3, figsize= (10,12))
+  list_length = len(transient_list)
+  i = 0
+  for  row, ax in zip([0, round(list_length/2), list_length-1], axes.flat):
+      for time, data in transient_list[row].items():
+
+          x_cords = transient_mesh.grid["x_grid"].cell_cordinates
+          y_cords = transient_mesh.grid["y_grid"].cell_cordinates
+
+          xv, yv = np.meshgrid(x_cords, y_cords)
+          #axis = plt.subplot(3,1,i+1)
+          #axis.set_title(row)
+          im = ax.pcolormesh(xv, yv, data)
+          ax.set_title(f"time {time}s")
+          i = i +1
+          fig.colorbar(im, label ="temp")
+  #fig.colorbar(im, ax = axes.ravel().tolist(), label = "temperature (celcius)")
+  plt.savefig("advection_transient.png")
+
+#+END_SRC
+
+#+RESULTS:
+[[file:advection_transient.png]]

@@ -59,6 +59,7 @@ class CartesianMesh:
         mesh_type: str = "finite_volume",
         conductivity: float = 1,
         diffusivity: float = 1,
+        velocity: float = None,
     ) -> None:
         """
         Init the cartesian mesh object.
@@ -75,6 +76,7 @@ class CartesianMesh:
         self.cordinates = cordinates
         self.mesh_type = mesh_type
         self.diffusivity = diffusivity
+        self.velocity = velocity
         self.grid = self.initalize_grid()
         self.differentiation_matrix = self.initalize_differentiation_matrix()
         self.initalize_phi()
