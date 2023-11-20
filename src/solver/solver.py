@@ -2,8 +2,24 @@ import numpy as np
 import pandas as pd
 from typing import List
 from solver.cartesian_mesh import CartesianMesh
+import logging
 
-# from solver.utilities import MeshReshaper
+# create logging configuration
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
+# Create a console handler
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.INFO)
+
+# Set the formatter for the console handler
+formatter = logging.Formatter(
+    "%(name)s:%(levelname)s:%(funcName)s:%(message)s",
+)
+console_handler.setFormatter(formatter)
+
+# Add the console handler to the logger
+logger.addHandler(console_handler)
 
 
 class ImplicitStep(object):
@@ -68,7 +84,7 @@ class Saver(object):
     def __init__(self):
         self.saved_state_list = []
 
-    def save_state(self, *args, **kwargs):
+    def save_state(self, record_type="data_frame", *args, **kwargs):
         """
         Save the object atributes specified by appending it to the saved_state_list.
 
@@ -83,7 +99,10 @@ class Saver(object):
             saved_state_dictionary[arg] = getattr(self, arg)
         for key, value in kwargs.items():
             saved_state_dictionary[key] = value
-        self.saved_state_list.append(pd.DataFrame(saved_state_dictionary))
+        if record_type == "dictionary":
+            self.saved_state_list.append(saved_state_dictionary)
+        else:
+            self.saved_state_list.append(pd.DataFrame(saved_state_dictionary))
 
 
 class Solver(Saver):
@@ -136,15 +155,27 @@ class Solver(Saver):
         phi_reshape = np.reshape(solved_phi, phi_shape)
         self.mesh.phi.set_phi(phi_reshape.tolist())
 
-    def solve(self, t_final, t_initial=0):
+    def solve(
+        self, t_final, t_initial=0, record_step=1, compute_error_flag=False, tolerance=0
+    ):
         """
         Run the solver for unitil the final time is reached.
 
         Inputs:
         t_initial = the initial time (default 0)
         t_final = the final time
+        record_step = how often to record the solution
+        compute_error: boolian = should the steady state solution be calcualted to show how far off steady the solution is
+
         """
+        self.compute_error_flag = compute_error_flag
+
+        self.update_save_dictionary(phi=self.mesh.phi.get_phi())
+        super().save_state(record_type="dictionary", **self.save_dictionary)
+
         self.current_time = t_initial
+        # self.error = None
+        time_save_index = 1
         while self.current_time < t_final:
             phi = self.mesh.phi.get_phi()
             phi.shape = phi.shape
@@ -154,6 +185,41 @@ class Solver(Saver):
             self.mesh.phi.set_phi(phi_reshape.tolist())
 
             self.current_time = self.current_time + self.step_size
+            if time_save_index == record_step:
+                self.update_save_dictionary(phi=self.mesh.phi.get_phi())
+                super().save_state(record_type="dictionary", **self.save_dictionary)
+
+                error = self.compute_error(phi=solved_phi)
+                if (not error == None) and (error < tolerance):
+                    logger.info(
+                        f"steady state reached with an error: {error} < tolerance: {tolerance}"
+                    )
+                    break
+                time_save_index = 0
+
+            time_save_index = time_save_index + 1
+
+        if not time_save_index == 1:
+            super().save_state(record_type="dictionary", **self.save_dictionary)
+        self.error = self.compute_error(phi=solved_phi)
+
+    def compute_error(self, phi):
+        if self.compute_error_flag:
+            self.store_steady()
+            percent_difference = (phi - self.steady_phi) / self.steady_phi
+            rmse = np.sqrt(np.sum(percent_difference**2))
+            logger.info(f"Time: {self.current_time}, RMSPE: {rmse}")
+            return rmse
+        else:
+            return None
+
+    def store_steady(self):
+        # Calculate and store the steady state phi if it does not exist
+        if not hasattr(self, "steady_phi"):
+            self.steady_phi = self.steady_solver.solve(
+                laplacian=self.laplacian,
+                boundary_condition_array=self.boundary_condition_array,
+            )
 
     def update_save_dictionary(self, **kwargs):
         self.save_dictionary = {

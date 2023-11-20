@@ -178,7 +178,7 @@ def test_solver_save_state_accepts_atribute_names(explicit_solver):
 def test_solver_save_state_accepts_keywords(explicit_solver):
     solver_instance = explicit_solver
     solver_instance.save_state(
-        "method", x_position=np.array([0.125, 0.375, 0.625, 0.875])
+        method="explicit", x_position=np.array([0.125, 0.375, 0.625, 0.875])
     )
     expected_list = pd.concat(
         [
@@ -434,6 +434,36 @@ class TestCartesianMesh_Integration:
         )
         actual.solve(t_final=20)
         actual_phi = actual.mesh.phi.get_phi()
+        expected = steady_2d_solved
+        # verify it matches the steady case
+        np.testing.assert_array_almost_equal(x=actual_phi, y=expected)
+
+    def test_unsteady_error_report_2d(self, CartesianMesh_2d, steady_2d_solved):
+        """Test that the solver can report the difference between itself and steady state"""
+        actual = solver.Solver(
+            mesh=CartesianMesh_2d,
+            method="implicit",
+        )
+        actual.solve(t_final=20, compute_error_flag=True)
+        actual_phi = actual.mesh.phi.get_phi()
+        steady_phi = steady_2d_solved
+
+        expected = np.sqrt(np.sum((actual_phi - steady_phi) ** 2 / steady_phi))
+        np.testing.assert_almost_equal(actual.error, expected)
+
+    def test_record_time_2d(self, CartesianMesh_2d, steady_2d_solved):
+        """Test that the solver can take an input to record every x timesteps"""
+        actual = solver.Solver(
+            mesh=CartesianMesh_2d,
+            method="implicit",
+        )
+        # record_list = list()
+        actual.solve(t_final=20, compute_error_flag=True, record_step=10)
+
+        # verify it matches the steady case
+        assert len(actual.saved_state_list) == 3
+
+        actual_phi = actual.saved_state_list[2]["phi"]
         expected = steady_2d_solved
         # verify it matches the steady case
         np.testing.assert_array_almost_equal(x=actual_phi, y=expected)
