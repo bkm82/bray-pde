@@ -5,7 +5,7 @@ from solver.mesher import (
     side_selector,
     cell_phi,
 )
-from solver.cartesian_solver import CartesianSolver
+
 from solver.utilities import Parser
 from typing import Sequence, Tuple, List
 import numpy as np
@@ -280,13 +280,28 @@ class CartesianMesh:
     def set_generation(self, function):
         """
         set a generation function
+        args:
+        function: the generation function
+            set_generation(lambda x : x**2) for 1d,
+            set_generation(lambda x,y: 2x + y**2) for 2d
 
-        note: the function must contain all of the axis even if it is a zero
+            note: the function must contain a variable for all active axies
+            variables even if it is a zero i.e. (lambda x,y: 1x + 0*y)
+            it can also be a named function:
+            def my_function (x, y):
+                return(2*x+3*y +5)
+            set_generation(my_function)
+        Behavior
+            This function generates a dictionary for each grid axis in grid.items()
+            using the slice function to evalueate the function in the grid space required
+            (analagous to linspace). The function is then evaluated on the grid and flattened
+            The set_boundary_condition_array is then called to ensure it is added to the boundary condition array
+        Reference (https://stackoverflow.com/questions/22774726/numpy-evaluate-function-on-a-grid-of-points)
         """
         grid_dict = {}
-        dx = self.grid["x_grid"].cell_width
-        dy = self.grid["y_grid"].cell_width
         logger.debug(f"grid:{self.grid}")
+        # Generate a dictionary for each axis as either a column or a row.
+        # Analagous to meshgrid
         for i, (names, cordinate_value) in enumerate(self.grid.items()):
             grid_dict[(Parser().parse(names))] = cordinate_value.cell_cordinates[
                 (None,) * i
