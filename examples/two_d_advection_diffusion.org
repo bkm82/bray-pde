@@ -18,7 +18,7 @@ Part 2 condsiders the same formulation as part 1 with an added source term $Q = 
 
 Part 3 considers the unsteady case of part 1, starting from an initial condition of $T(0,x,y) = 30^{\circ} c$ until a steady state is achieved
 
-Part 4 considers the advection-diffusion problem with a left dirichelet boundary condition of $50 ^{\circ} c$, for three constant velocities $\textbf{V} = [1,0], [10,0], [100,0] m/s$
+Part 4 considers the advection-diffusion problem with a left dirichelet boundary condition of $50 ^{\circ} c$, for three constant velocities $\textbf{V} = [0.01,0], [0.1,0], [1,0] m/s$
 ** Discritized Equations
 The first term of equation 1 discritized on a cartesian structured grid by approximating the volumetric inegral's average as being its center point and discritizing the time derivative using a forward discritization.
 \begin{equation}
@@ -86,7 +86,7 @@ Based on the problem description, at atmospheric pressure the thermal diffusivit
 The water thermal conductivity taken to be a constant at $0.456 \frac{W}{mK}$ again coresponding to a temperature of 25 degrees celcius. [cite:@Water_Conductivity_EngineeringToolBox]
 
 #+ATTR_LATEX: :options frame=single
-#+BEGIN_SRC python :results output :exports both :session Python-Session
+#+BEGIN_SRC python :results output :exports both :session Python-Session :tangle "./advection_diffusion_project/advection_diffusion.py"
   from solver.cartesian_mesh import CartesianMesh
   from solver.solver import Solver
   from solver.utilities import EnergyBalance, Plotter
@@ -157,7 +157,7 @@ The water thermal conductivity taken to be a constant at $0.456 \frac{W}{mK}$ ag
 
 * Part 1 Steady State
 #+ATTR_LATEX: :options frame=single
-#+BEGIN_SRC python :results output :exports both :session Python-Session
+#+BEGIN_SRC python :results output :exports both :session Python-Session :tangle "./advection_diffusion_project/advection_diffusion.py"
   mesh_dict = {}
   energy_balance_dict = {}
   for mesh_size , cells in mesh_size_dict.items():
@@ -222,7 +222,7 @@ solver.utilities:INFO:flux:
 Due to the finite volume scheme, the total flux error and the sum of each cells squared error is relativly independent of mesh size. The overall error increases slightly with the higher number of points due to the numerical round off error present with the higher number of calcualtions.
 
 #+ATTR_LATEX: :options frame=single
-#+BEGIN_SRC python :results graphics file :file steady.png :exports results :session Python-Session
+#+BEGIN_SRC python :results graphics file :file steady.png :exports results :session Python-Session :tangle "./advection_diffusion_project/advection_diffusion.py"
   fig, ax = plt.subplots(len(mesh_dict), figsize= (10,12))
   i = 0
   for  mesh_size, mesh in mesh_dict.items():
@@ -248,7 +248,7 @@ Due to the finite volume scheme, the total flux error and the sum of each cells 
 
 * Part 2: With Generation
 #+ATTR_LATEX: :options frame=single
-#+BEGIN_SRC python :results output :exports both :session Python-Session
+#+BEGIN_SRC python :results output :exports both :session Python-Session :tangle "./advection_diffusion_project/advection_diffusion.py"
   generation_mesh_dict = {}
   generation_energy_balance_dict = {}
   def gen_function (x, y):
@@ -263,8 +263,11 @@ Due to the finite volume scheme, the total flux error and the sum of each cells 
       generation_mesh_dict[mesh_size].set_generation(function = gen_function)
 
       # Solve the steady Case with generation
-      Solver(mesh = generation_mesh_dict[mesh_size]).solve_steady()
-      generation_energy_balance_dict[mesh_size] = EnergyBalance(mesh = generation_mesh_dict[mesh_size])
+      Solver(
+          mesh = generation_mesh_dict[mesh_size]
+      ).solve_steady()
+      generation_energy_balance_dict[mesh_size] = EnergyBalance(
+          mesh = generation_mesh_dict[mesh_size])
       logger.info(f"\n Mesh Size:{mesh_size}")
       total_flux = generation_energy_balance_dict[mesh_size].flux("all")
 
@@ -319,7 +322,7 @@ solver.utilities:INFO:flux:
 #+end_example
 
 #+ATTR_LATEX: :options frame=single
-#+BEGIN_SRC python :results graphics file :file generation.png :exports results :session Python-Session
+#+BEGIN_SRC python :results graphics file :file generation.png :exports results :session Python-Session :tangle "./advection_diffusion_project/advection_diffusion.py"
   fig, ax = plt.subplots(len(generation_mesh_dict), figsize= (10,12))
   i = 0
   for  mesh_size, mesh in generation_mesh_dict.items():
@@ -387,7 +390,7 @@ This shows that the time scales of interest are on the order of 1 million second
 With a realistic desired discritization size of $\Delta x = 0.01$ and our thermal diffusivity of $0.146 *10 ^{-6} \frac{m^2}{s}$ an Explicit solver would require a time step size on the order of 100 seconds which would require roughly 10^4 time steps for the finer meshes.For this reason an implicit solver was chosen.
 
 #+ATTR_LATEX: :options frame=single
-#+BEGIN_SRC python :results output :exports both :session Python-Session
+#+BEGIN_SRC python :results output :exports both :session Python-Session :tangle "./advection_diffusion_project/advection_diffusion.py"
   transient_mesh = create_mesh()
   transient_mesh.phi.set_phi(30)
 
@@ -426,7 +429,7 @@ solver.solver:INFO:compute_error:Time: 13000000, RMSPE: 0.09327679418999363
 #+end_example
 
 #+ATTR_LATEX: :options frame=single
-#+BEGIN_SRC python :results graphics file :file transient_temperature_profile.png :exports both :session Python-Session
+#+BEGIN_SRC python :results graphics file :file transient_temperature_profile.png :exports both :session Python-Session :tangle "./advection_diffusion_project/advection_diffusion.py"
   part3_plotter= Plotter(mesh = transient_mesh)
   part3_plotter.transient_plotter(
       data_list = transient_solver.saved_state_list,
@@ -436,104 +439,117 @@ solver.solver:INFO:compute_error:Time: 13000000, RMSPE: 0.09327679418999363
 #+RESULTS:
 [[file:transient_temperature_profile.png]]
 [[./transient_line_distributions.png]]
-
+\newpage
 * Part 4: Advection Diffusion
 
+#+ATTR_LATEX: :options frame=single
+#+BEGIN_SRC python :results output :exports both :session Python-Session :tangle "./advection_diffusion_project/advection_diffusion.py"
+  def create_advection_diffusion_mesh(velocity, x_cells = 60, y_cells = 20):
+      #Create our standard 2d cartesian mesh
+      mesh = create_mesh(x_cells = x_cells, y_cells = y_cells, temp_left = 50)
+      mesh.phi.set_phi(30)
 
+      #Create a 1d finite volume linear convective mesh (from HW5)
+      convection_mesh = linear_convection_mesh(
+          x = x_range,
+          n_cells= x_cells,
+          mesh_type= "finite_volume",
+          discretization_type= "upwind")
+
+      convection_mesh.set_dirichlet_boundary("left", phi = 50)
+
+
+      dx = mesh.grid["x_grid"].cell_width
+      Iy = np.identity(y_cells)
+      #make the 2d laplacian using the kronecker delta and Iy
+      #This puts the 1d laplacian into every 1 in an identity of the shape y_cells x y_cells
+      twod_x_lap = (velocity/dx) * np.kron(Iy,convection_mesh.laplacian)
+      #logger.debug(f"{twod_x_lap}")
+      twod_x_bc = (
+          velocity/(dx)
+      ) * convection_mesh.boundary_condition_array.reshape(
+          1,x_cells).repeat(y_cells, axis = 0).flatten()
+
+      #add the convective terms to the 2d diffusion mesh
+      mesh.laplacian = mesh.laplacian + twod_x_lap
+      mesh.boundary_condition_array = mesh.boundary_condition_array + twod_x_bc
+      return(mesh)
+
+#+END_SRC
+
+#+RESULTS:
 
 #+ATTR_LATEX: :options frame=single
-#+BEGIN_SRC python :results none:exports both :session Python-Session
-  x_cells = 40
-  y_cells = 20
-  diffusivity = 0.146
-  transient_mesh = CartesianMesh(
-    dimensions = 2,
-    n_cells = [x_cells, y_cells],
-    cordinates = [(0,5), (0,1)],
-    mesh_type = "finite_volume",
-    conductivity = conductivity,
-    diffusivity = diffusivity
-  )
+#+BEGIN_SRC python :results none:exports both :session Python-Session :tangle "./advection_diffusion_project/advection_diffusion.py"
 
-  transient_mesh.set_dirichlet_boundary(side="left", phi=50)
-  transient_mesh.set_dirichlet_boundary(side="right", phi=temp_right)
-  transient_mesh.set_dirichlet_boundary(side="bottom", phi=temp_bottom)
+  ultra_slow_dict ={
+    "name":"ultra_slow",
+    "velocity":0.000001,
+    "time_step_size":10000,
+    "t_final":10000000,
+    "record_step_time":10,
+    "tolerance": 0.01
+  }
 
-  transient_mesh.set_neumann_boundary(side="top", flux=-10/conductivity)
+  mixed_dict ={
+    "name":"mixed",
+    "velocity":0.00001,
+    "time_step_size":1000,
+    "t_final":1000000,
+    "record_step_time":10,
+    "tolerance": 0.01
+  }
 
-  #Set the initial condition
-  transient_mesh.phi.set_phi(30)
+  slow_dict ={
+    "name":"slow",
+    "velocity":0.01,
+    "time_step_size":1,
+    "t_final":1000,
+    "record_step_time":10,
+    "tolerance": 0.01
+  }
 
-  #Create a laplacian and boundary condition to update the diffuison mesh
-  ux = 1
-  convection_mesh = linear_convection_mesh(
-      x = x_range,
-      n_cells= x_cells,
-      mesh_type= "finite_volume",
-      discretization_type= "upwind")
+  med_dict ={
+    "name":"med",
+    "velocity":0.1,
+    "time_step_size":0.1,
+    "t_final":100,
+    "record_step_time":10,
+    "tolerance": 0.01
+  }
 
-  convection_mesh.set_dirichlet_boundary("left", phi = 50)
+  fast_dict ={
+    "name":"fast",
+    "velocity":1,
+    "time_step_size":0.01,
+    "t_final":10,
+    "record_step_time":10,
+    "tolerance": 0.01
+  }
 
+  settings_list= [fast_dict, med_dict, slow_dict, mixed_dict,  ultra_slow_dict]
+  ###settings_list= [mixed_dict]
 
-  dx = transient_mesh.grid["x_grid"].cell_width
-  Iy = np.identity(y_cells)
+  # # make a dictionary of solvers for the various time velocities
+  mesh_dict = {}
+  solutions_dict = {}
+  #Create the mesh
+  for settings in settings_list:
+      mesh_dict[settings["name"]]= create_advection_diffusion_mesh(
+          velocity = settings["velocity"])
 
-  twod_x_lap = (ux/dx) * np.kron(Iy,convection_mesh.laplacian)
-  #logger.debug(f"{twod_x_lap}")
+      solutions_dict[settings["name"]] = Solver(
+          mesh = mesh_dict[settings["name"]],
+          method = "implicit",
+          time_step_size = settings["time_step_size"])
 
-
-  twod_x_bc = (ux/(dx)) * convection_mesh.boundary_condition_array.reshape(1,x_cells).repeat(y_cells, axis = 0).flatten()
-
-  #logger.debug(f"{(ux/dx) * convection_mesh.boundary_condition_array.reshape(1,x_cells).repeat(y_cells, axis = 0)}")
-
-
-
-
-  #add the convective portion to the mesh
-  #logger.debug(f"conv laplacian:\n {twod_x_lap}")
-  #logger.debug(f"laplacian: pre add conv \n {transient_mesh.laplacian}")
-  transient_mesh.laplacian = transient_mesh.laplacian + twod_x_lap
-  #logger.debug(f"laplacian: post add conv \n {transient_mesh.laplacian}")
-  transient_mesh.boundary_condition_array = transient_mesh.boundary_condition_array + twod_x_bc
-  ##############################################################
-  solver_step_size = 5/(100*ux)
-  round_threshold = 2+ len(str(round(solver_step_size)))
-
-  logger.debug(f"sover_step_size: {solver_step_size}")
-
-  #Create the implicit solver
-  transient_solver = Solver(
-      mesh = transient_mesh,
-      method = "implicit",
-      time_step_size = solver_step_size
-
-  )
-  transient_list = []
-  record_time_step_time = solver_step_size * 10
-
-  max_time = solver_step_size *1000
-  #transient_solver.solve_steady()
-  transient_dict[0] = transient_mesh.phi.get_phi().copy()
-  #logger.debug(f"dict_0 {transient_dict[0]}")
-
-  transient_mesh.phi.set_phi(30)
-  time = 0
-  while time < max_time:
-
-      transient_solver.solve(
-          t_initial = time,
-          t_final = time + record_time_step_time)
-
-      time = round(
-          transient_solver.current_time,
-          round_threshold
+      solutions_dict[settings["name"]].solve(
+          t_final = settings["t_final"],
+          record_step= settings["record_step_time"],
+          compute_error_flag = True,
+          tolerance = settings["tolerance"]
       )
 
-      logger.debug(f"time : {time}")
-
-      #transient_dict[time] = transient_mesh.phi.get_phi()
-      transient_list.append({time:transient_mesh.phi.get_phi()})
-
 
 #+END_SRC
 
@@ -541,27 +557,42 @@ solver.solver:INFO:compute_error:Time: 13000000, RMSPE: 0.09327679418999363
 
 
 #+ATTR_LATEX: :options frame=single
-#+BEGIN_SRC python :results graphics file :file advection_transient.png :exports both :session Python-Session
-  fig, axes = plt.subplots(3, figsize= (10,12))
-  list_length = len(transient_list)
-  i = 0
-  for  row, ax in zip([0, round(list_length/2), list_length-1], axes.flat):
-      for time, data in transient_list[row].items():
+#+BEGIN_SRC python :results none :exports code :session Python-Session :tangle "./advection_diffusion_project/advection_diffusion.py"
+  for name, solution in solutions_dict.items():
+      part4_plotter= Plotter(
+          mesh = mesh_dict[name]
+      ).transient_plotter(
+          data_list = solution.saved_state_list,
+          name = f"advection_diffusion_{name}",
+          phi_min = 30,
+          phi_max = 50
 
-          x_cords = transient_mesh.grid["x_grid"].cell_cordinates
-          y_cords = transient_mesh.grid["y_grid"].cell_cordinates
-
-          xv, yv = np.meshgrid(x_cords, y_cords)
-          #axis = plt.subplot(3,1,i+1)
-          #axis.set_title(row)
-          im = ax.pcolormesh(xv, yv, data)
-          ax.set_title(f"time {time}s")
-          i = i +1
-          fig.colorbar(im, label ="temp")
-  #fig.colorbar(im, ax = axes.ravel().tolist(), label = "temperature (celcius)")
-  plt.savefig("advection_transient.png")
-
+      )
 #+END_SRC
 
 #+RESULTS:
-[[file:advection_transient.png]]
+\newpage
+** Fast Velocity
+When a velocity of 1m/s is used, the problem is convective driven, with the 50 degree wave propegating across from left two right. The diffusion of the wave is likely due to numerical error an not due to actual diffusion. Note how the diffusion of temperature from the top and bottom boundaries has very little impact on the temperature profiles.
+[[./advection_diffusion_fast_temperature_profile.png]]
+[[./advection_diffusion_fast_line_distributions.png]]
+\newpage
+** Medium Velocity
+Slowing the velocity down to 0.1 m/s has very little change (beyond the time from which it takes the front to move from left to right). At this velocity this profile remains advection dominated.
+[[./advection_diffusion_med_temperature_profile.png]]
+[[./advection_diffusion_med_line_distributions.png]]
+\newpage
+** Slow Velocity
+Again, even at a velocity of 0.01 m/s the problem is still advection dominated. This aligns with the transient results which obtained steady state in ~10^6 seconds, while the advection can transefer the temperature across the domain in ~10^3
+[[./advection_diffusion_slow_temperature_profile.png]]
+[[./advection_diffusion_slow_line_distributions.png]]
+\newpage
+** Mixed Advection diffusion
+Slowwing the velocity down the velocity an additional 3 orders of magnitude, the diffusive effects start to influence the solution, with the bottom temperature profile starting to diverge from the middle and top profile
+[[./advection_diffusion_mixed_temperature_profile.png]]
+[[./advection_diffusion_mixed_line_distributions.png]]
+\newpage
+** Diffusion Driven
+Further slowwing down the velocity to 0.000001 m/s the flow becomes diffusion driven, with very little convective influence.
+[[./advection_diffusion_ultra_slow_temperature_profile.png]]
+[[./advection_diffusion_ultra_slow_line_distributions.png]]

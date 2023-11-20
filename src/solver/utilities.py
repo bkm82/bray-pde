@@ -170,7 +170,7 @@ class Plotter:
     def __init__(self, mesh):
         self.mesh = mesh
 
-    def transient_plotter(self, data_list, name, phi_min=10, phi_max=31):
+    def transient_plotter(self, data_list, name, phi_min=10, phi_max=30):
         """plot 4 seperate transient temperature profiles
 
         args
@@ -198,7 +198,7 @@ class Plotter:
             y_cells = data.shape[0]
 
             # Plot the temperature profiles for each time step
-            im = ax.pcolormesh(xv, yv, data, vmax=30, vmin=tmin)
+            im = ax.pcolormesh(xv, yv, data, vmax=tmax, vmin=tmin)
             ax.set_title(f"Temperature Profile at Time {time} s")
 
             # Plot the the temperature distributions for various horizontal lines
@@ -221,7 +221,7 @@ class Plotter:
                     label=color_group_name[g],
                 )
 
-                ax2.axis((0, 5, tmin, tmax))
+                ax2.axis((0, 5, tmin, tmax + 1))
                 ax2.set_ylabel("temperature (celcius)")
                 ax2.set_title(f"midpoint temperature at time {time} s")
                 ax2.legend()
