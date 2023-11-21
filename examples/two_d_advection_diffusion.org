@@ -596,3 +596,8 @@ Slowwing the velocity down the velocity an additional 3 orders of magnitude, the
 Further slowwing down the velocity to 0.000001 m/s the flow becomes diffusion driven, with very little convective influence.
 [[./advection_diffusion_ultra_slow_temperature_profile.png]]
 [[./advection_diffusion_ultra_slow_line_distributions.png]]
+
+\newpage
+* References
+#+CITE_EXPORT: csl ~/masters/ieee.csl
+#+print_bibliography:
