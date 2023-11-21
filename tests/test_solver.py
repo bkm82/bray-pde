@@ -1,9 +1,11 @@
 import numpy as np
 import pandas as pd
 import pytest
-from solver.solver import solver_1d
+from solver.solver import solver_1d, SteadySolver, Solver
 from solver.mesher import heat_diffusion_mesh
 from solver import solver
+from solver import cartesian_mesh
+
 from unittest.mock import patch, MagicMock
 
 
@@ -56,7 +58,7 @@ def mock_mesh(mocker):
     mesh.temperature = np.array([0, 0, 0, 0])
     mesh.n_cells = 4
     mesh.thermal_diffusivity = 0.0001
-    mesh.differentiation_matrix = np.array(
+    mesh.laplacian = np.array(
         [[-3, 1, 0, 0], [1, -2, 1, 0], [0, 1, -2, 1], [0, 0, 1, -1]]
     )
     mesh.boundary_condition_array = np.array(np.array([100, 0, 0, 0]))
@@ -176,7 +178,7 @@ def test_solver_save_state_accepts_atribute_names(explicit_solver):
 def test_solver_save_state_accepts_keywords(explicit_solver):
     solver_instance = explicit_solver
     solver_instance.save_state(
-        "method", x_position=np.array([0.125, 0.375, 0.625, 0.875])
+        method="explicit", x_position=np.array([0.125, 0.375, 0.625, 0.875])
     )
     expected_list = pd.concat(
         [
@@ -256,7 +258,7 @@ def mock_linear_convective_mesh_upwind(mocker):
     mesh.delta_x = 0.25
     mesh.phi = np.array([1, 1, 0, 0])
     mesh.n_cells = 4
-    mesh.differentiation_matrix = np.array(
+    mesh.laplacian = np.array(
         [[-1, 0, 0, 0], [1, -1, 0, 0], [0, 1, -1, 0], [0, 0, 1, -1]]
     )
     mesh.boundary_condition_array = np.array(np.array([1, 0, 0, 0]))
@@ -304,7 +306,7 @@ def mock_linear_convective_mesh_mcormack(mocker):
     mesh.delta_x = 0.25
     mesh.phi = np.array([1, 1, 0, 0, 0])
     mesh.n_cells = 5
-    mesh.differentiation_matrix = np.array(
+    mesh.laplacian = np.array(
         [
             [0, 0, 0, 0, 0],
             [-1, 1, 0, 0, 0],
@@ -351,6 +353,120 @@ def test_maccormack_take_step(maccormack_solver):
     expected_phi = [1, 1, 1, 0, 0]
 
     np.testing.assert_array_equal(maccormack_solver.mesh.phi, expected_phi)
+
+
+@pytest.fixture
+def solved_temp_1d():
+    return np.array([25, 15, 5])
+
+
+class TestSteadySolver:
+    @pytest.fixture
+    def lp(self):
+        return np.array([[-3, 1, 0], [1, -2, 1], [0, 1, -3]])
+
+    @pytest.fixture
+    def bc(self):
+        return np.array([60, 0, 0])
+
+    # @pytest.fixture
+    # def solved_temp(self):
+    #     return np.array([25, 15, 5])
+
+    def test_solve_steady(self, lp, bc, solved_temp_1d):
+        expectd = solved_temp_1d
+        actual = SteadySolver().solve(laplacian=lp, boundary_condition_array=bc)
+        np.testing.assert_array_equal(x=actual, y=expectd)
+
+
+class TestCartesianMesh_Integration:
+    @pytest.fixture
+    def CartesianMesh_1d(self):
+        mesh = cartesian_mesh.CartesianMesh(
+            dimensions=1, n_cells=[3], cordinates=[(0, 1)]
+        )
+        mesh.set_dirichlet_boundary("left", 30)
+        mesh.set_dirichlet_boundary("right", 0)
+        return mesh
+
+    def test_solve_steady(
+        self, CartesianMesh_1d, solved_temp_1d
+    ):  # CartesianMesh_1d, solved_temp_1d):
+        actual = solver.Solver(mesh=CartesianMesh_1d)
+        actual.solve_steady()
+        actual_phi = actual.mesh.phi.get_phi()
+        expected = solved_temp_1d
+        np.testing.assert_array_equal(x=actual_phi, y=expected)
+
+    @pytest.fixture
+    def CartesianMesh_2d(self):
+        mesh = cartesian_mesh.CartesianMesh(
+            dimensions=2, n_cells=[3, 4], cordinates=[(0, 1), (0, 2)]
+        )
+        mesh.set_dirichlet_boundary("left", 30)
+        mesh.set_dirichlet_boundary("right", 30)
+        mesh.set_dirichlet_boundary("bottom", 30)
+        mesh.set_neumann_boundary("top", -10)
+        return mesh
+
+    @pytest.fixture
+    def steady_2d_solved(self):
+        return np.array(
+            [
+                [28.72076498, 27.94615599, 28.72076498],
+                [29.70707761, 29.46041556, 29.70707761],
+                [29.93022914, 29.86469587, 29.93022914],
+                [29.98686165, 29.97407644, 29.98686165],
+            ]
+        )
+
+    def test_solve_steady_2d(self, CartesianMesh_2d, steady_2d_solved):
+        actual = solver.Solver(mesh=CartesianMesh_2d)
+        actual.solve_steady()
+        actual_phi = actual.mesh.phi.get_phi()
+        expected = steady_2d_solved
+        np.testing.assert_array_almost_equal(x=actual_phi, y=expected)
+
+    def test_solve_unsteady_2d(self, CartesianMesh_2d, steady_2d_solved):
+        actual = solver.Solver(
+            mesh=CartesianMesh_2d,
+            method="implicit",
+        )
+        actual.solve(t_final=20)
+        actual_phi = actual.mesh.phi.get_phi()
+        expected = steady_2d_solved
+        # verify it matches the steady case
+        np.testing.assert_array_almost_equal(x=actual_phi, y=expected)
+
+    def test_unsteady_error_report_2d(self, CartesianMesh_2d, steady_2d_solved):
+        """Test that the solver can report the difference between itself and steady state"""
+        actual = solver.Solver(
+            mesh=CartesianMesh_2d,
+            method="implicit",
+        )
+        actual.solve(t_final=20, compute_error_flag=True)
+        actual_phi = actual.mesh.phi.get_phi()
+        steady_phi = steady_2d_solved
+
+        expected = np.sqrt(np.sum((actual_phi - steady_phi) ** 2 / steady_phi))
+        np.testing.assert_almost_equal(actual.error, expected)
+
+    def test_record_time_2d(self, CartesianMesh_2d, steady_2d_solved):
+        """Test that the solver can take an input to record every x timesteps"""
+        actual = solver.Solver(
+            mesh=CartesianMesh_2d,
+            method="implicit",
+        )
+        # record_list = list()
+        actual.solve(t_final=20, compute_error_flag=True, record_step=10)
+
+        # verify it matches the steady case
+        assert len(actual.saved_state_list) == 3
+
+        actual_phi = actual.saved_state_list[2]["phi"]
+        expected = steady_2d_solved
+        # verify it matches the steady case
+        np.testing.assert_array_almost_equal(x=actual_phi, y=expected)
 
 
 if __name__ == "__main__":
