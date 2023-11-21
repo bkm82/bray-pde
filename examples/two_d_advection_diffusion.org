@@ -348,7 +348,7 @@ solver.utilities:INFO:flux:
 [[file:generation.png]]
 
 
-In the generation case you can see the overall energy balance still holds for the finite volume discritization regardless of discritization size. As expected, the energy generated is balanced by the energy leaving the control volume. The source term was strong enough to have a flux out of the control volume on the 4 dirichilet boundaries. Of note in this case is that even though the generation term was constant in the Y axis, the temperature distribution is shifted towards the upper bound due to the fixed flux of $10 W/m$ being less than the bottom flux (which is ~ $20 \frac{W}{m}$ but would not be constant across the boundary. Also of note, the maximum temperature reached was ~ 90 degrees celcius which is approaching a range where, depending on the application, the assumption of a constant thermal conductivity could be introducing a non-negligable amound of error into calculating the solution.
+In the generation case you can see the overall energy balance still holds for the finite volume discritization regardless of discritization size. As expected, the energy generated is balanced by the energy leaving the control volume. The source term was strong enough to have a flux out of the control volume on the the bottom boundary. Also of note, the maximum temperature reached was ~ 90 degrees celcius which is approaching a range where, depending on the application, the assumption of a constant thermal conductivity could be introducing a non-negligable amound of error into calculating the solution.
 
 * Part 3: Transient
 
@@ -439,6 +439,8 @@ solver.solver:INFO:compute_error:Time: 13000000, RMSPE: 0.09327679418999363
 #+RESULTS:
 [[file:transient_temperature_profile.png]]
 [[./transient_line_distributions.png]]
+
+As shown above, the temperatures reached steady state after ~13 million seconds due to the low diffusivity of water. The temperature distributions all follow a similar pattern (with a differing magnitude) as the heat diffuses towards the top. All of the dirichilet boundarys remain at a fixed temperature
 \newpage
 * Part 4: Advection Diffusion
 
@@ -598,6 +600,22 @@ Further slowwing down the velocity to 0.000001 m/s the flow becomes diffusion dr
 [[./advection_diffusion_ultra_slow_line_distributions.png]]
 
 \newpage
+
+* Acknowledgments
+
+This work was produced using my best attemps at following the object oriented approach discussed and recomended in Scientific Software Design The Object-Oriented Way by Damian Rouson, Jim Xia, and Xiaofeng Xu. [cite:@SCISoftwareDesign]
+
+Additionally, the approach utilized was influenced by my own previous notes from MD362 Numerical analysis taught by Dr John M Neuberger.
+
+Finaly when preparing this assignment,  ChatGPT was utilized as a reasource to assist with code syntax and as well as a tool for debugging and idea generation. A common use pattern was when a particular pice of code was not generating the desired output it was coppied into chat gpt with a request to do the desired output. The response was reviewed, and tested (both using unit testing as well as interactivly) to see if the desired behavior was obtained. Alternativly key words in the response were sometimes to assist in formulating a more targeted google search.
+
+
+Chat GPT is a "Natural Language Processer" which at its core is a mathmatical model that calculates the probability of a given response $\textbf{Y} = f(\textbf{X})$ and then selecting the responce with the highest probability. Machine learning models are trained to fit a generalized non-linear model by taking the input paramaters and multiplying them by a weight function (i.e x1 * w1 = b1). In the case of a deep nural network the response of the first equation will be acted on my a non linear operator (i.e. b1 = b1 if b1>0, else 0) and then multiplied by another weight function. This can be repeated multiple times in varying configurations until the response was predicted.
+
+To train the model a gradient decent method is often utilized, where a training data with known responses is used to fit the weight paramaters. The model starts with random weights, predicts the response and compairs each result with the actual response utilizing a loss function (such as mean squared error) The loss is minimized by using gradient decent in which the weigths are updated by taking a step in the direction of steepest decent.
+
+Because Chat GPT is predicting the next most posible phrase, it can result in responses that sound confident, but are not correct. Each line of code was tested Note: The information in this description was developed from my own notes from CS499 Deep Learning taught by Dr. Toby Hocking
+
 * References
 #+CITE_EXPORT: csl ~/masters/ieee.csl
 #+print_bibliography:
