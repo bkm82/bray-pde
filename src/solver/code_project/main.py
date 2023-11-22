@@ -334,3 +334,14 @@ def AdvectionDiffusion():
     advection_diffusion = AdvectionDiffusionSolver()
     advection_diffusion.solve()
     advection_diffusion.plot()
+
+
+def main():
+    SteadyState()
+    Generation()
+    Transient()
+    AdvectionDiffusion()
+
+
+if __name__ == "__main__":
+    main()
