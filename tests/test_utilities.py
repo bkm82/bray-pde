@@ -129,3 +129,35 @@ class TestAxisParse:
     def test_axis_parse(self, input_str, expected):
         actual = utilities.Parser().parse(input_str)
         assert actual == expected
+
+
+class TestVelocityRounder:
+    @pytest.mark.parametrize(
+        "velocity,t_final",
+        [
+            (0.000001, 10000000),
+            (0.00001, 1000000),
+            (0.01, 1000),
+            (0.1, 100),
+            (1, 10),
+            (10, 1),
+        ],
+    )
+    def test_max_velocity(self, velocity, t_final):
+        actual = utilities.VelocityRounder().t_final(velocity)
+        assert actual == t_final
+
+    @pytest.mark.parametrize(
+        "velocity,expected",
+        [
+            (0.000001, 10000),
+            (0.00001, 1000),
+            (0.01, 1),
+            (0.1, 0.1),
+            (1, 0.01),
+            (10, 0.001),
+        ],
+    )
+    def test_time_step_size(self, velocity, expected):
+        actual = utilities.VelocityRounder().time_step_size(velocity)
+        assert actual == expected
