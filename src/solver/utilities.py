@@ -234,3 +234,18 @@ class Plotter:
                 fig2.subplots_adjust(bottom=0.1, top=0.9, hspace=0.5)
                 fig.savefig(f"{name}_temperature_profile.png")
                 fig2.savefig(f"{name}_line_distributions.png")
+
+
+class VelocityRounder:
+    def t_final(self, velocity):
+        t_final = round(10 / velocity)
+        return t_final
+
+    def time_step_size(self, velocity):
+        return self.rounder(velocity, 0.01)
+
+    def rounder(self, velocity, scale):
+        if round(velocity / scale) == 0:
+            return round(0.01 / velocity)
+        else:
+            return 1 / round(velocity / scale)
