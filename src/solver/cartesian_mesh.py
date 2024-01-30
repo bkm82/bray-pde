@@ -266,8 +266,7 @@ class CartesianMesh:
             self.y_bc_reshape = y_bc_array.reshape(y_cells, 1).repeat(x_cells, axis=1)
             logger.debug(f"generation in set bc {self.generation.shape}")
             square_boundary_condition = (
-                (self.x_bc_reshape * (1 / dx**2))
-                + (self.y_bc_reshape * (1 / dy**2))
+                (self.x_bc_reshape * (1 / dx**2)) + (self.y_bc_reshape * (1 / dy**2))
             ) * self.diffusivity
             self.boundary_condition_array = square_boundary_condition.reshape(
                 x_cells * y_cells

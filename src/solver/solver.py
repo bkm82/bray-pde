@@ -243,11 +243,7 @@ class solver_1d(Solver):
         Inputs:
         delta_t: the time step size to take
         """
-        k = (
-            self.mesh.thermal_diffusivity
-            * self.time_step_size
-            / (self.mesh.delta_x**2)
-        )
+        k = self.mesh.thermal_diffusivity * self.time_step_size / (self.mesh.delta_x**2)
         self.mesh.temperature = super().take_step(k, self.mesh.temperature)
 
     def solve(self, t_final, t_initial=0):
