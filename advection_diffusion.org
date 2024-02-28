@@ -149,6 +149,7 @@ solver.utilities:INFO:flux:
 Due to the finite volume scheme, the total flux error and the sum of each cells squared error is relativly independent of mesh size. The overall error increases slightly with the higher number of points due to the numerical round off error present with the higher number of calcualtions.
 
 * Part 2: With Generation
+[[./examples/advection_diffusion_project/generation.png]]
 #+ATTR_LATEX: :options frame=single
 #+BEGIN_SRC python :results output :exports both :session Python-Session :tangle "../../../../src/solver/code_project/main.py
   class GenerationSolver:
@@ -244,7 +245,7 @@ solver.utilities:INFO:flux:
 In the generation case you can see the overall energy balance still holds for the finite volume discritization regardless of discritization size. As expected, the energy generated is balanced by the energy leaving the control volume. The source term was strong enough to have a flux out of the control volume on the the bottom boundary. Also of note, the maximum temperature reached was ~ 90 degrees celcius which is approaching a range where, depending on the application, the assumption of a constant thermal conductivity could be introducing a non-negligable amound of error into calculating the solution.
 
 * Part 3: Transient
-
+[[./examples/advection_diffusion_project/transient_temperature_profile.png]]
 To obtain a rough estimate the time to perform the simulation we can use the formula
 \begin{equation*}
 \frac{Water Mass * (T _{final} - T _{start}) * Specific Heat}{Cooling Rate}
@@ -350,7 +351,7 @@ solver.solver:INFO:compute_error:Time: 13000000, RMSPE: 0.09327679418999363
 As shown above, the temperatures reached steady state after ~13 million seconds due to the low diffusivity of water. The temperature distributions all follow a similar pattern (with a differing magnitude) as the heat diffuses towards the top. All of the dirichilet boundarys remain at a fixed temperature
 
 * Part 4: Advection Diffusion
-
+[[./examples/advection_diffusion_project/advection_diffusion_ultra_slow_temperature_profile.png]]
 #+ATTR_LATEX: :options frame=single
 #+BEGIN_SRC python :results output :exports both :session Python-Session :tangle "../../../../src/solver/code_project/main.py
   class AdvectionDiffusionMesh:
