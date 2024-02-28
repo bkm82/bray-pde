@@ -1,0 +1,1124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<!-- 2023-11-22 Wed 01:54 -->
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Code Project</title>
+<meta name="author" content="Bray Moll" />
+<meta name="generator" content="Org Mode" />
+<style>
+  #content { max-width: 60em; margin: auto; }
+  .title  { text-align: center;
+             margin-bottom: .2em; }
+  .subtitle { text-align: center;
+              font-size: medium;
+              font-weight: bold;
+              margin-top:0; }
+  .todo   { font-family: monospace; color: red; }
+  .done   { font-family: monospace; color: green; }
+  .priority { font-family: monospace; color: orange; }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .org-right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .org-left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .org-center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
+  pre {
+    border: 1px solid #e6e6e6;
+    border-radius: 3px;
+    background-color: #f2f2f2;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
+  }
+  pre.src {
+    position: relative;
+    overflow: auto;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    top: -8px;
+    right: 12px;
+    padding: 3px;
+    color: #555;
+    background-color: #f2f2f299;
+  }
+  pre.src:hover:before { display: inline; margin-top: 14px;}
+  /* Languages per Org manual */
+  pre.src-asymptote:before { content: 'Asymptote'; }
+  pre.src-awk:before { content: 'Awk'; }
+  pre.src-authinfo::before { content: 'Authinfo'; }
+  pre.src-C:before { content: 'C'; }
+  /* pre.src-C++ doesn't work in CSS */
+  pre.src-clojure:before { content: 'Clojure'; }
+  pre.src-css:before { content: 'CSS'; }
+  pre.src-D:before { content: 'D'; }
+  pre.src-ditaa:before { content: 'ditaa'; }
+  pre.src-dot:before { content: 'Graphviz'; }
+  pre.src-calc:before { content: 'Emacs Calc'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-fortran:before { content: 'Fortran'; }
+  pre.src-gnuplot:before { content: 'gnuplot'; }
+  pre.src-haskell:before { content: 'Haskell'; }
+  pre.src-hledger:before { content: 'hledger'; }
+  pre.src-java:before { content: 'Java'; }
+  pre.src-js:before { content: 'Javascript'; }
+  pre.src-latex:before { content: 'LaTeX'; }
+  pre.src-ledger:before { content: 'Ledger'; }
+  pre.src-lisp:before { content: 'Lisp'; }
+  pre.src-lilypond:before { content: 'Lilypond'; }
+  pre.src-lua:before { content: 'Lua'; }
+  pre.src-matlab:before { content: 'MATLAB'; }
+  pre.src-mscgen:before { content: 'Mscgen'; }
+  pre.src-ocaml:before { content: 'Objective Caml'; }
+  pre.src-octave:before { content: 'Octave'; }
+  pre.src-org:before { content: 'Org mode'; }
+  pre.src-oz:before { content: 'OZ'; }
+  pre.src-plantuml:before { content: 'Plantuml'; }
+  pre.src-processing:before { content: 'Processing.js'; }
+  pre.src-python:before { content: 'Python'; }
+  pre.src-R:before { content: 'R'; }
+  pre.src-ruby:before { content: 'Ruby'; }
+  pre.src-sass:before { content: 'Sass'; }
+  pre.src-scheme:before { content: 'Scheme'; }
+  pre.src-screen:before { content: 'Gnu Screen'; }
+  pre.src-sed:before { content: 'Sed'; }
+  pre.src-sh:before { content: 'shell'; }
+  pre.src-sql:before { content: 'SQL'; }
+  pre.src-sqlite:before { content: 'SQLite'; }
+  /* additional languages in org.el's org-babel-load-languages alist */
+  pre.src-forth:before { content: 'Forth'; }
+  pre.src-io:before { content: 'IO'; }
+  pre.src-J:before { content: 'J'; }
+  pre.src-makefile:before { content: 'Makefile'; }
+  pre.src-maxima:before { content: 'Maxima'; }
+  pre.src-perl:before { content: 'Perl'; }
+  pre.src-picolisp:before { content: 'Pico Lisp'; }
+  pre.src-scala:before { content: 'Scala'; }
+  pre.src-shell:before { content: 'Shell Script'; }
+  pre.src-ebnf2ps:before { content: 'ebfn2ps'; }
+  /* additional language identifiers per "defun org-babel-execute"
+       in ob-*.el */
+  pre.src-cpp:before  { content: 'C++'; }
+  pre.src-abc:before  { content: 'ABC'; }
+  pre.src-coq:before  { content: 'Coq'; }
+  pre.src-groovy:before  { content: 'Groovy'; }
+  /* additional language identifiers from org-babel-shell-names in
+     ob-shell.el: ob-shell is the only babel language using a lambda to put
+     the execution function name together. */
+  pre.src-bash:before  { content: 'bash'; }
+  pre.src-csh:before  { content: 'csh'; }
+  pre.src-ash:before  { content: 'ash'; }
+  pre.src-dash:before  { content: 'dash'; }
+  pre.src-ksh:before  { content: 'ksh'; }
+  pre.src-mksh:before  { content: 'mksh'; }
+  pre.src-posh:before  { content: 'posh'; }
+  /* Additional Emacs modes also supported by the LaTeX listings package */
+  pre.src-ada:before { content: 'Ada'; }
+  pre.src-asm:before { content: 'Assembler'; }
+  pre.src-caml:before { content: 'Caml'; }
+  pre.src-delphi:before { content: 'Delphi'; }
+  pre.src-html:before { content: 'HTML'; }
+  pre.src-idl:before { content: 'IDL'; }
+  pre.src-mercury:before { content: 'Mercury'; }
+  pre.src-metapost:before { content: 'MetaPost'; }
+  pre.src-modula-2:before { content: 'Modula-2'; }
+  pre.src-pascal:before { content: 'Pascal'; }
+  pre.src-ps:before { content: 'PostScript'; }
+  pre.src-prolog:before { content: 'Prolog'; }
+  pre.src-simula:before { content: 'Simula'; }
+  pre.src-tcl:before { content: 'tcl'; }
+  pre.src-tex:before { content: 'TeX'; }
+  pre.src-plain-tex:before { content: 'Plain TeX'; }
+  pre.src-verilog:before { content: 'Verilog'; }
+  pre.src-vhdl:before { content: 'VHDL'; }
+  pre.src-xml:before { content: 'XML'; }
+  pre.src-nxml:before { content: 'XML'; }
+  /* add a generic configuration mode; LaTeX export needs an additional
+     (add-to-list 'org-latex-listings-langs '(conf " ")) in .emacs */
+  pre.src-conf:before { content: 'Configuration File'; }
+
+  table { border-collapse:collapse; }
+  caption.t-above { caption-side: top; }
+  caption.t-bottom { caption-side: bottom; }
+  td, th { vertical-align:top;  }
+  th.org-right  { text-align: center;  }
+  th.org-left   { text-align: center;   }
+  th.org-center { text-align: center; }
+  td.org-right  { text-align: right;  }
+  td.org-left   { text-align: left;   }
+  td.org-center { text-align: center; }
+  dt { font-weight: bold; }
+  .footpara { display: inline; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .equation-container {
+    display: table;
+    text-align: center;
+    width: 100%;
+  }
+  .equation {
+    vertical-align: middle;
+  }
+  .equation-label {
+    display: table-cell;
+    text-align: right;
+    vertical-align: middle;
+  }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
+    background: #ffffcc;
+  }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
+  .org-svg { }
+</style>
+<script>
+  window.MathJax = {
+    tex: {
+      ams: {
+        multlineWidth: '85%'
+      },
+      tags: 'ams',
+      tagSide: 'right',
+      tagIndent: '.8em'
+    },
+    chtml: {
+      scale: 1.0,
+      displayAlign: 'center',
+      displayIndent: '0em'
+    },
+    svg: {
+      scale: 1.0,
+      displayAlign: 'center',
+      displayIndent: '0em'
+    },
+    output: {
+      font: 'mathjax-modern',
+      displayOverflow: 'overflow'
+    }
+  };
+</script>
+
+<script
+  id="MathJax-script"
+  async
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+</script>
+</head>
+<body>
+<div id="content" class="content">
+<h1 class="title">Code Project</h1>
+
+<div id="outline-container-org05aed6d" class="outline-2">
+<h2 id="org05aed6d"><span class="section-number-2">1.</span> Problem Description</h2>
+<div class="outline-text-2" id="text-1">
+</div>
+<div id="outline-container-org076be16" class="outline-3">
+<h3 id="org076be16"><span class="section-number-3">1.1.</span> Integral Equation</h3>
+<div class="outline-text-3" id="text-1-1">
+<p>
+This problem considers the 2 dimensional advection diffusion equation, which in its integral form can be written as
+</p>
+\begin{equation}
+\frac{d}{dt} \int _\Omega \phi  d\Omega = - \int _S \phi \textbf{V} \cdot \textbf{n} dS  \int _S \alpha \nabla \phi \cdot \textbf{n} dS + \int _\Omega Q d\Omega
+\end{equation}
+</div>
+</div>
+
+<div id="outline-container-org48ad736" class="outline-3">
+<h3 id="org48ad736"><span class="section-number-3">1.2.</span> Descriptions</h3>
+<div class="outline-text-3" id="text-1-2">
+<p>
+Part 1 condsiders the steady state problem with no advection or generation terms for a thin water column with the spatial domain of  \(x \epsilon(0,5m)\) and \(y \epsilon(0,1m)\) with a dirichlet boundary conditions of \(30^{\circ} c\) on the left, bottom, and top surface and a neumann boundary condition of \(q = 10 \frac{W}{m^2}\) on the top surface
+</p>
+
+<p>
+Part 2 condsiders the same formulation as part 1 with an added source term \(Q = 50e^{-(x-\frac{L}{2})^2}\)
+</p>
+
+<p>
+Part 3 considers the unsteady case of part 1, starting from an initial condition of \(T(0,x,y) = 30^{\circ} c\) until a steady state is achieved
+</p>
+
+<p>
+Part 4 considers the advection-diffusion problem with a left dirichelet boundary condition of \(50 ^{\circ} c\), for three constant velocities \(\textbf{V} = [0.01,0], [0.1,0], [1,0] m/s\)
+</p>
+</div>
+</div>
+<div id="outline-container-org8b4116b" class="outline-3">
+<h3 id="org8b4116b"><span class="section-number-3">1.3.</span> Discritized Equations</h3>
+<div class="outline-text-3" id="text-1-3">
+<p>
+The first term of equation 1 discritized on a cartesian structured grid by approximating the volumetric inegral's average as being its center point and discritizing the time derivative using a forward discritization.
+</p>
+\begin{equation}
+\frac{d}{d t} \int _\Omega  \phi d\Omega = \frac{d}{d t} \bar{\phi}\Delta x \Delta y \approx \frac{d}{d t} \phi _i\Delta x \Delta y \approx \frac{\phi^{n+1} _i - \phi ^ n _i}{\Delta t} \Delta x \Delta y + O(\Delta t)
+\end{equation}
+
+<p>
+Due to the velocitys all being in the positive x direction, the second term can be discritized using an upwind discritization.
+</p>
+\begin{equation}
+ -\int _S \phi \textbf{V} \cdot \textbf{n} dS   \approx u_x(\phi_L - \phi _i) \Delta y +O(\Delta x , \Delta t)
+\end{equation}
+<p>
+where u<sub>x</sub> is the velocity magnitude in the x direction and \(\phi _W\) coresponds to value of phi for the cell next to the current cell in the the west cardinal dircetion. Of note, the \(\Delta x\) discritization here will make the entire equation 1st order accurate spatial discritization. Note: The convection of refering to the cells surrounding the current cell as N = North, E = East, W = West, S = South
+and the lowercase equivalent refering to the respective face intersections between will be used throuhout this report)
+</p>
+
+<p>
+the third diffusive flux term can be discritized using the central difference. Assuming a constant diffusivity paramater this results in
+</p>
+
+\begin{equation}
+ \int _S \alpha \nabla \phi \cdot \textbf{n} dS \approx \alpha \frac{\phi _L -2 \phi _i +\phi _R}{\Delta x} \Delta y + \alpha \frac{\phi _S -2 \phi _i +\phi _N}{\Delta y} \Delta x + O(\Delta x^2 ,\Delta y^2)
+\end{equation}
+
+<p>
+The last source term can again be approximated as the value at its mid point
+</p>
+
+\begin{equation}
+\int _\Omega Q d\Omega \approx Q_i\Delta x \Delta y
+\end{equation}
+
+<p>
+Combining the equations 2 - 5 and deviding both sided by \(\Delta x \Delta y\) and multipying the source term (given in units of \(\frac{W}{m^2}\)) by \(\frac{\alpha}{k}\) results in the final discritized equation
+</p>
+\begin{equation}
+\frac{\phi^{n+1} _i - \phi ^ n _i}{\Delta t} = \frac{u_x(\phi_L - \phi _i)}{\Delta x} + \alpha \frac{\phi _L -2 \phi _i +\phi _R}{\Delta x ^2} + \alpha \frac{\phi _S -2 \phi _i +\phi _N}{\Delta y^2} + \ Q_i \frac{\alpha}{k} +O(\Delta t, \Delta x, \Delta y)
+\end{equation}
+
+<p>
+Finally, the source term was given in
+</p>
+</div>
+</div>
+
+<div id="outline-container-org6e474ff" class="outline-3">
+<h3 id="org6e474ff"><span class="section-number-3">1.4.</span> Boundary Conditions</h3>
+<div class="outline-text-3" id="text-1-4">
+<p>
+For the boundary conditions, we can modify equation 6 on the boundaries using the ghost cell approach using the known quantities. Shown here for the left dirichlet boundaries
+</p>
+\begin{equation}
+\frac{\phi _L+ \phi _i}{2} = T_{left}
+\end{equation}
+<p>
+allows solving for the dirichlet equations on the boundaries
+</p>
+\begin{equation}
+\phi _L = 2T_{left}-\phi _i
+\end{equation}
+<p>
+Simillarly for the right
+</p>
+\begin{equation}
+\phi _R = 2T_{right}-\phi _i
+\end{equation}
+<p>
+and bottom boundaries
+</p>
+\begin{equation}
+\phi _S = 2T_{bottom}-\phi _i
+\end{equation}
+<p>
+The neumann boundary can be determined from the flux term
+</p>
+\begin{equation}
+q = k \frac{\delta T}{\delta y} \approx k \frac{\phi _N - \phi _i}{\Delta y}
+\end{equation}
+<p>
+where k is the materials thermal conductivity.
+Solving for \(\phi _n\)
+</p>
+\begin{equation}
+\phi _N = \frac{q \Delta y}{k} +\phi _i
+\end{equation}
+
+
+<p>
+\newpage
+</p>
+</div>
+</div>
+</div>
+<div id="outline-container-org0c69329" class="outline-2">
+<h2 id="org0c69329"><span class="section-number-2">2.</span> Installation</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+The code used in this project has been published as a pypi package and can be installed using pip.
+</p>
+<div class="org-src-container">
+<pre class="src src-python">pip install bray-pde
+</pre>
+</div>
+<p>
+Then from python session the examples can be imported using
+</p>
+<div class="org-src-container">
+<pre class="src src-python">import solver.code_project.main as project
+</pre>
+</div>
+<p>
+Each solution can then be ran independently as
+</p>
+<div class="org-src-container">
+<pre class="src src-python">project.SteadyState()
+project.Generation()
+project.Transient()
+project.AdvectionDiffusion()
+</pre>
+</div>
+
+<p>
+Or all at once
+</p>
+<div class="org-src-container">
+<pre class="src src-python">project.main()
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-org2866d28" class="outline-2">
+<h2 id="org2866d28"><span class="section-number-2">3.</span> Problem Constants</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+Based on the problem description, at atmospheric pressure the thermal diffusivity ranges from \(0.155 *10^{-6} \frac{m^2}{s}\) at 50 degrees celcius, to \(0.143 * 10^ {-6} \frac{m^2}{s}\) at 20 degrees celsius. A constant thermal diffusivity of \(0.146 * 10^{-6} /frac{m^2}{s}\) for water at standard temperature and pressure (25 degrees celcius at atmospheric pressure) was used for this project as the error introduced due to this symplifying assumption was determined to be acceptable <a href="#citeproc_bib_item_1">[1]</a>
+</p>
+
+<p>
+The water thermal conductivity taken to be a constant at \(0.456 \frac{W}{mK}\) again coresponding to a temperature of 25 degrees celcius. <a href="#citeproc_bib_item_2">[2]</a>
+</p>
+
+<div class="org-src-container">
+<pre class="src src-python">from solver.cartesian_mesh import CartesianMesh
+from solver.solver import Solver
+from solver.utilities import EnergyBalance, Plotter, VelocityRounder
+from solver.mesher import linear_convection_mesh
+from matplotlib import pyplot as plt
+import numpy as np
+import logging
+import math
+
+#create logging configuration
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.INFO)
+formatter = logging.Formatter(
+  "%(message)s",
+)
+console_handler.setFormatter(formatter)
+logger.addHandler(console_handler)
+
+class Setup:
+    def __init__(self,
+                 x_range = (0,5),
+                 y_range = (0,1),
+                 mesh_type = "finite_volume",
+                 conductivity = 0.456,
+                 diffusivity = 0.146*10**(-6),
+                 temp_left = 30,
+                 temp_right = 30,
+                 temp_bottom = 30,
+                 top_flux = -10,
+                 ):
+
+
+        self.mesh_size_dict = {
+            "course":(5,2),
+            "medium": (20,8),
+            "fine":(100,10),
+            "ultra_fine":(200,50)
+        }
+        # Define Problem constants
+        self.x_range = x_range
+        self.y_range = y_range
+        self.mesh_type = mesh_type
+        self.conductivity = conductivity # W/mk
+        self.diffusivity = diffusivity #m^2/s
+        self.temp_left = temp_left #celcius
+        self.temp_right = temp_right #celcius
+        self.temp_bottom = temp_bottom #celcius
+        self.top_flux = top_flux #celcius
+
+        # Create a function that creates the mesh
+    def create_mesh(
+            self,
+            x_cells = 80,
+            y_cells = 12,
+
+    ):
+        mesh = CartesianMesh(
+            dimensions=2,
+            n_cells=[x_cells, y_cells],
+            cordinates=[self.x_range, self.y_range],
+        mesh_type= self.mesh_type,
+        conductivity = self.conductivity,
+        diffusivity = self.diffusivity
+    )
+
+        mesh.set_dirichlet_boundary(side="left", phi=self.temp_left)
+        mesh.set_dirichlet_boundary(side="right", phi=self.temp_right)
+        mesh.set_dirichlet_boundary(side="bottom", phi=self.temp_bottom)
+        mesh.set_neumann_boundary(side="top", flux = self.top_flux/self.conductivity)
+        return(mesh)
+
+    def plot_steady(self, mesh_dictionary, plot_name):
+          fig, ax = plt.subplots(len(mesh_dictionary), figsize= (10,12))
+          i = 0
+          for  mesh_size, mesh in mesh_dictionary.items():
+
+              x_cords = mesh.grid["x_grid"].cell_cordinates
+              y_cords = mesh.grid["y_grid"].cell_cordinates
+              logger.debug(x_cords)
+              xv, yv = np.meshgrid(x_cords, y_cords)
+              axis = plt.subplot(len(mesh_dictionary),1,i+1)
+              axis.set_title(mesh_size)
+              steady = axis.pcolormesh(xv, yv, mesh.phi.get_phi())
+
+              i = i +1
+
+              fig.colorbar(steady, label = "temperature (celcius)")
+          plt.savefig(plot_name)
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgf790af5" class="outline-2">
+<h2 id="orgf790af5"><span class="section-number-2">4.</span> Part 1 Steady State</h2>
+<div class="outline-text-2" id="text-4">
+<div class="org-src-container">
+<pre class="src src-python">class SteadyStateSolver:
+   def __init__(self, settings = Setup()):
+      self.settings = settings
+
+   def solve(self):
+      self.mesh_dict = {}
+      energy_balance_dict = {}
+      for mesh_size , cells in self.settings.mesh_size_dict.items():
+         x_cells , y_cells  = cells
+
+         self.mesh_dict[mesh_size] = self.settings.create_mesh(
+            x_cells = x_cells,
+            y_cells=y_cells
+         )
+         # Solve the steady Case
+         Solver(mesh = self.mesh_dict[mesh_size]).solve_steady()
+         energy_balance_dict[mesh_size] = EnergyBalance(mesh = self.mesh_dict[mesh_size])
+         logger.info(f"\n Mesh Size:{mesh_size}")
+         total_flux = energy_balance_dict[mesh_size].flux("all")
+
+   def plot(self):
+      fig, ax = plt.subplots(len(self.mesh_dict), figsize= (10,12))
+      i = 0
+      for  mesh_size, mesh in self.mesh_dict.items():
+
+         x_cords = mesh.grid["x_grid"].cell_cordinates
+         y_cords = mesh.grid["y_grid"].cell_cordinates
+         logger.debug(x_cords)
+         xv, yv = np.meshgrid(x_cords, y_cords)
+         axis = plt.subplot(len(self.mesh_dict),1,i+1)
+         axis.set_title(mesh_size)
+         steady = axis.pcolormesh(xv, yv, mesh.phi.get_phi())
+
+         i = i +1
+
+         fig.colorbar(steady, label = "temperature (celcius)")
+         plt.savefig("steady.png")
+
+def SteadyState():
+    steady = SteadyStateSolver()
+    steady.solve()
+    steady.plot()
+
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-python">SteadyState()
+</pre>
+</div>
+<pre class="example" id="org8e861da">
+
+ Mesh Size:course
+solver.utilities:INFO:flux:
+ Left Flux: 5.984599731767105 W
+ Right Flux: 5.984599731767105 W
+ Bottom Flux: 38.03080053646583 W
+ Generation: 0.0 W
+ Top Flux: -50.0 W
+ Cell Sum Squared Error: 8.131861707906003e-28 W
+ Flux leaving boundarys: 4.440892098500626e-14W
+ Total Flux: 4.440892098500626e-14
+
+ Mesh Size:medium
+solver.utilities:INFO:flux:
+ Left Flux: 7.330052111172102 W
+ Right Flux: 7.330052111172095 W
+ Bottom Flux: 35.339895777655755 W
+ Generation: 0.0 W
+ Top Flux: -50.0 W
+ Cell Sum Squared Error: 2.2277109653610886e-26 W
+ Flux leaving boundarys: -5.684341886080802e-14W
+ Total Flux: -5.684341886080802e-14
+
+ Mesh Size:fine
+solver.utilities:INFO:flux:
+ Left Flux: 7.410898164506065 W
+ Right Flux: 7.4108981645061895 W
+ Bottom Flux: 35.178203670991046 W
+ Generation: 0.0 W
+ Top Flux: -49.99999999999999 W
+ Cell Sum Squared Error: 1.7166707559454444e-25 W
+ Flux leaving boundarys: 3.304023721284466e-12W
+ Total Flux: 3.304023721284466e-12
+
+ Mesh Size:ultra_fine
+solver.utilities:INFO:flux:
+ Left Flux: 7.417294624355647 W
+ Right Flux: 7.417294624356283 W
+ Bottom Flux: 35.165410751328 W
+ Generation: 0.0 W
+ Top Flux: -50.0 W
+ Cell Sum Squared Error: 1.6155439387848486e-24 W
+ Flux leaving boundarys: 3.991829089500243e-11W
+ Total Flux: 3.991829089500243e-11
+</pre>
+
+<p>
+Due to the finite volume scheme, the total flux error and the sum of each cells squared error is relativly independent of mesh size. The overall error increases slightly with the higher number of points due to the numerical round off error present with the higher number of calcualtions.
+</p>
+
+
+<div id="org4487411" class="figure">
+<p><img src="./steady.png" alt="steady.png" />
+</p>
+</div>
+</div>
+</div>
+
+
+<div id="outline-container-org2b768ff" class="outline-2">
+<h2 id="org2b768ff"><span class="section-number-2">5.</span> Part 2: With Generation</h2>
+<div class="outline-text-2" id="text-5">
+<div class="org-src-container">
+<pre class="src src-python">class GenerationSolver:
+    def __init__(self, settings = Setup()):
+        self.settings = settings
+    def solve(self):
+        self.generation_mesh_dict = {}
+        generation_energy_balance_dict = {}
+        def gen_function (x, y):
+            return(0*y+ 50*np.exp(-(x-2.5)**2))
+        for mesh_size , cells in self.settings.mesh_size_dict.items():
+            x_cells , y_cells  = cells
+
+            #Create the mesh
+            self.generation_mesh_dict[mesh_size] = self.settings.create_mesh(
+                x_cells = x_cells,y_cells=y_cells)
+
+            #Add the generation function
+            self.generation_mesh_dict[mesh_size].set_generation(function = gen_function)
+
+            # Solve the steady Case with generation
+            Solver(
+                mesh = self.generation_mesh_dict[mesh_size]
+            ).solve_steady()
+            generation_energy_balance_dict[mesh_size] = EnergyBalance(
+                mesh = self.generation_mesh_dict[mesh_size])
+            logger.info(f"\n Mesh Size:{mesh_size}")
+            total_flux = generation_energy_balance_dict[mesh_size].flux("all")
+    def plot(self):
+        self.settings.plot_steady(self.generation_mesh_dict, "generation.png")
+
+def Generation():
+    generation = GenerationSolver()
+    generation.solve()
+    generation.plot()
+
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-python">Generation()
+</pre>
+</div>
+<pre class="example" id="orgd099812">
+
+ Mesh Size:course
+solver.utilities:INFO:flux:
+ Left Flux: 3.050929235793739 W
+ Right Flux: 3.050929235793736 W
+ Bottom Flux: -44.721366477605116 W
+ Generation: 88.61950800601765 W
+ Top Flux: -50.0 W
+ Cell Sum Squared Error: 1.3769936879182083e-27 W
+ Flux leaving boundarys: -88.61950800601764W
+ Total Flux: 1.9984014443252818e-14
+
+ Mesh Size:medium
+solver.utilities:INFO:flux:
+ Left Flux: 4.701073325592375 W
+ Right Flux: 4.70107332559235 W
+ Bottom Flux: -47.991201972823 W
+ Generation: 88.58905532163828 W
+ Top Flux: -50.0 W
+ Cell Sum Squared Error: 2.551527219976484e-26 W
+ Flux leaving boundarys: -88.58905532163827W
+ Total Flux: 1.2878587085651816e-14
+
+ Mesh Size:fine
+solver.utilities:INFO:flux:
+ Left Flux: 4.785512273955572 W
+ Right Flux: 4.785512273955726 W
+ Bottom Flux: -48.157752314938016 W
+ Generation: 88.58672776703278 W
+ Top Flux: -49.99999999999999 W
+ Cell Sum Squared Error: 3.4356761443066776e-25 W
+ Flux leaving boundarys: -88.58672776702672W
+ Total Flux: 6.0751403907488566e-12
+
+ Mesh Size:ultra_fine
+solver.utilities:INFO:flux:
+ Left Flux: 4.804574739708152 W
+ Right Flux: 4.804574739708852 W
+ Bottom Flux: -48.195801968524805 W
+ Generation: 88.58665248917005 W
+ Top Flux: -50.0 W
+ Cell Sum Squared Error: 3.482364056824771e-24 W
+ Flux leaving boundarys: -88.5866524891078W
+ Total Flux: 6.225775450729998e-11
+</pre>
+
+
+<div id="org30e0cb8" class="figure">
+<p><img src="./generation.png" alt="generation.png" />
+</p>
+</div>
+
+<p>
+In the generation case you can see the overall energy balance still holds for the finite volume discritization regardless of discritization size. As expected, the energy generated is balanced by the energy leaving the control volume. The source term was strong enough to have a flux out of the control volume on the the bottom boundary. Also of note, the maximum temperature reached was ~ 90 degrees celcius which is approaching a range where, depending on the application, the assumption of a constant thermal conductivity could be introducing a non-negligable amound of error into calculating the solution.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orga36d347" class="outline-2">
+<h2 id="orga36d347"><span class="section-number-2">6.</span> Part 3: Transient</h2>
+<div class="outline-text-2" id="text-6">
+<p>
+To obtain a rough estimate the time to perform the simulation we can use the formula
+</p>
+\begin{equation*}
+\frac{Water Mass * (T _{final} - T _{start}) * Specific Heat}{Cooling Rate}
+\end{equation*}
+
+<p>
+Aproximating the cooling rate as being the average of its starting rate (50W from the top) and 0W (steady state) = 25W.
+</p>
+
+<p>
+The temperatures are 30 celcius and the average temperature seen in the steady state case.
+At these temperatures, the isobaric and isochoric specific heats are aproximatly equivalent at 4.1379 kJ/kgK <a href="#citeproc_bib_item_3">[3]</a>
+</p>
+
+\begin{equation*}
+\frac{5 (m) * 1 (m) * \frac{1000 kg}{m^3} * (T _{final} -30 )K * 41379 \frac{J}{kgK}}{-25 \frac{J}{s m^2} } =
+\end{equation*}
+<p>
+where L is the lenght into the page
+</p>
+<div class="org-src-container">
+<pre class="src src-python">
+average_final_temp =np.mean(mesh_dict["fine"].phi.get_phi())
+time_estimate = ((5*1)*1000*(average_final_temp - 30)*41379)/(-25)
+logger.info(f"Time Estimate: {time_estimate}s")
+</pre>
+</div>
+
+<pre class="example">
+Time Estimate: 67171960.47650723s
+</pre>
+
+
+<p>
+This time estimate can also be obtained using the einstein's approximation equations <a href="#citeproc_bib_item_4">[4]</a>
+</p>
+
+\begin{equation}
+ t \approx \frac{x ^2}{alpha} = \frac{1 m^2}{2* 0.146 *10^{-6}\frac{m^2}{s}} \approx 0.2 *10 ^6 seconds
+\end{equation}
+
+<p>
+This shows that the time scales of interest are on the order of 1 million seconds. Recalling that for an explicit solver we need
+</p>
+\begin{equation*}
+\Delta t \le \frac{\Delta x ^2}{2\alpha ^2}
+\end{equation*}
+<p>
+With a realistic desired discritization size of \(\Delta x = 0.01\) and our thermal diffusivity of \(0.146 *10 ^{-6} \frac{m^2}{s}\) an Explicit solver would require a time step size on the order of 100 seconds which would require roughly 10<sup>4</sup> time steps for the finer meshes.For this reason an implicit solver was chosen.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-python">class TransientSolver:
+  def __init__(self, settings = Setup()):
+    self.settings = settings
+
+
+  def solve(self):
+    self.transient_mesh = self.settings.create_mesh()
+    self.transient_mesh.phi.set_phi(30)
+
+    #Create the implicit solver
+    self.transient_solver = Solver(
+      mesh = self.transient_mesh,
+      method = "implicit",
+      time_step_size = 10000
+    )
+
+    self.transient_solver.solve(
+      t_final = 14000000,
+      record_step = 100,
+      compute_error_flag = True,
+      tolerance = 0.1
+    )
+
+  def plot(self):
+    transient_plotter= Plotter(mesh = self.transient_mesh)
+    transient_plotter.transient_plotter(
+      data_list = self.transient_solver.saved_state_list,
+      name = "transient")
+
+def Transient():
+    transient = TransientSolver()
+    transient.solve()
+    transient.plot()
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-python">Transient()
+</pre>
+</div>
+
+<pre class="example" id="org164b79b">
+solver.solver:INFO:compute_error:Time: 1000000, RMSPE: 13.686435117459721
+solver.solver:INFO:compute_error:Time: 2000000, RMSPE: 9.032248864389436
+solver.solver:INFO:compute_error:Time: 3000000, RMSPE: 5.97143759557091
+solver.solver:INFO:compute_error:Time: 4000000, RMSPE: 3.945127397456205
+solver.solver:INFO:compute_error:Time: 5000000, RMSPE: 2.604738881567865
+solver.solver:INFO:compute_error:Time: 6000000, RMSPE: 1.718969112895572
+solver.solver:INFO:compute_error:Time: 7000000, RMSPE: 1.1340631542603474
+solver.solver:INFO:compute_error:Time: 8000000, RMSPE: 0.7480277052323432
+solver.solver:INFO:compute_error:Time: 9000000, RMSPE: 0.49333346085210694
+solver.solver:INFO:compute_error:Time: 10000000, RMSPE: 0.32533176831355054
+solver.solver:INFO:compute_error:Time: 11000000, RMSPE: 0.21453034885521768
+solver.solver:INFO:compute_error:Time: 12000000, RMSPE: 0.14146074967366537
+solver.solver:INFO:compute_error:Time: 13000000, RMSPE: 0.09327679418999363
+solver.solver:INFO:solve:steady state reached with an error: 0.09327679418999363 &lt; tolerance: 0.1
+solver.solver:INFO:compute_error:Time: 13000000, RMSPE: 0.09327679418999363
+</pre>
+
+
+<p>
+<img src="./transient_temperature_profile.png" alt="transient_temperature_profile.png" />
+<img src="./transient_line_distributions.png" alt="transient_line_distributions.png" />
+As shown above, the temperatures reached steady state after ~13 million seconds due to the low diffusivity of water. The temperature distributions all follow a similar pattern (with a differing magnitude) as the heat diffuses towards the top. All of the dirichilet boundarys remain at a fixed temperature
+\newpage
+</p>
+</div>
+</div>
+<div id="outline-container-orge6aa31f" class="outline-2">
+<h2 id="orge6aa31f"><span class="section-number-2">7.</span> Part 4: Advection Diffusion</h2>
+<div class="outline-text-2" id="text-7">
+<div class="org-src-container">
+<pre class="src src-python">class AdvectionDiffusionMesh:
+  def __init__(self, settings = Setup(temp_left = 50)):
+    self.settings = settings
+
+  def create_advection_diffusion_mesh(self,velocity, x_cells = 60, y_cells = 20):
+    #Create our standard 2d cartesian mesh
+    # mesh = self.settings.create_mesh(x_cells = x_cells, y_cells = y_cells, temp_left = 50)
+    mesh = self.settings.create_mesh(x_cells = x_cells, y_cells = y_cells)
+    mesh.phi.set_phi(30)
+
+    #Create a 1d finite volume linear convective mesh (from HW5)
+    convection_mesh = linear_convection_mesh(
+        x = self.settings.x_range,
+        n_cells= x_cells,
+        mesh_type= "finite_volume",
+        discretization_type= "upwind")
+
+    convection_mesh.set_dirichlet_boundary("left", phi = 50)
+
+
+    dx = mesh.grid["x_grid"].cell_width
+    Iy = np.identity(y_cells)
+    #make the 2d laplacian using the kronecker delta and Iy
+    #This puts the 1d laplacian into every 1 in an identity of the shape y_cells x y_cells
+    twod_x_lap = (velocity/dx) * np.kron(Iy,convection_mesh.laplacian)
+    #logger.debug(f"{twod_x_lap}")
+    twod_x_bc = (
+        velocity/(dx)
+    ) * convection_mesh.boundary_condition_array.reshape(
+        1,x_cells).repeat(y_cells, axis = 0).flatten()
+
+    #add the convective terms to the 2d diffusion mesh
+    mesh.laplacian = mesh.laplacian + twod_x_lap
+    mesh.boundary_condition_array = mesh.boundary_condition_array + twod_x_bc
+    return(mesh)
+
+
+
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-python">class AdvectionDiffusionSolver:
+  def __init__(self, settings = Setup()):
+    self.settings = settings
+  def solve(self):
+    ultra_slow_dict ={
+      "name":"ultra_slow",
+      "velocity":0.000001,
+      "time_step_size":10000,
+      "t_final":10000000,
+      "record_step_time":10,
+      "tolerance": 0.01
+    }
+
+    mixed_dict ={
+      "name":"mixed",
+      "velocity":0.00001,
+      "time_step_size":1000,
+      "t_final":1000000,
+      "record_step_time":10,
+      "tolerance": 0.01
+    }
+
+    slow_dict ={
+      "name":"slow",
+      "velocity":0.01,
+      "time_step_size":1,
+      "t_final":1000,
+      "record_step_time":10,
+      "tolerance": 0.01
+    }
+
+    med_dict ={
+      "name":"med",
+      "velocity":0.1,
+      "time_step_size":0.1,
+      "t_final":100,
+      "record_step_time":10,
+      "tolerance": 0.01
+    }
+
+    fast_dict ={
+      "name":"fast",
+      "velocity":1,
+      "time_step_size":0.01,
+      "t_final":10,
+      "record_step_time":10,
+      "tolerance": 0.01
+    }
+
+    settings_list= [fast_dict, med_dict, slow_dict, mixed_dict,  ultra_slow_dict]
+    #settings_list= [fast_dict]
+
+    # # make a dictionary of solvers for the various time velocities
+    self.mesh_dict = {}
+    self.solutions_dict = {}
+    #Create the mesh
+    for settings in settings_list:
+
+      self.mesh_dict[settings["name"]]=AdvectionDiffusionMesh(
+      ).create_advection_diffusion_mesh(velocity = settings["velocity"])
+
+      self.solutions_dict[settings["name"]] = Solver(
+        mesh = self.mesh_dict[settings["name"]],
+        method = "implicit",
+        time_step_size = settings["time_step_size"])
+
+      self.solutions_dict[settings["name"]].solve(
+        t_final = settings["t_final"],
+        record_step= settings["record_step_time"],
+        compute_error_flag = True,
+        tolerance = settings["tolerance"]
+      )
+
+  def plot(self):
+    for name, solution in self.solutions_dict.items():
+      part4_plotter= Plotter(
+        mesh = self.mesh_dict[name]
+      ).transient_plotter(
+        data_list = solution.saved_state_list,
+        name = f"advection_diffusion_{name}",
+        phi_min = 30,
+        phi_max = 50
+
+     )
+
+def AdvectionDiffusion():
+  advection_diffusion = AdvectionDiffusionSolver()
+  advection_diffusion.solve()
+  advection_diffusion.plot()
+
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-python">AdvectionDiffusion()
+</pre>
+</div>
+
+
+<p>
+\newpage
+</p>
+</div>
+<div id="outline-container-orgbd98d28" class="outline-3">
+<h3 id="orgbd98d28"><span class="section-number-3">7.1.</span> Fast Velocity</h3>
+<div class="outline-text-3" id="text-7-1">
+<p>
+When a velocity of 1m/s is used, the problem is convective driven, with the 50 degree wave propegating across from left two right. The diffusion of the wave is likely due to numerical error an not due to actual diffusion. Note how the diffusion of temperature from the top and bottom boundaries has very little impact on the temperature profiles.
+<img src="./advection_diffusion_fast_temperature_profile.png" alt="advection_diffusion_fast_temperature_profile.png" />
+<img src="./advection_diffusion_fast_line_distributions.png" alt="advection_diffusion_fast_line_distributions.png" />
+\newpage
+</p>
+</div>
+</div>
+<div id="outline-container-org5af165d" class="outline-3">
+<h3 id="org5af165d"><span class="section-number-3">7.2.</span> Medium Velocity</h3>
+<div class="outline-text-3" id="text-7-2">
+<p>
+Slowing the velocity down to 0.1 m/s has very little change (beyond the time from which it takes the front to move from left to right). At this velocity this profile remains advection dominated.
+<img src="./advection_diffusion_med_temperature_profile.png" alt="advection_diffusion_med_temperature_profile.png" />
+<img src="./advection_diffusion_med_line_distributions.png" alt="advection_diffusion_med_line_distributions.png" />
+\newpage
+</p>
+</div>
+</div>
+<div id="outline-container-org1865faa" class="outline-3">
+<h3 id="org1865faa"><span class="section-number-3">7.3.</span> Slow Velocity</h3>
+<div class="outline-text-3" id="text-7-3">
+<p>
+Again, even at a velocity of 0.01 m/s the problem is still advection dominated. This aligns with the transient results which obtained steady state in ~10<sup>6</sup> seconds, while the advection can transefer the temperature across the domain in ~10<sup>3</sup>
+<img src="./advection_diffusion_slow_temperature_profile.png" alt="advection_diffusion_slow_temperature_profile.png" />
+<img src="./advection_diffusion_slow_line_distributions.png" alt="advection_diffusion_slow_line_distributions.png" />
+\newpage
+</p>
+</div>
+</div>
+<div id="outline-container-orgaa88e0c" class="outline-3">
+<h3 id="orgaa88e0c"><span class="section-number-3">7.4.</span> Mixed Advection diffusion</h3>
+<div class="outline-text-3" id="text-7-4">
+<p>
+Slowwing the velocity down the velocity an additional 3 orders of magnitude, the diffusive effects start to influence the solution, with the bottom temperature profile starting to diverge from the middle and top profile
+<img src="./advection_diffusion_mixed_temperature_profile.png" alt="advection_diffusion_mixed_temperature_profile.png" />
+<img src="./advection_diffusion_mixed_line_distributions.png" alt="advection_diffusion_mixed_line_distributions.png" />
+\newpage
+</p>
+</div>
+</div>
+<div id="outline-container-org451d423" class="outline-3">
+<h3 id="org451d423"><span class="section-number-3">7.5.</span> Diffusion Driven</h3>
+<div class="outline-text-3" id="text-7-5">
+<p>
+Further slowwing down the velocity to 0.000001 m/s the flow becomes diffusion driven, with very little convective influence.
+<img src="./advection_diffusion_ultra_slow_temperature_profile.png" alt="advection_diffusion_ultra_slow_temperature_profile.png" />
+<img src="./advection_diffusion_ultra_slow_line_distributions.png" alt="advection_diffusion_ultra_slow_line_distributions.png" />
+</p>
+
+<p>
+\newpage
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgdb23820" class="outline-2">
+<h2 id="orgdb23820"><span class="section-number-2">8.</span> Acknowledgments</h2>
+<div class="outline-text-2" id="text-8">
+<p>
+This work was produced using my best attemps at following the object oriented approach discussed and recomended in Scientific Software Design The Object-Oriented Way by Damian Rouson, Jim Xia, and Xiaofeng Xu. <a href="#citeproc_bib_item_5">[5]</a>
+</p>
+
+<p>
+Additionally, the approach utilized was influenced by my own previous notes from MD362 Numerical analysis taught by Dr John M Neuberger.
+</p>
+
+<p>
+Finaly when preparing this assignment,  ChatGPT was utilized as a reasource to assist with code syntax and as well as a tool for debugging and idea generation. A common use pattern was when a particular pice of code was not generating the desired output it was coppied into chat gpt with a request to do the desired output. The response was reviewed, and tested (both using unit testing as well as interactivly) to see if the desired behavior was obtained. Alternativly key words in the response were sometimes to assist in formulating a more targeted google search.
+</p>
+
+
+<p>
+Chat GPT is a "Natural Language Processer" which at its core is a mathmatical model that calculates the probability of a given response \(\textbf{Y} = f(\textbf{X})\) and then selecting the responce with the highest probability. Machine learning models are trained to fit a generalized non-linear model by taking the input paramaters and multiplying them by a weight function (i.e x1 * w1 = b1). In the case of a deep nural network the response of the first equation will be acted on my a non linear operator (i.e. b1 = b1 if b1&gt;0, else 0) and then multiplied by another weight function. This can be repeated multiple times in varying configurations until the response was predicted.
+</p>
+
+<p>
+To train the model a gradient decent method is often utilized, where a training data with known responses is used to fit the weight paramaters. The model starts with random weights, predicts the response and compairs each result with the actual response utilizing a loss function (such as mean squared error) The loss is minimized by using gradient decent in which the weigths are updated by taking a step in the direction of steepest decent.
+</p>
+
+<p>
+Because Chat GPT is predicting the next most posible phrase, it can result in responses that sound confident, but are not correct. Each line of code was tested Note: The information in this description was developed from my own notes from CS499 Deep Learning taught by Dr. Toby Hocking
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgb17b66b" class="outline-2">
+<h2 id="orgb17b66b"><span class="section-number-2">9.</span> References</h2>
+<div class="outline-text-2" id="text-9">
+<style>.csl-left-margin{float: left; padding-right: 0em;}
+ .csl-right-inline{margin: 0 0 0 1em;}</style><div class="csl-bib-body">
+  <div class="csl-entry"><a id="citeproc_bib_item_1"></a>
+    <div class="csl-left-margin">[1]</div><div class="csl-right-inline">T. E. ToolBox, “Water-steam-thermal-diffusivity,” <i>The engineering toolbox</i>. The Engineering ToolBox, 2018. Available: <a href="https://www.engineeringtoolbox.com/water-steam-thermal-diffusivity-d_2058.html">https://www.engineeringtoolbox.com/water-steam-thermal-diffusivity-d_2058.html</a></div>
+  </div>
+  <div class="csl-entry"><a id="citeproc_bib_item_2"></a>
+    <div class="csl-left-margin">[2]</div><div class="csl-right-inline">T. E. ToolBox, “Water- thermal conductivity vs temperature,” <i>The engineering toolbox</i>. The Engineering ToolBox, 2012. Available: <a href="https://www.engineeringtoolbox.com/water-liquid-gas-thermal-conductivity-temperature-pressure-d_2012.html">https://www.engineeringtoolbox.com/water-liquid-gas-thermal-conductivity-temperature-pressure-d_2012.html</a></div>
+  </div>
+  <div class="csl-entry"><a id="citeproc_bib_item_3"></a>
+    <div class="csl-left-margin">[3]</div><div class="csl-right-inline">T. E. ToolBox, “Water - specific heat vs. temperature,” <i>The engineering toolbox</i>. The Engineering ToolBox, 2004. Available: <a href="https://www.engineeringtoolbox.com/specific-heat-capacity-water-d_660.html">https://www.engineeringtoolbox.com/specific-heat-capacity-water-d_660.html</a></div>
+  </div>
+  <div class="csl-entry"><a id="citeproc_bib_item_4"></a>
+    <div class="csl-left-margin">[4]</div><div class="csl-right-inline">Psysiologyweb, “Diffusion time calculator.” Available: <a href="https://www.physiologyweb.com/calculators/diffusion_time_calculator.html">https://www.physiologyweb.com/calculators/diffusion_time_calculator.html</a></div>
+  </div>
+  <div class="csl-entry"><a id="citeproc_bib_item_5"></a>
+    <div class="csl-left-margin">[5]</div><div class="csl-right-inline">D. Rouson, J. Xia, and X. Xu, <i>Scientific software design the object-oriented way</i>. 2011.</div>
+  </div>
+</div>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="author">Author: Bray Moll</p>
+<p class="date">Created: 2023-11-22 Wed 01:54</p>
+<p class="validation"><a href="https://validator.w3.org/check?uri=referer">Validate</a></p>
+</div>
+</body>
+</html>
