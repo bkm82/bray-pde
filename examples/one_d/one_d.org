@@ -4,11 +4,10 @@
 #+OPTIONS: toc:nil
 #+SETUPFILE: ~/masters/bray-standard-latex-export.org
 
-[[https://github.com/bkm82/bray-pde/actions][https://github.com/bkm82/1D_Heat_Diffusion/actions/workflows/tests.yml/badge.svg]]
 
-* Example
+* 1-D Example
 ** Problem Setup
-
+[[file:finite_difference.png]]
 #+ATTR_LATEX: :options frame=single
 #+BEGIN_SRC python :results output :exports both :session Python-Session
   import pandas as pd
