@@ -3,98 +3,9 @@
 #+OPTIONS: toc:nil
 #+SETUPFILE: ~/masters/bray-standard-latex-export.org
 #+BIBLIOGRAPHY: ../citations.bib
+[[https://github.com/bkm82/bray-pde/actions][https://github.com/bkm82/1D_Heat_Diffusion/actions/workflows/tests.yml/badge.svg]]
 
-* Problem Description
-** Integral Equation
-
-This example considers the 2 dimensional advection diffusion equation, which in its integral form can be written as
-
-$$
-\frac{d}{dt} \int _\Omega \phi  d\Omega = - \int _S \phi \textbf{V} \cdot \textbf{n} dS  \int _S \alpha \nabla \phi \cdot \textbf{n} dS + \int _\Omega Q d\Omega
-$$
-
-** Descriptions
-Part 1 condsiders the steady state problem with no advection or generation terms for a thin water column with the spatial domain of  $x \epsilon(0,5m)$ and $y \epsilon(0,1m)$ with a dirichlet boundary conditions of 30 degrees celcius on the left, bottom, and top surface and a neumann boundary condition of $q = 10 \frac{W}{m^2}$ on the top surface
-
-Part 2 condsiders the same formulation as part 1 with an added source term Q=50e^{-(x)^2}
-
-Part 3 considers the unsteady case of part 1, starting from an initial condition of T(0,x,y) = 30c until a steady state is achieved
-
-Part 4 considers the advection-diffusion problem with a left dirichelet boundary condition of 50c, for three constant velocities $\textbf{V} = [0.01,0], [0.1,0], [1,0] m/s$
-** Discritized Equations
-The first term of the integral equation can be  discritized on a cartesian structured grid by approximating the volumetric inegral's average as being its center point and discritizing the time derivative using a forward discritization.
-
-$$
-\frac{d}{d t} \int _\Omega  \phi d\Omega = \frac{d}{d t} \bar{\phi}\Delta x \Delta y \approx \frac{d}{d t} \phi _i\Delta x \Delta y \approx \frac{\phi^{n+1} _i - \phi ^ n _i}{\Delta t} \Delta x \Delta y + O(\Delta t)$
-$$
-
-Due to the velocitys all being in the positive x direction, the second term can be discritized using an upwind discritization.
-
-$$
- -\int _S \phi \textbf{V} \cdot \textbf{n} dS   \approx u_x(\phi_L - \phi _i) \Delta y +O(\Delta x , \Delta t)
-$$
-
-where u_x is the velocity magnitude in the x direction and $\phi _W$ coresponds to value of phi for the cell next to the current cell in the the west cardinal dircetion. Of note, the $\Delta x$ discritization here will make the entire equation 1st order accurate spatial discritization. Note: The convection of refering to the cells surrounding the current cell as N = North, E = East, W = West, S = South
-and the lowercase equivalent refering to the respective face intersections between will be used throuhout this report)
-
-the third diffusive flux term can be discritized using the central difference. Assuming a constant diffusivity paramater this results in
-
-$$
- \int _S \alpha \nabla \phi \cdot \textbf{n} dS \approx \alpha \frac{\phi _L -2 \phi _i +\phi _R}{\Delta x} \Delta y + \alpha \frac{\phi _S -2 \phi _i +\phi _N}{\Delta y} \Delta x + O(\Delta x^2 ,\Delta y^2)
-$$
-
-The last source term can again be approximated as the value at its mid point
-
-$$
-\int _\Omega Q d\Omega \approx Q_i\Delta x \Delta y
-$$
-
-Combining the equations discritized equations and deviding both sided by $\Delta x \Delta y$ and multipying the source term (given in units of $\frac{W}{m^2}$) by $\frac{\alpha}{k}$ results in the final discritized equation
-
-$$
-\frac{\phi^{n+1} _i - \phi ^ n _i}{\Delta t} = \frac{u_x(\phi_L - \phi _i)}{\Delta x} + \alpha \frac{\phi _L -2 \phi _i +\phi _R}{\Delta x ^2} + \alpha \frac{\phi _S -2 \phi _i +\phi _N}{\Delta y^2} + \ Q_i \frac{\alpha}{k} +O(\Delta t, \Delta x, \Delta y)
-$$
-
-Finally, the source term was given in
-
-** Boundary Conditions
-For the boundary conditions, we can modify the equation on the boundaries using the ghost cell approach using the known quantities. Shown here for the left dirichlet boundaries
-
-$$
-\frac{\phi _L+ \phi _i}{2} = T_{left}
-$$
-
-allows solving for the dirichlet equations on the boundaries
-
-$$
-\phi _L = 2T_{left}-\phi _i
-$$
-
-Simillarly for the right
-
-$$
-\phi _R = 2T_{right}-\phi _i
-$$
-
-and bottom boundaries
-
-$$
-\phi _S = 2T_{bottom}-\phi _i
-$$
-
-The neumann boundary can be determined from the flux term
-
-$$
-q = k \frac{\delta T}{\delta y} \approx k \frac{\phi _N - \phi _i}{\Delta y}
-$$
-
-where k is the materials thermal conductivity.
-Solving for $\phi _n$
-
-$$
-\phi _N = \frac{q \Delta y}{k} +\phi _i
-$$
-
+[[./examples/advection_diffusion_project/advection_diffusion_mixed_temperature_profile.png]]
 
 * Installation
 The code used in this project has been published as a pypi package and can be installed using pip.
@@ -121,109 +32,19 @@ Or all at once
 #+BEGIN_SRC python :results output :exports both :session Python-Session
     project.main()
 #+END_SRC
-* Problem Constants
-Based on the problem description, at atmospheric pressure the thermal diffusivity ranges from $0.155 *10^{-6} \frac{m^2}{s}$ at 50 degrees celcius, to $0.143 * 10^ {-6} \frac{m^2}{s}$ at 20 degrees celsius. A constant thermal diffusivity of $0.146 * 10^{-6} /frac{m^2}{s}$ for water at standard temperature and pressure (25 degrees celcius at atmospheric pressure) was used for this project as the error introduced due to this symplifying assumption was determined to be acceptable [cite:@Water_Diffusion_EngineeringToolbox]
+* Problem Description
+** Example Problems
+This code can be utilized to solve 1 and 2 dimension PDE's. In this example we will show how the code can be used to solve a 4 different 2d problems.
 
-The water thermal conductivity taken to be a constant at $0.456 \frac{W}{mK}$ again coresponding to a temperature of 25 degrees celcius. [cite:@Water_Conductivity_EngineeringToolBox]
+Part 1 condsiders the steady state problem with no advection or generation terms for a thin water column with the spatial domain of  $x \epsilon(0,5m)$ and $y \epsilon(0,1m)$ with a dirichlet boundary conditions of 30 degrees celcius on the left, bottom, and top surface and a neumann boundary condition of $q = 10 \frac{W}{m^2}$ on the top surface
 
-#+ATTR_LATEX: :options frame=single
-#+BEGIN_SRC python :results output :exports both :session Python-Session :tangle "../../../../src/solver/code_project/main.py
-  from solver.cartesian_mesh import CartesianMesh
-  from solver.solver import Solver
-  from solver.utilities import EnergyBalance, Plotter, VelocityRounder
-  from solver.mesher import linear_convection_mesh
-  from matplotlib import pyplot as plt
-  import numpy as np
-  import logging
-  import math
+Part 2 condsiders the same formulation as part 1 with an added source term Q=50e^{-(x)^2}
 
-  #create logging configuration
-  logger = logging.getLogger(__name__)
-  logger.setLevel(logging.INFO)
+Part 3 considers the unsteady case of part 1, starting from an initial condition of T(0,x,y) = 30c until a steady state is achieved
 
-  console_handler = logging.StreamHandler()
-  console_handler.setLevel(logging.INFO)
-  formatter = logging.Formatter(
-    "%(message)s",
-  )
-  console_handler.setFormatter(formatter)
-  logger.addHandler(console_handler)
-
-  class Setup:
-      def __init__(self,
-                   x_range = (0,5),
-                   y_range = (0,1),
-                   mesh_type = "finite_volume",
-                   conductivity = 0.456,
-                   diffusivity = 0.146*10**(-6),
-                   temp_left = 30,
-                   temp_right = 30,
-                   temp_bottom = 30,
-                   top_flux = -10,
-                   ):
-
-
-          self.mesh_size_dict = {
-              "course":(5,2),
-              "medium": (20,8),
-              "fine":(100,10),
-              "ultra_fine":(200,50)
-          }
-          # Define Problem constants
-          self.x_range = x_range
-          self.y_range = y_range
-          self.mesh_type = mesh_type
-          self.conductivity = conductivity # W/mk
-          self.diffusivity = diffusivity #m^2/s
-          self.temp_left = temp_left #celcius
-          self.temp_right = temp_right #celcius
-          self.temp_bottom = temp_bottom #celcius
-          self.top_flux = top_flux #celcius
-
-          # Create a function that creates the mesh
-      def create_mesh(
-              self,
-              x_cells = 80,
-              y_cells = 12,
-
-      ):
-          mesh = CartesianMesh(
-              dimensions=2,
-              n_cells=[x_cells, y_cells],
-              cordinates=[self.x_range, self.y_range],
-          mesh_type= self.mesh_type,
-          conductivity = self.conductivity,
-          diffusivity = self.diffusivity
-      )
-
-          mesh.set_dirichlet_boundary(side="left", phi=self.temp_left)
-          mesh.set_dirichlet_boundary(side="right", phi=self.temp_right)
-          mesh.set_dirichlet_boundary(side="bottom", phi=self.temp_bottom)
-          mesh.set_neumann_boundary(side="top", flux = self.top_flux/self.conductivity)
-          return(mesh)
-
-      def plot_steady(self, mesh_dictionary, plot_name):
-            fig, ax = plt.subplots(len(mesh_dictionary), figsize= (10,12))
-            i = 0
-            for  mesh_size, mesh in mesh_dictionary.items():
-
-                x_cords = mesh.grid["x_grid"].cell_cordinates
-                y_cords = mesh.grid["y_grid"].cell_cordinates
-                logger.debug(x_cords)
-                xv, yv = np.meshgrid(x_cords, y_cords)
-                axis = plt.subplot(len(mesh_dictionary),1,i+1)
-                axis.set_title(mesh_size)
-                steady = axis.pcolormesh(xv, yv, mesh.phi.get_phi())
-
-                i = i +1
-
-                fig.colorbar(steady, label = "temperature (celcius)")
-            plt.savefig(plot_name)
- #+END_SRC
-
- #+RESULTS:
-
+Part 4 considers the advection-diffusion problem with a left dirichelet boundary condition of 50c, for three constant velocities $\textbf{V} = [0.01,0], [0.1,0], [1,0] m/s$
 * Part 1 Steady State
+[[./examples/advection_diffusion_project/steady.png]]
 #+ATTR_LATEX: :options frame=single
 #+BEGIN_SRC python :results output :exports both :session Python-Session :tangle "../../../../src/solver/code_project/main.py
   class SteadyStateSolver:
@@ -326,9 +147,6 @@ solver.utilities:INFO:flux:
 #+end_example
 
 Due to the finite volume scheme, the total flux error and the sum of each cells squared error is relativly independent of mesh size. The overall error increases slightly with the higher number of points due to the numerical round off error present with the higher number of calcualtions.
-
-[[./examples/advection_diffusion_project/steady.png]]
-
 
 * Part 2: With Generation
 #+ATTR_LATEX: :options frame=single
@@ -1088,6 +906,191 @@ Slowwing the velocity down the velocity an additional 3 orders of magnitude, the
 Further slowwing down the velocity to 0.000001 m/s the flow becomes diffusion driven, with very little convective influence.
 [[./examples/advection_diffusion_project/advection_diffusion_ultra_slow_temperature_profile.png]]
 [[./examples/advection_diffusion_project/advection_diffusion_ultra_slow_line_distributions.png]]
+
+* Theory
+** Integral Equation
+
+This example considers the 2 dimensional advection diffusion equation, which in its integral form can be written as
+
+$$
+\frac{d}{dt} \int _\Omega \phi  d\Omega = - \int _S \phi \textbf{V} \cdot \textbf{n} dS  \int _S \alpha \nabla \phi \cdot \textbf{n} dS + \int _\Omega Q d\Omega
+$$
+
+** Discritized Equations
+The first term of the integral equation can be  discritized on a cartesian structured grid by approximating the volumetric inegral's average as being its center point and discritizing the time derivative using a forward discritization.
+
+$$
+\frac{d}{d t} \int _\Omega  \phi d\Omega = \frac{d}{d t} \bar{\phi}\Delta x \Delta y \approx \frac{d}{d t} \phi _i\Delta x \Delta y \approx \frac{\phi^{n+1} _i - \phi ^ n _i}{\Delta t} \Delta x \Delta y + O(\Delta t)$
+$$
+
+Due to the velocitys all being in the positive x direction, the second term can be discritized using an upwind discritization.
+
+$$
+ -\int _S \phi \textbf{V} \cdot \textbf{n} dS   \approx u_x(\phi_L - \phi _i) \Delta y +O(\Delta x , \Delta t)
+$$
+
+where u_x is the velocity magnitude in the x direction and $\phi _W$ coresponds to value of phi for the cell next to the current cell in the the west cardinal dircetion. Of note, the $\Delta x$ discritization here will make the entire equation 1st order accurate spatial discritization. Note: The convection of refering to the cells surrounding the current cell as N = North, E = East, W = West, S = South
+and the lowercase equivalent refering to the respective face intersections between will be used throuhout this report)
+
+the third diffusive flux term can be discritized using the central difference. Assuming a constant diffusivity paramater this results in
+
+$$
+ \int _S \alpha \nabla \phi \cdot \textbf{n} dS \approx \alpha \frac{\phi _L -2 \phi _i +\phi _R}{\Delta x} \Delta y + \alpha \frac{\phi _S -2 \phi _i +\phi _N}{\Delta y} \Delta x + O(\Delta x^2 ,\Delta y^2)
+$$
+
+The last source term can again be approximated as the value at its mid point
+
+$$
+\int _\Omega Q d\Omega \approx Q_i\Delta x \Delta y
+$$
+
+Combining the equations discritized equations and deviding both sided by $\Delta x \Delta y$ and multipying the source term (given in units of $\frac{W}{m^2}$) by $\frac{\alpha}{k}$ results in the final discritized equation
+
+$$
+\frac{\phi^{n+1} _i - \phi ^ n _i}{\Delta t} = \frac{u_x(\phi_L - \phi _i)}{\Delta x} + \alpha \frac{\phi _L -2 \phi _i +\phi _R}{\Delta x ^2} + \alpha \frac{\phi _S -2 \phi _i +\phi _N}{\Delta y^2} + \ Q_i \frac{\alpha}{k} +O(\Delta t, \Delta x, \Delta y)
+$$
+
+Finally, the source term was given in
+
+** Boundary Conditions
+For the boundary conditions, we can modify the equation on the boundaries using the ghost cell approach using the known quantities. Shown here for the left dirichlet boundaries
+
+$$
+\frac{\phi _L+ \phi _i}{2} = T_{left}
+$$
+
+allows solving for the dirichlet equations on the boundaries
+
+$$
+\phi _L = 2T_{left}-\phi _i
+$$
+
+Simillarly for the right
+
+$$
+\phi _R = 2T_{right}-\phi _i
+$$
+
+and bottom boundaries
+
+$$
+\phi _S = 2T_{bottom}-\phi _i
+$$
+
+The neumann boundary can be determined from the flux term
+
+$$
+q = k \frac{\delta T}{\delta y} \approx k \frac{\phi _N - \phi _i}{\Delta y}
+$$
+
+where k is the materials thermal conductivity.
+Solving for $\phi _n$
+
+$$
+\phi _N = \frac{q \Delta y}{k} +\phi _i
+$$
+
+* Problem Constants
+Based on the problem description, at atmospheric pressure the thermal diffusivity ranges from $0.155 *10^{-6} \frac{m^2}{s}$ at 50 degrees celcius, to $0.143 * 10^ {-6} \frac{m^2}{s}$ at 20 degrees celsius. A constant thermal diffusivity of $0.146 * 10^{-6} /frac{m^2}{s}$ for water at standard temperature and pressure (25 degrees celcius at atmospheric pressure) was used for this project as the error introduced due to this symplifying assumption was determined to be acceptable [cite:@Water_Diffusion_EngineeringToolbox]
+
+The water thermal conductivity taken to be a constant at $0.456 \frac{W}{mK}$ again coresponding to a temperature of 25 degrees celcius. [cite:@Water_Conductivity_EngineeringToolBox]
+
+#+ATTR_LATEX: :options frame=single
+#+BEGIN_SRC python :results output :exports both :session Python-Session :tangle "../../../../src/solver/code_project/main.py
+  from solver.cartesian_mesh import CartesianMesh
+  from solver.solver import Solver
+  from solver.utilities import EnergyBalance, Plotter, VelocityRounder
+  from solver.mesher import linear_convection_mesh
+  from matplotlib import pyplot as plt
+  import numpy as np
+  import logging
+  import math
+
+  #create logging configuration
+  logger = logging.getLogger(__name__)
+  logger.setLevel(logging.INFO)
+
+  console_handler = logging.StreamHandler()
+  console_handler.setLevel(logging.INFO)
+  formatter = logging.Formatter(
+    "%(message)s",
+  )
+  console_handler.setFormatter(formatter)
+  logger.addHandler(console_handler)
+
+  class Setup:
+      def __init__(self,
+                   x_range = (0,5),
+                   y_range = (0,1),
+                   mesh_type = "finite_volume",
+                   conductivity = 0.456,
+                   diffusivity = 0.146*10**(-6),
+                   temp_left = 30,
+                   temp_right = 30,
+                   temp_bottom = 30,
+                   top_flux = -10,
+                   ):
+
+
+          self.mesh_size_dict = {
+              "course":(5,2),
+              "medium": (20,8),
+              "fine":(100,10),
+              "ultra_fine":(200,50)
+          }
+          # Define Problem constants
+          self.x_range = x_range
+          self.y_range = y_range
+          self.mesh_type = mesh_type
+          self.conductivity = conductivity # W/mk
+          self.diffusivity = diffusivity #m^2/s
+          self.temp_left = temp_left #celcius
+          self.temp_right = temp_right #celcius
+          self.temp_bottom = temp_bottom #celcius
+          self.top_flux = top_flux #celcius
+
+          # Create a function that creates the mesh
+      def create_mesh(
+              self,
+              x_cells = 80,
+              y_cells = 12,
+
+      ):
+          mesh = CartesianMesh(
+              dimensions=2,
+              n_cells=[x_cells, y_cells],
+              cordinates=[self.x_range, self.y_range],
+          mesh_type= self.mesh_type,
+          conductivity = self.conductivity,
+          diffusivity = self.diffusivity
+      )
+
+          mesh.set_dirichlet_boundary(side="left", phi=self.temp_left)
+          mesh.set_dirichlet_boundary(side="right", phi=self.temp_right)
+          mesh.set_dirichlet_boundary(side="bottom", phi=self.temp_bottom)
+          mesh.set_neumann_boundary(side="top", flux = self.top_flux/self.conductivity)
+          return(mesh)
+
+      def plot_steady(self, mesh_dictionary, plot_name):
+            fig, ax = plt.subplots(len(mesh_dictionary), figsize= (10,12))
+            i = 0
+            for  mesh_size, mesh in mesh_dictionary.items():
+
+                x_cords = mesh.grid["x_grid"].cell_cordinates
+                y_cords = mesh.grid["y_grid"].cell_cordinates
+                logger.debug(x_cords)
+                xv, yv = np.meshgrid(x_cords, y_cords)
+                axis = plt.subplot(len(mesh_dictionary),1,i+1)
+                axis.set_title(mesh_size)
+                steady = axis.pcolormesh(xv, yv, mesh.phi.get_phi())
+
+                i = i +1
+
+                fig.colorbar(steady, label = "temperature (celcius)")
+            plt.savefig(plot_name)
+ #+END_SRC
+
+ #+RESULTS:
 
 * Acknowledgments
 
