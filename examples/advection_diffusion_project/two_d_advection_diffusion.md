@@ -7,9 +7,8 @@
 
 This problem considers the 2 dimensional advection diffusion equation, which in its integral form can be written as
 
-\begin{equation}
-\frac{d}{dt} \int _\Omega \phi  d\Omega = - \int _S \phi \textbf{V} \cdot \textbf{n} dS  \int _S \alpha \nabla \phi \cdot \textbf{n} dS + \int _\Omega Q d\Omega
-\end{equation}
+
+$$\frac{d}{dt} \int _\Omega \phi  d\Omega = - \int _S \phi \textbf{V} \cdot \textbf{n} dS  \int _S \alpha \nabla \phi \cdot \textbf{n} dS + \int _\Omega Q d\Omega$$
 
 
 ## Descriptions
@@ -27,78 +26,60 @@ Part 4 considers the advection-diffusion problem with a left dirichelet boundary
 
 The first term of equation 1 discritized on a cartesian structured grid by approximating the volumetric inegral's average as being its center point and discritizing the time derivative using a forward discritization.
 
-\begin{equation}
-\frac{d}{d t} \int _\Omega  \phi d\Omega = \frac{d}{d t} \bar{\phi}\Delta x \Delta y \approx \frac{d}{d t} \phi _i\Delta x \Delta y \approx \frac{\phi^{n+1} _i - \phi ^ n _i}{\Delta t} \Delta x \Delta y + O(\Delta t)
-\end{equation}
+
+$$\frac{d}{d t} \int _\Omega  \phi d\Omega = \frac{d}{d t} \bar{\phi}\Delta x \Delta y \approx \frac{d}{d t} \phi _i\Delta x \Delta y \approx \frac{\phi^{n+1} _i - \phi ^ n _i}{\Delta t} \Delta x \Delta y + O(\Delta t)$$
+
 
 Due to the velocitys all being in the positive x direction, the second term can be discritized using an upwind discritization.
 
-\begin{equation}
- -\int _S \phi \textbf{V} \cdot \textbf{n} dS   \approx u_x(\phi_L - \phi _i) \Delta y +O(\Delta x , \Delta t)
-\end{equation}
+
+$$ -\int _S \phi \textbf{V} \cdot \textbf{n} dS   \approx u_x(\phi_L - \phi _i) \Delta y +O(\Delta x , \Delta t)$$
 
 where u<sub>x</sub> is the velocity magnitude in the x direction and $\phi _W$ coresponds to value of phi for the cell next to the current cell in the the west cardinal dircetion. Of note, the $\Delta x$ discritization here will make the entire equation 1st order accurate spatial discritization. Note: The convection of refering to the cells surrounding the current cell as N = North, E = East, W = West, S = South
 and the lowercase equivalent refering to the respective face intersections between will be used throuhout this report)
 
 the third diffusive flux term can be discritized using the central difference. Assuming a constant diffusivity paramater this results in
 
-\begin{equation}
- \int _S \alpha \nabla \phi \cdot \textbf{n} dS \approx \alpha \frac{\phi _L -2 \phi _i +\phi _R}{\Delta x} \Delta y + \alpha \frac{\phi _S -2 \phi _i +\phi _N}{\Delta y} \Delta x + O(\Delta x^2 ,\Delta y^2)
-\end{equation}
+$$ \int _S \alpha \nabla \phi \cdot \textbf{n} dS \approx \alpha \frac{\phi _L -2 \phi _i +\phi _R}{\Delta x} \Delta y + \alpha \frac{\phi _S -2 \phi _i +\phi _N}{\Delta y} \Delta x + O(\Delta x^2 ,\Delta y^2)$$
 
 The last source term can again be approximated as the value at its mid point
 
-\begin{equation}
-\int _\Omega Q d\Omega \approx Q_i\Delta x \Delta y
-\end{equation}
+$$\int _\Omega Q d\Omega \approx Q_i\Delta x \Delta y$$
+
 
 Combining the equations 2 - 5 and deviding both sided by $\Delta x \Delta y$ and multipying the source term (given in units of $\frac{W}{m^2}$) by $\frac{\alpha}{k}$ results in the final discritized equation
 
-\begin{equation}
-\frac{\phi^{n+1} _i - \phi ^ n _i}{\Delta t} = \frac{u_x(\phi_L - \phi _i)}{\Delta x} + \alpha \frac{\phi _L -2 \phi _i +\phi _R}{\Delta x ^2} + \alpha \frac{\phi _S -2 \phi _i +\phi _N}{\Delta y^2} + \ Q_i \frac{\alpha}{k} +O(\Delta t, \Delta x, \Delta y)
-\end{equation}
-
-Finally, the source term was given in
-
+$$\frac{\phi^{n+1} _i - \phi ^ n _i}{\Delta t} = \frac{u_x(\phi_L - \phi _i)}{\Delta x} + \alpha \frac{\phi _L -2 \phi _i +\phi _R}{\Delta x ^2} + \alpha \frac{\phi _S -2 \phi _i +\phi _N}{\Delta y^2} + \ Q_i \frac{\alpha}{k} +O(\Delta t, \Delta x, \Delta y) $$
 
 ## Boundary Conditions
 
 For the boundary conditions, we can modify equation 6 on the boundaries using the ghost cell approach using the known quantities. Shown here for the left dirichlet boundaries
 
-\begin{equation}
-\frac{\phi _L+ \phi _i}{2} = T_{left}
-\end{equation}
+$$ \frac{\phi _L+ \phi _i}{2} = T_{left}$$
 
 allows solving for the dirichlet equations on the boundaries
 
-\begin{equation}
-\phi _L = 2T_{left}-\phi _i
-\end{equation}
+
+$$\phi _L = 2T_{left}-\phi _i$$
 
 Simillarly for the right
 
-\begin{equation}
-\phi _R = 2T_{right}-\phi _i
-\end{equation}
+$$\phi _R = 2T_{right}-\phi _i$$
 
 and bottom boundaries
 
-\begin{equation}
-\phi _S = 2T_{bottom}-\phi _i
-\end{equation}
+$$\phi _S = 2T_{bottom}-\phi _i$$
 
 The neumann boundary can be determined from the flux term
 
-\begin{equation}
-q = k \frac{\delta T}{\delta y} \approx k \frac{\phi _N - \phi _i}{\Delta y}
-\end{equation}
+$$q = k \frac{\delta T}{\delta y} \approx k \frac{\phi _N - \phi _i}{\Delta y}$$
 
 where k is the materials thermal conductivity.
 Solving for $\phi _n$
 
-\begin{equation}
-\phi _N = \frac{q \Delta y}{k} +\phi _i
-\end{equation}
+
+$$\phi _N = \frac{q \Delta y}{k} +\phi _i$$
+
 
 \newpage
 
@@ -127,7 +108,7 @@ Or all at once
 
 # Problem Constants
 
-Based on the problem description, at atmospheric pressure the thermal diffusivity ranges from $0.155 *10^{-6} \frac{m^2}{s}$ at 50 degrees celcius, to $0.143 * 10^ {-6} \frac{m^2}{s}$ at 20 degrees celsius. A constant thermal diffusivity of $0.146 * 10^{-6} /frac{m^2}{s}$ for water at standard temperature and pressure (25 degrees celcius at atmospheric pressure) was used for this project as the error introduced due to this symplifying assumption was determined to be acceptable <a href="#citeproc_bib_item_1">[1]</a>
+At atmospheric pressure the thermal diffusivity ranges from $0.155 *10^{-6} \frac{m^2}{s}$ at 50 degrees celcius, to $0.143 * 10^ {-6} \frac{m^2}{s}$ at 20 degrees celsius. A constant thermal diffusivity of $0.146 * 10^{-6} /frac{m^2}{s}$ for water at standard temperature and pressure (25 degrees celcius at atmospheric pressure) was used for this project as the error introduced due to this symplifying assumption was determined to be acceptable <a href="#citeproc_bib_item_1">[1]</a>
 
 The water thermal conductivity taken to be a constant at $0.456 \frac{W}{mK}$ again coresponding to a temperature of 25 degrees celcius. <a href="#citeproc_bib_item_2">[2]</a>
 
