@@ -1,4 +1,4 @@
-#+TITLE: Code Project
+#+TITLE: Bray-PDE
 #+AUTHOR: Bray Moll
 #+OPTIONS: toc:nil
 #+SETUPFILE: ~/masters/bray-standard-latex-export.org
