@@ -2,7 +2,7 @@
 #+AUTHOR: Bray Moll
 #+OPTIONS: toc:nil
 #+SETUPFILE: ~/masters/bray-standard-latex-export.org
-#+BIBLIOGRAPHY: ../citations.bib
+#+BIBLIOGRAPHY: ./examples/advection_diffusion_project/citations.bib
 [[https://github.com/bkm82/bray-pde/actions][https://github.com/bkm82/1D_Heat_Diffusion/actions/workflows/tests.yml/badge.svg]]
 
 [[./examples/advection_diffusion_project/advection_diffusion_mixed_temperature_profile.png]]
@@ -43,6 +43,89 @@ Part 2 condsiders the same formulation as part 1 with an added source term Q=50e
 Part 3 considers the unsteady case of part 1, starting from an initial condition of T(0,x,y) = 30c until a steady state is achieved
 
 Part 4 considers the advection-diffusion problem with a left dirichelet boundary condition of 50c, for three constant velocities $\textbf{V} = [0.01,0], [0.1,0], [1,0] m/s$
+* Theory
+** Integral Equation
+
+This example considers the 2 dimensional advection diffusion equation, which in its integral form can be written as
+
+$$
+\frac{d}{dt} \int _\Omega \phi  d\Omega = - \int _S \phi \textbf{V} \cdot \textbf{n} dS  \int _S \alpha \nabla \phi \cdot \textbf{n} dS + \int _\Omega Q d\Omega
+$$
+
+** Discritized Equations
+The first term of the integral equation can be  discritized on a cartesian structured grid by approximating the volumetric inegral's average as being its center point and discritizing the time derivative using a forward discritization.
+
+$$
+\frac{d}{d t} \int _\Omega  \phi d\Omega = \frac{d}{d t} \bar{\phi}\Delta x \Delta y \approx \frac{d}{d t} \phi _i\Delta x \Delta y \approx \frac{\phi^{n+1} _i - \phi ^ n _i}{\Delta t} \Delta x \Delta y + O(\Delta t)$
+$$
+
+Due to the velocitys all being in the positive x direction, the second term can be discritized using an upwind discritization.
+
+$$
+ -\int _S \phi \textbf{V} \cdot \textbf{n} dS   \approx u_x(\phi_L - \phi _i) \Delta y +O(\Delta x , \Delta t)
+$$
+
+where u_x is the velocity magnitude in the x direction and $\phi _W$ coresponds to value of phi for the cell next to the current cell in the the west cardinal dircetion. Of note, the $\Delta x$ discritization here will make the entire equation 1st order accurate spatial discritization. Note: The convection of refering to the cells surrounding the current cell as N = North, E = East, W = West, S = South
+and the lowercase equivalent refering to the respective face intersections between will be used throuhout this report)
+
+the third diffusive flux term can be discritized using the central difference. Assuming a constant diffusivity paramater this results in
+
+$$
+ \int _S \alpha \nabla \phi \cdot \textbf{n} dS \approx \alpha \frac{\phi _L -2 \phi _i +\phi _R}{\Delta x} \Delta y + \alpha \frac{\phi _S -2 \phi _i +\phi _N}{\Delta y} \Delta x + O(\Delta x^2 ,\Delta y^2)
+$$
+
+The last source term can again be approximated as the value at its mid point
+
+$$
+\int _\Omega Q d\Omega \approx Q_i\Delta x \Delta y
+$$
+
+Combining the equations discritized equations and deviding both sided by $\Delta x \Delta y$ and multipying the source term (given in units of $\frac{W}{m^2}$) by $\frac{\alpha}{k}$ results in the final discritized equation
+
+$$
+\frac{\phi^{n+1} _i - \phi ^ n _i}{\Delta t} = \frac{u_x(\phi_L - \phi _i)}{\Delta x} + \alpha \frac{\phi _L -2 \phi _i +\phi _R}{\Delta x ^2} + \alpha \frac{\phi _S -2 \phi _i +\phi _N}{\Delta y^2} + \ Q_i \frac{\alpha}{k} +O(\Delta t, \Delta x, \Delta y)
+$$
+
+Finally, the source term was given in
+
+** Boundary Conditions
+For the boundary conditions, we can modify the equation on the boundaries using the ghost cell approach using the known quantities. Shown here for the left dirichlet boundaries
+
+$$
+\frac{\phi _L+ \phi _i}{2} = T_{left}
+$$
+
+allows solving for the dirichlet equations on the boundaries
+
+$$
+\phi _L = 2T_{left}-\phi _i
+$$
+
+Simillarly for the right
+
+$$
+\phi _R = 2T_{right}-\phi _i
+$$
+
+and bottom boundaries
+
+$$
+\phi _S = 2T_{bottom}-\phi _i
+$$
+
+The neumann boundary can be determined from the flux term
+
+$$
+q = k \frac{\delta T}{\delta y} \approx k \frac{\phi _N - \phi _i}{\Delta y}
+$$
+
+where k is the materials thermal conductivity.
+Solving for $\phi _n$
+
+$$
+\phi _N = \frac{q \Delta y}{k} +\phi _i
+$$
+
 * Part 1 Steady State
 [[./examples/advection_diffusion_project/steady.png]]
 #+ATTR_LATEX: :options frame=single
@@ -907,89 +990,6 @@ Slowwing the velocity down the velocity an additional 3 orders of magnitude, the
 Further slowwing down the velocity to 0.000001 m/s the flow becomes diffusion driven, with very little convective influence.
 [[./examples/advection_diffusion_project/advection_diffusion_ultra_slow_temperature_profile.png]]
 [[./examples/advection_diffusion_project/advection_diffusion_ultra_slow_line_distributions.png]]
-
-* Theory
-** Integral Equation
-
-This example considers the 2 dimensional advection diffusion equation, which in its integral form can be written as
-
-$$
-\frac{d}{dt} \int _\Omega \phi  d\Omega = - \int _S \phi \textbf{V} \cdot \textbf{n} dS  \int _S \alpha \nabla \phi \cdot \textbf{n} dS + \int _\Omega Q d\Omega
-$$
-
-** Discritized Equations
-The first term of the integral equation can be  discritized on a cartesian structured grid by approximating the volumetric inegral's average as being its center point and discritizing the time derivative using a forward discritization.
-
-$$
-\frac{d}{d t} \int _\Omega  \phi d\Omega = \frac{d}{d t} \bar{\phi}\Delta x \Delta y \approx \frac{d}{d t} \phi _i\Delta x \Delta y \approx \frac{\phi^{n+1} _i - \phi ^ n _i}{\Delta t} \Delta x \Delta y + O(\Delta t)$
-$$
-
-Due to the velocitys all being in the positive x direction, the second term can be discritized using an upwind discritization.
-
-$$
- -\int _S \phi \textbf{V} \cdot \textbf{n} dS   \approx u_x(\phi_L - \phi _i) \Delta y +O(\Delta x , \Delta t)
-$$
-
-where u_x is the velocity magnitude in the x direction and $\phi _W$ coresponds to value of phi for the cell next to the current cell in the the west cardinal dircetion. Of note, the $\Delta x$ discritization here will make the entire equation 1st order accurate spatial discritization. Note: The convection of refering to the cells surrounding the current cell as N = North, E = East, W = West, S = South
-and the lowercase equivalent refering to the respective face intersections between will be used throuhout this report)
-
-the third diffusive flux term can be discritized using the central difference. Assuming a constant diffusivity paramater this results in
-
-$$
- \int _S \alpha \nabla \phi \cdot \textbf{n} dS \approx \alpha \frac{\phi _L -2 \phi _i +\phi _R}{\Delta x} \Delta y + \alpha \frac{\phi _S -2 \phi _i +\phi _N}{\Delta y} \Delta x + O(\Delta x^2 ,\Delta y^2)
-$$
-
-The last source term can again be approximated as the value at its mid point
-
-$$
-\int _\Omega Q d\Omega \approx Q_i\Delta x \Delta y
-$$
-
-Combining the equations discritized equations and deviding both sided by $\Delta x \Delta y$ and multipying the source term (given in units of $\frac{W}{m^2}$) by $\frac{\alpha}{k}$ results in the final discritized equation
-
-$$
-\frac{\phi^{n+1} _i - \phi ^ n _i}{\Delta t} = \frac{u_x(\phi_L - \phi _i)}{\Delta x} + \alpha \frac{\phi _L -2 \phi _i +\phi _R}{\Delta x ^2} + \alpha \frac{\phi _S -2 \phi _i +\phi _N}{\Delta y^2} + \ Q_i \frac{\alpha}{k} +O(\Delta t, \Delta x, \Delta y)
-$$
-
-Finally, the source term was given in
-
-** Boundary Conditions
-For the boundary conditions, we can modify the equation on the boundaries using the ghost cell approach using the known quantities. Shown here for the left dirichlet boundaries
-
-$$
-\frac{\phi _L+ \phi _i}{2} = T_{left}
-$$
-
-allows solving for the dirichlet equations on the boundaries
-
-$$
-\phi _L = 2T_{left}-\phi _i
-$$
-
-Simillarly for the right
-
-$$
-\phi _R = 2T_{right}-\phi _i
-$$
-
-and bottom boundaries
-
-$$
-\phi _S = 2T_{bottom}-\phi _i
-$$
-
-The neumann boundary can be determined from the flux term
-
-$$
-q = k \frac{\delta T}{\delta y} \approx k \frac{\phi _N - \phi _i}{\Delta y}
-$$
-
-where k is the materials thermal conductivity.
-Solving for $\phi _n$
-
-$$
-\phi _N = \frac{q \Delta y}{k} +\phi _i
-$$
 
 * Problem Constants
 Based on the problem description, at atmospheric pressure the thermal diffusivity ranges from $0.155 *10^{-6} \frac{m^2}{s}$ at 50 degrees celcius, to $0.143 * 10^ {-6} \frac{m^2}{s}$ at 20 degrees celsius. A constant thermal diffusivity of $0.146 * 10^{-6} /frac{m^2}{s}$ for water at standard temperature and pressure (25 degrees celcius at atmospheric pressure) was used for this project as the error introduced due to this symplifying assumption was determined to be acceptable [cite:@Water_Diffusion_EngineeringToolbox]
