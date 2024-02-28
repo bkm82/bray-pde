@@ -311,7 +311,7 @@ solver.utilities:INFO:flux:
 
 Due to the finite volume scheme, the total flux error and the sum of each cells squared error is relativly independent of mesh size. The overall error increases slightly with the higher number of points due to the numerical round off error present with the higher number of calcualtions.
 
-[[./steady.png]]
+[[./examples/advection_diffusion_project/steady.png]]
 
 
 * Part 2: With Generation
@@ -405,7 +405,7 @@ solver.utilities:INFO:flux:
  Total Flux: 6.225775450729998e-11
 #+end_example
 
-[[./generation.png]]
+[[./examples/advection_diffusion_project/generation.png]]
 
 In the generation case you can see the overall energy balance still holds for the finite volume discritization regardless of discritization size. As expected, the energy generated is balanced by the energy leaving the control volume. The source term was strong enough to have a flux out of the control volume on the the bottom boundary. Also of note, the maximum temperature reached was ~ 90 degrees celcius which is approaching a range where, depending on the application, the assumption of a constant thermal conductivity could be introducing a non-negligable amound of error into calculating the solution.
 
@@ -511,10 +511,10 @@ solver.solver:INFO:compute_error:Time: 13000000, RMSPE: 0.09327679418999363
 #+end_example
 
 
-[[./transient_temperature_profile.png]]
-[[./transient_line_distributions.png]]
+[[./examples/advection_diffusion_project/transient_temperature_profile.png]]
+[[./examples/advection_diffusion_project/transient_line_distributions.png]]
 As shown above, the temperatures reached steady state after ~13 million seconds due to the low diffusivity of water. The temperature distributions all follow a similar pattern (with a differing magnitude) as the heat diffuses towards the top. All of the dirichilet boundarys remain at a fixed temperature
-\newpage
+
 * Part 4: Advection Diffusion
 
 #+ATTR_LATEX: :options frame=single
@@ -1048,33 +1048,30 @@ solver.solver:INFO:compute_error:Time: 7500000, RMSPE: 0.009553332830667111
       main()
 #+END_SRC
 
-\newpage
+
 ** Fast Velocity
 When a velocity of 1m/s is used, the problem is convective driven, with the 50 degree wave propegating across from left two right. The diffusion of the wave is likely due to numerical error an not due to actual diffusion. Note how the diffusion of temperature from the top and bottom boundaries has very little impact on the temperature profiles.
-[[./advection_diffusion_fast_temperature_profile.png]]
-[[./advection_diffusion_fast_line_distributions.png]]
-\newpage
+[[./examples/advection_diffusion_project/advection_diffusion_fast_temperature_profile.png]]
+[[./examples/advection_diffusion_project/advection_diffusion_fast_line_distributions.png]]
+
 ** Medium Velocity
 Slowing the velocity down to 0.1 m/s has very little change (beyond the time from which it takes the front to move from left to right). At this velocity this profile remains advection dominated.
-[[./advection_diffusion_med_temperature_profile.png]]
-[[./advection_diffusion_med_line_distributions.png]]
-\newpage
+[[./examples/advection_diffusion_project/advection_diffusion_med_temperature_profile.png]]
+[[./examples/advection_diffusion_project/advection_diffusion_med_line_distributions.png]]
 ** Slow Velocity
 Again, even at a velocity of 0.01 m/s the problem is still advection dominated. This aligns with the transient results which obtained steady state in ~10^6 seconds, while the advection can transefer the temperature across the domain in ~10^3
-[[./advection_diffusion_slow_temperature_profile.png]]
-[[./advection_diffusion_slow_line_distributions.png]]
-\newpage
+[[./examples/advection_diffusion_project/advection_diffusion_slow_temperature_profile.png]]
+[[./examples/advection_diffusion_project/advection_diffusion_slow_line_distributions.png]]
+
 ** Mixed Advection diffusion
 Slowwing the velocity down the velocity an additional 3 orders of magnitude, the diffusive effects start to influence the solution, with the bottom temperature profile starting to diverge from the middle and top profile
-[[./advection_diffusion_mixed_temperature_profile.png]]
-[[./advection_diffusion_mixed_line_distributions.png]]
-\newpage
+[[./examples/advection_diffusion_project/advection_diffusion_mixed_temperature_profile.png]]
+[[./examples/advection_diffusion_project/advection_diffusion_mixed_line_distributions.png]]
+
 ** Diffusion Driven
 Further slowwing down the velocity to 0.000001 m/s the flow becomes diffusion driven, with very little convective influence.
-[[./advection_diffusion_ultra_slow_temperature_profile.png]]
-[[./advection_diffusion_ultra_slow_line_distributions.png]]
-
-\newpage
+[[./examples/advection_diffusion_project/advection_diffusion_ultra_slow_temperature_profile.png]]
+[[./examples/advection_diffusion_project/advection_diffusion_ultra_slow_line_distributions.png]]
 
 * Acknowledgments
 
