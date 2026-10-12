@@ -135,16 +135,14 @@ class EnergyBalance:
             return np.sum(self.generation)
         if side == "all":
             total_flux = np.sum(self.y_flux + self.x_flux + self.generation)
-            logger.info(
-                f"\n Left Flux: {np.sum(self.x_flux[:,0])} W  \
+            logger.info(f"\n Left Flux: {np.sum(self.x_flux[:,0])} W  \
                 \n Right Flux: {np.sum(self.x_flux[:,-1])} W  \
                 \n Bottom Flux: {np.sum(self.y_flux[-1,:])} W  \
                 \n Generation: {np.sum(self.generation)} W \
                 \n Top Flux: {np.sum(self.y_flux[0,:])} W  \
                 \n Cell Sum Squared Error: {np.sum((self.cell_flux**2))} W \
                 \n Flux leaving boundarys: {np.sum(self.y_flux+ self.x_flux)}W \
-                \n Total Flux: {total_flux}"
-            )
+                \n Total Flux: {total_flux}")
 
             return total_flux
 
